@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CaxGlobaltek</name>
+    </assembly>
+    <members>
+        <member name="M:CaxGlobaltek.CaxEnv.GetGlobaltekEnvDir">
+            <summary>
+            回傳：IP\Globaltek
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxEnv.GetGlobaltekTaskDir">
+            <summary>
+            回傳：IP\Globaltek\Task
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxEnv.GetLocalTaskDir">
+            <summary>
+            回傳：[Local]\Globaltek\Task
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPE.GetPEConfigDir">
+            <summary>
+            回傳：IP\Globaltek\PE\Config
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxCheckDat.CheckMETEDownload_Upload">
+            <summary>
+            檢查METEDownload_Upload.dat是否存在
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxCheckDat.CheckCustomerName">
+            <summary>
+            檢查CustomerName.dat是否存在
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxCheckDat.CheckOperationArray">
+            <summary>
+            檢查OperationArray.dat是否存在
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

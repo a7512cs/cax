@@ -1,0 +1,19 @@
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\obj\Debug\ETableWork.csprojResolveAssemblyReference.cache
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\obj\Debug\ETableWork.eTbale.resources
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\obj\Debug\ETableWork.csproj.GenerateResource.Cache
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\bin\Debug\ETableWork.dll
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\bin\Debug\ETableWork.pdb
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\obj\Debug\ETableWork.dll
+c:\users\yif\documents\visual studio 2010\Projects\ETableWork\ETableWork\obj\Debug\ETableWork.pdb
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\ETableWork.dll
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\ETableWork.pdb
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\obj\Debug\ETableWork.csprojResolveAssemblyReference.cache
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\obj\Debug\ETableWork.eTbale.resources
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\obj\Debug\ETableWork.csproj.GenerateResource.Cache
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\obj\Debug\ETableWork.dll
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\obj\Debug\ETableWork.pdb
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\Newtonsoft.Json.dll
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\YifCommonFunction.dll
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\YifCommonFunction.pdb
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\LicenseCheck.dll
+D:\0_SIMFORCE\0_Project\0_SrcCode\ETableWork\ETableWork\bin\Debug\LicenseCheck.pdb

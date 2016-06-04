@@ -1,0 +1,5 @@
+{
+	"companyName":"COXON",
+	"hasCMM":"1",
+	"hasMultiFixture":"0"
+}

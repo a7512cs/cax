@@ -1,0 +1,13 @@
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\TEOpenTask.dll
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\TEOpenTask.pdb
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\CaxGlobaltek.dll
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\Newtonsoft.Json.dll
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\CaxGlobaltek.pdb
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\CaxGlobaltek.xml
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\Newtonsoft.Json.pdb
+D:\GlobalCode\TEOpenTask\TEOpenTask\bin\Release\Newtonsoft.Json.xml
+D:\GlobalCode\TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.csprojResolveAssemblyReference.cache
+D:\GlobalCode\TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.dll
+D:\GlobalCode\TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.pdb
+D:\GlobalCode\TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.TEOpenTaskDlg.resources
+D:\GlobalCode\TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.csproj.GenerateResource.Cache
