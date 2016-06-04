@@ -287,7 +287,7 @@ namespace ExportShopDoc
                         if (NCProgramTag == ncGroup.Tag.ToString())
                         {
                             
-                            
+                            //123
 
                             bool cheValue;
                             OperData sOperData = new OperData();
