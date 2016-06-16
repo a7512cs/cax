@@ -142,7 +142,7 @@ namespace CaxGlobaltek
         /// <returns></returns>
         public static string AskOperHolderDescription(NXOpen.CAM.Operation singleOper)
         {
-            string operHolderDescription = "尚未建立Builder存取資料";
+            string operHolderDescription = "";
             try
             {
                 NCGroup singleOperParent = singleOper.GetParent(CAMSetup.View.MachineTool);//由Oper取得刀子
@@ -230,7 +230,7 @@ namespace CaxGlobaltek
         /// <returns></returns>
         public static string AskOperToolNumber(NXOpen.CAM.Operation singleOper)
         {
-            string operToolNumber = "尚未建立Builder存取資料";
+            string operToolNumber = "0";
             try
             {
                 NCGroup singleOperParent = singleOper.GetParent(CAMSetup.View.MachineTool);//由Oper取得刀子
@@ -387,17 +387,109 @@ namespace CaxGlobaltek
             }
         }
 
-        public static string AskOperStock(NXOpen.CAM.Operation singleOper)
+        /// <summary>
+        /// 取得Operation的預留量
+        /// </summary>
+        /// <param name="singleOper"></param>
+        /// <param name="StockStr"></param>
+        /// <param name="FloorStockStr"></param>
+        /// <returns></returns>
+        public static bool AskOperStock(NXOpen.CAM.Operation singleOper, out string StockStr, out string FloorStockStr)
         {
-            string StockStr = "";
+            StockStr = "0";
+            FloorStockStr = "0";
             try
             {
-                StockStr = singleOper.GetType().ToString();
-                return StockStr;
+                //CaxLog.ShowListingWindow(singleOper.GetType().ToString());
+                if (singleOper.GetType().ToString() == "NXOpen.CAM.PlanarMilling")
+                {
+                    NXOpen.CAM.PlanarMillingBuilder Builder1; 
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreatePlanarMillingBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString();
+                    FloorStockStr = Builder1.CutParameters.FloorStock.Value.ToString();
+                }
+                else if (singleOper.GetType().ToString() == "NXOpen.CAM.PlungeMilling")
+                {
+                    NXOpen.CAM.PlungeMillingBuilder Builder1; 
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreatePlungeMillingBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString();
+                    FloorStockStr = Builder1.CutParameters.FloorStock.Value.ToString();
+                }
+                else if (singleOper.GetType().ToString() == "NXOpen.CAM.RoughTurning")
+                {
+                    NXOpen.CAM.RoughTurningBuilder Builder1; 
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreateRoughTurningBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString(); 
+                }
+                else if (singleOper.GetType().ToString() == "NXOpen.CAM.FinishTurning")
+                {
+                    NXOpen.CAM.FinishTurningBuilder Builder1; 
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreateFinishTurningBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString(); 
+                }
+                else if (singleOper.GetType().ToString() == "NXOpen.CavityMilling")
+                {
+                    NXOpen.CAM.CavityMillingBuilder Builder1;
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreateCavityMillingBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString();
+                    FloorStockStr = Builder1.CutParameters.FloorStock.Value.ToString();
+                }
+                else if (singleOper.GetType().ToString() == "NXOpen.FaceMilling")
+                {
+                    NXOpen.CAM.FaceMillingBuilder Builder1;
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreateFaceMillingBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString();
+                    FloorStockStr = Builder1.CutParameters.FloorStock.Value.ToString();
+                }
+                else if (singleOper.GetType().ToString() == "NXOpen.HoleMaking")
+                {
+                    NXOpen.CAM.HoleMakingBuilder Builder1;
+                    Builder1 = workPart.CAMSetup.CAMOperationCollection.CreateHoleMakingBuilder(singleOper);
+                    StockStr = Builder1.CutParameters.PartStock.Value.ToString();
+                }
+                
+                
             }
             catch (System.Exception ex)
             {
-                return StockStr;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取得Operation總加工時間
+        /// </summary>
+        /// <param name="singleOper"></param>
+        /// <returns></returns>
+        public static string AskOperTotalCuttingTime(NXOpen.CAM.Operation singleOper)
+        {
+            string TotalCuttingTime = "";
+            try
+            {
+                return TotalCuttingTime = singleOper.GetToolpathTime().ToString();
+            }
+            catch (System.Exception ex)
+            {
+                return TotalCuttingTime;
+            }
+        }
+
+        /// <summary>
+        /// 取得Operation總加工長度
+        /// </summary>
+        /// <param name="singleOper"></param>
+        /// <returns></returns>
+        public static string AskOperTotalCuttingLength(NXOpen.CAM.Operation singleOper)
+        {
+            string TotalCuttingLength = "";
+            try
+            {
+                return TotalCuttingLength = singleOper.GetToolpathLength().ToString();
+            }
+            catch (System.Exception ex)
+            {
+                return TotalCuttingLength;
             }
         }
     }

@@ -49,5 +49,23 @@ namespace CaxGlobaltek
             }
             return true;
         }
+
+        /// <summary>
+        /// 取得template_post.dat內容
+        /// </summary>
+        /// <returns></returns>
+        public static string[] GetTemplatePostData()
+        {
+            string[] DatData = new string[]{};
+            try
+            {
+                string TemplatePostPath = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekPostProcessorDir(), "template_post.dat");
+                return DatData = System.IO.File.ReadAllLines(TemplatePostPath);
+            }
+            catch (System.Exception ex)
+            {
+                return DatData;
+            }
+        }
     }
 }

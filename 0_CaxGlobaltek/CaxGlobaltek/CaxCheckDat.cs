@@ -99,5 +99,28 @@ namespace CaxGlobaltek
             }
             return true;
         }
+
+        /// <summary>
+        /// 檢查template_post.dat是否存在
+        /// </summary>
+        /// <returns></returns>
+        public static bool CheckTemplatePostDat()
+        {
+            try
+            {
+                string TemplatePost_dat = "template_post.dat";
+                string TemplatePostData_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekPostProcessorDir(), TemplatePost_dat);
+                if (!System.IO.File.Exists(TemplatePostData_Path))
+                {
+                    MessageBox.Show("template_post.dat不存在");
+                    return false;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

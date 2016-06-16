@@ -50,16 +50,26 @@ public class Program
             bool status;
 
             #region 檢查METEDownload_Upload.dat是否存在
-
+            /*
             status = CaxCheckDat.CheckMETEDownload_Upload();
             if (!status)
             {
                 MessageBox.Show("METEDownload_Upload.dat不存在");
                 return retValue;
             }
-
+            */
             #endregion
 
+            #region 關閉 Preferences->Manufacturing->Operation->Regresh before Each Path
+
+            //NXOpen.CAM.Preferences preferences1;
+            //preferences1 = theSession.CAMSession.CreateCamPreferences();
+            //preferences1.ReplayRefreshBeforeEachPath = false;
+            //preferences1.Commit();
+            //preferences1.Destroy();
+
+            #endregion
+            
 
             Application.EnableVisualStyles();
             ExportShopDocDlg cExportShopDocDlg = new ExportShopDocDlg();

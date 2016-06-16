@@ -37,6 +37,11 @@ namespace ExportShopDoc
         public static bool status;
         public static METE_Download_Upload_Path cMETE_Download_Upload_Path = new METE_Download_Upload_Path();
         public static string Local_Folder_CAM = "";
+        public static int CurrentRowIndex = -1;
+        public static string CurrentSelOperName = "";
+        public static List<string> ListSelOper = new List<string>();
+        public static string FixturePathStr = "", FixtureNameStr = "";
+        public static string PhotoFolderPath = "";
 
         public struct ProgramName
         {
@@ -54,6 +59,8 @@ namespace ExportShopDoc
             public string ToolFeed { get; set; }
             public string ToolNumber { get; set; }
             public string ToolSpeed { get; set; }
+            public string PartStock { get; set; }
+            public string PartFloorStock { get; set; }
         }
 
         public struct RowColumn
@@ -72,18 +79,28 @@ namespace ExportShopDoc
             public int ToolFeedColumn { get; set; }
             public int ToolSpeedRow { get; set; }
             public int ToolSpeedColumn { get; set; }
-            public int ImgToolRow { get; set; }
-            public int ImgToolColumn { get; set; }
-            //public int ImgOperRow { get; set; }
-            //public int ImgOperColumn { get; set; }
+            public int OperImgToolRow { get; set; }
+            public int OperImgToolColumn { get; set; }
+            public int PartStockRow { get; set; }
+            public int PartStockColumn { get; set; }
+            public int TotalCuttingTimeRow { get; set; }
+            public int TotalCuttingTimeColumn { get; set; }
         }
 
-        public struct ImgPosiSize
+        public struct OperImgPosiSize
         {
-            public float PosiLeft { get; set; }
-            public float PosiTop { get; set; }
-            public float ImgWidth { get; set; }
-            public float ImgHeight { get; set; }
+            public float OperPosiLeft { get; set; }
+            public float OperPosiTop { get; set; }
+            public float OperImgWidth { get; set; }
+            public float OperImgHeight { get; set; }
+        }
+
+        public struct FixImgPosiSize
+        {
+            public float FixPosiLeft { get; set; }
+            public float FixPosiTop { get; set; }
+            public float FixImgWidth { get; set; }
+            public float FixImgHeight { get; set; }
         }
 
         public ExportShopDocDlg()
@@ -95,13 +112,18 @@ namespace ExportShopDoc
 
             panel.Columns["拍照"].EditorType = typeof(SetView);
 
+            //預設關閉群組拍照
+            GroupSaveView.Enabled = false;
+
             //取得METEDownload_Upload資料
+            /*
             status = CaxGetDatData.GetMETEDownload_Upload(out cMETE_Download_Upload_Path);
             if (!status)
             {
                 MessageBox.Show("取得METEDownload_Upload失敗");
                 return;
             }
+            */
 
             #region 註解中，驗證的資料
             
@@ -181,10 +203,17 @@ namespace ExportShopDoc
 
         private void ExportShopDocDlg_Load(object sender, EventArgs e)
         {
-            
+            //取得料號
+            PartNo = Path.GetFileNameWithoutExtension(displayPart.FullPath);
+            //建立圖片資料夾
+            PhotoFolderPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), "OperationPhoto");
+            if (!Directory.Exists(PhotoFolderPath))
+            {
+                System.IO.Directory.CreateDirectory(PhotoFolderPath);
+            }
             //取得所有GroupAry，用來判斷Group的Type決定是NC、Tool、Geometry
             NCGroupAry = displayPart.CAMSetup.CAMGroupCollection.ToArray();
-            //取得所有operationAry
+            //取得所有OperationAry
             OperationAry = displayPart.CAMSetup.CAMOperationCollection.ToArray();
 
             #region test
@@ -276,7 +305,7 @@ namespace ExportShopDoc
                         this.Close();
                         return;
                     }
-
+                    
                     ncGroupName = ncGroup.Name;
                     
                     foreach (NXOpen.CAM.Operation item in OperationAry)
@@ -286,8 +315,8 @@ namespace ExportShopDoc
                         NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
                         if (NCProgramTag == ncGroup.Tag.ToString())
                         {
-                            
-                            //123
+                            string StockStr = "", FloorstockStr = "";
+                            CaxOper.AskOperStock(item, out StockStr, out FloorstockStr);
 
                             bool cheValue;
                             OperData sOperData = new OperData();
@@ -297,11 +326,13 @@ namespace ExportShopDoc
                                 sOperData.OperName = item.Name;
                                 sOperData.ToolName = CaxOper.AskOperToolNameFromTag(item.Tag);
                                 sOperData.HolderDescription = CaxOper.AskOperHolderDescription(item);
-                                sOperData.CuttingLength = Convert.ToDouble(CaxOper.AskOperCuttingLength(item)).ToString("f3");
-                                sOperData.ToolFeed = CaxOper.AskOperToolFeed(item);
-                                sOperData.CuttingTime = (Convert.ToDouble(CaxOper.AskOperCuttingTime(item)) * 60).ToString("f3");//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
+                                sOperData.CuttingLength = Convert.ToDouble(CaxOper.AskOperTotalCuttingLength(item)).ToString("f3");
+                                sOperData.ToolFeed = Math.Round(Convert.ToDouble(CaxOper.AskOperToolFeed(item)), 3, MidpointRounding.AwayFromZero).ToString();
+                                sOperData.CuttingTime = Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString();//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
                                 sOperData.ToolNumber = "T" + CaxOper.AskOperToolNumber(item);
                                 sOperData.ToolSpeed = CaxOper.AskOperToolSpeed(item);
+                                sOperData.PartStock = StockStr;
+                                sOperData.PartFloorStock = FloorstockStr;
                                 DicNCData.Add(ncGroup.Name, sOperData);
                             }
                             else
@@ -309,11 +340,13 @@ namespace ExportShopDoc
                                 sOperData.OperName = sOperData.OperName + "," + item.Name;
                                 sOperData.ToolName = sOperData.ToolName + "," + CaxOper.AskOperToolNameFromTag(item.Tag);
                                 sOperData.HolderDescription = sOperData.HolderDescription + "," + CaxOper.AskOperHolderDescription(item);
-                                sOperData.CuttingLength = sOperData.CuttingLength + "," + Convert.ToDouble(CaxOper.AskOperCuttingLength(item)).ToString("f3");
-                                sOperData.ToolFeed = sOperData.ToolFeed + "," + CaxOper.AskOperToolFeed(item);
-                                sOperData.CuttingTime = sOperData.CuttingTime + "," + (Convert.ToDouble(CaxOper.AskOperCuttingTime(item)) * 60).ToString("f3");//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
+                                sOperData.CuttingLength = sOperData.CuttingLength + "," + Convert.ToDouble(CaxOper.AskOperTotalCuttingLength(item)).ToString("f3");
+                                sOperData.ToolFeed = sOperData.ToolFeed + "," + Math.Round(Convert.ToDouble(CaxOper.AskOperToolFeed(item)), 3, MidpointRounding.AwayFromZero).ToString();
+                                sOperData.CuttingTime = sOperData.CuttingTime + "," + Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString();//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
                                 sOperData.ToolNumber = sOperData.ToolNumber + "," + "T" + CaxOper.AskOperToolNumber(item);
                                 sOperData.ToolSpeed = sOperData.ToolSpeed + "," + CaxOper.AskOperToolSpeed(item);
+                                sOperData.PartStock = sOperData.PartStock + "," + StockStr;
+                                sOperData.PartFloorStock = sOperData.PartFloorStock + "," + FloorstockStr;
                                 DicNCData[ncGroup.Name] = sOperData;
                             }
                         }
@@ -335,11 +368,24 @@ namespace ExportShopDoc
 
             #region 設定輸出路徑
 
+            //暫時使用的路徑
+            string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
+            OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), 
+                                                        Path.GetFileNameWithoutExtension(displayPart.FullPath) + "_" + (FolderFile.Length + 1) + ".xls");
+            
+           
+
+            /*-------以下發布版本
             //取得總組立名稱與全路徑
-            PartNo = Path.GetFileNameWithoutExtension(displayPart.FullPath);
             string PartNoFullPath = Path.GetDirectoryName(displayPart.FullPath);//回傳：IP:\Globaltek\Task\廠商\料號\版次
             string[] splitPartNoFullPath = PartNoFullPath.Split('\\');
+            if (splitPartNoFullPath.Length<5)
+            {
+                CaxLog.ShowListingWindow("未使用下載檔案工具，請手動建立資料架構！");
+                this.Close();
+            }
 
+            
             string Local_IP = cMETE_Download_Upload_Path.Local_IP;
             string Local_ShareStr = cMETE_Download_Upload_Path.Local_ShareStr;
             Local_Folder_CAM = cMETE_Download_Upload_Path.Local_Folder_CAM;
@@ -350,16 +396,22 @@ namespace ExportShopDoc
             Local_ShareStr = Local_ShareStr.Replace("[CusRev]", splitPartNoFullPath[5]);
             Local_Folder_CAM = Local_Folder_CAM.Replace("[Local_ShareStr]", Local_ShareStr);
             Local_Folder_CAM = Local_Folder_CAM.Replace("[Oper1]", Regex.Replace(ncGroupName, "[^0-9]", ""));
-
+            
             //取得資料夾內所有檔案
+            if (!Directory.Exists(Local_Folder_CAM))
+            {
+                CaxLog.ShowListingWindow("資料夾架構建立有誤，請聯繫開發人員！");
+                this.Close();
+            }
             string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Local_Folder_CAM, "*.xls");
             //設定輸出路徑與檔名
             OutputPath.Text = string.Format(@"{0}\{1}", Local_Folder_CAM, PartNo + "_" + (FolderFile.Length + 1) + ".xls");
+            */
 
             #endregion
-            
 
-            
+
+
         }
 
         private void buttonSelePath_Click(object sender, EventArgs e)
@@ -448,7 +500,7 @@ namespace ExportShopDoc
         private void ConfirmRename_Click(object sender, EventArgs e)
         {
             string RenameStr = "";
-
+            
             foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
             {
                 if (CurrentNCGroup == ncGroup.Name)
@@ -456,11 +508,19 @@ namespace ExportShopDoc
                     //取得此NCGroup下的所有Oper
                     CAMObject[] OperGroup = ncGroup.GetMembers();
 
+                    //先將Oper更名成與新Oper名稱完全不衝突(防止前一條程式的名稱與之後的舊Oper名稱相同)
+                    for (int i = 0; i < OperGroup.Length; i++)
+                    {
+                        OperGroup[i].SetName(OperGroup[i].Name+i);
+                    }
+
+                    theUfSession.UiOnt.Refresh();
+
+                    //真正更名成新的Oper名稱
                     for (int i = 0; i < OperGroup.Length;i++ )
                     {
                         RenameStr = panel.GetCell(i, 1).Value.ToString();
                         OperGroup[i].SetName(RenameStr);
-
                         #region 註解中，驗證資料使用
 
                         //NXOpen.CAM.Operation abc = (NXOpen.CAM.Operation)OperGroup[i];
@@ -568,6 +628,8 @@ namespace ExportShopDoc
 
                         #endregion
                     }
+
+                    theUfSession.UiOnt.Refresh();
                 }
             }
 
@@ -595,6 +657,8 @@ namespace ExportShopDoc
             DicNCData[CurrentNCGroup] = NewOperData;
 
             #endregion
+
+            
 
             /*
             foreach (KeyValuePair<string, string> kvp in DicProgName)
@@ -650,6 +714,47 @@ namespace ExportShopDoc
 
             #region 拍OperToolPath圖片
 
+            //暫時使用版本
+            string[] FolderImageAry = System.IO.Directory.GetFileSystemEntries(PhotoFolderPath, "*.jpg");
+            OperationAry = displayPart.CAMSetup.CAMOperationCollection.ToArray();
+            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            {
+                if (CurrentNCGroup == ncGroup.Name)
+                {
+                    for (int i = 0; i < OperationAry.Length; i++)
+                    {
+                        //取得父層的群組(回傳：NCGroup XXXX)
+                        string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                        NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                        string ImagePath = "";
+                        if (NCProgramTag == ncGroup.Tag.ToString())
+                        {
+                            //判斷是否已經手動拍攝過，如拍攝過就不再拍攝
+                            bool checkStatus = false;
+                            foreach (string single in FolderImageAry)
+                            {
+                                if (Path.GetFileNameWithoutExtension(single) == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                                {
+                                    checkStatus = true;
+                                }
+                            }
+
+                            if (!checkStatus)
+                            {
+                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                                workPart.ModelingViews.WorkView.Orient(NXOpen.View.Canned.Isometric, NXOpen.View.ScaleAdjustment.Fit);
+                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+
+                                ImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, OperationAry[i].Name);
+                                theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
+                            }
+                        }
+                    }
+                }
+            }
+
+            /*-------發布使用版本
             //取得已經手動拍攝過的OperImg
             string[] FolderImageAry = System.IO.Directory.GetFileSystemEntries(Local_Folder_CAM, "*.jpg");
 
@@ -692,6 +797,8 @@ namespace ExportShopDoc
                     }
                 }
             }
+            */
+
 
             #endregion
 
@@ -734,66 +841,121 @@ namespace ExportShopDoc
                 }
             }
 
+            #region 註解中，計算欄位寬高
+
+            //sheet = (Excel.Worksheet)book.Sheets[1];
+            //double abc = 0;
+            //計算欄位的高
+            //for (int i = 1; i < 33; i++)
+            //{
+            //    oRng = (Excel.Range)sheet.Cells[i, 9];
+            //    abc = abc + Convert.ToDouble(oRng.Height);
+            //}
+            //CaxLog.ShowListingWindow(abc.ToString());
+
+            //計算欄位的寬
+            //for (int i = 1; i < 8; i++)
+            //{
+            //    oRng = (Excel.Range)sheet.Cells[23, i];
+            //    abc = abc + Convert.ToDouble(oRng.Width.ToString());
+            //}
+            //CaxLog.ShowListingWindow(abc.ToString());
+            #endregion
+            
+            
+
+             //book.SaveAs(OutputPath.Text, Excel.XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+             //book.Close(Type.Missing, Type.Missing, Type.Missing);
+             //x.Quit();
+             //return;
+
             //填表
             foreach (KeyValuePair<string,OperData> kvp in DicNCData)
             {
-                if (CurrentNCGroup == kvp.Key)
+                if (CurrentNCGroup != kvp.Key)
                 {
-                    
-                    /*
-                    for (int i = 0; i < book.Worksheets.Count;i++ )
+                    continue;
+                } 
+                try
+                {
+                    string[] splitOperName = kvp.Value.OperName.Split(',');
+                    string[] splitToolName = kvp.Value.ToolName.Split(',');
+                    string[] splitHolderDescription = kvp.Value.HolderDescription.Split(',');
+                    string[] splitOperCuttingLength = kvp.Value.CuttingLength.Split(',');
+                    string[] splitOperToolFeed = kvp.Value.ToolFeed.Split(',');
+                    string[] splitOperCuttingTime = kvp.Value.CuttingTime.Split(',');
+                    string[] splitOperToolNumber = kvp.Value.ToolNumber.Split(',');
+                    string[] splitOperToolSpeed = kvp.Value.ToolSpeed.Split(',');
+                    string[] splitOperPartStock = kvp.Value.PartStock.Split(',');
+                    string[] splitOperPartFloorStock = kvp.Value.PartFloorStock.Split(',');
+                    string CuttingTimeStr = "";
+                    string TotalCuttingTimeStr = "";
+                    double ToTalCuttingTime = 0;
+
+                    //取得所有加工時間
+                    foreach (string i in splitOperCuttingTime)
                     {
-                    */
-                        string[] splitOperName = kvp.Value.OperName.Split(',');
-                        string[] splitToolName = kvp.Value.ToolName.Split(',');
-                        string[] splitHolderDescription = kvp.Value.HolderDescription.Split(',');
-                        string[] splitOperCuttingLength = kvp.Value.CuttingLength.Split(',');
-                        string[] splitOperToolFeed = kvp.Value.ToolFeed.Split(',');
-                        string[] splitOperCuttingTime = kvp.Value.CuttingTime.Split(',');
-                        string[] splitOperToolNumber = kvp.Value.ToolNumber.Split(',');
-                        string[] splitOperToolSpeed = kvp.Value.ToolSpeed.Split(',');
+                        ToTalCuttingTime = ToTalCuttingTime + Convert.ToDouble(i);
+                    }
 
-                        for (int j = 0; j < splitOperName.Length; j++)
+                    for (int j = 0; j < splitOperName.Length; j++)
+                    {
+                        RowColumn sRowColumn;
+                        GetExcelRowColumn(j, out sRowColumn);
+                        int currentSheet = (j / 8);
+                        sheet = (Excel.Worksheet)book.Sheets[currentSheet + 1];
+
+                        oRng = (Excel.Range)sheet.Cells;
+                        oRng[sRowColumn.OperImgToolRow, sRowColumn.OperImgToolColumn] = splitOperToolNumber[j] + "_" + splitOperName[j];
+                        oRng[sRowColumn.ToolNumberRow, sRowColumn.ToolNumberColumn] = splitOperToolNumber[j];
+                        oRng[sRowColumn.ToolNameRow, sRowColumn.ToolNameColumn] = splitToolName[j];
+                        oRng[sRowColumn.OperNameRow, sRowColumn.OperNameColumn] = splitOperName[j];
+                        oRng[sRowColumn.HolderRow, sRowColumn.HolderColumn] = splitHolderDescription[j];
+                        oRng[sRowColumn.ToolFeedRow, sRowColumn.ToolFeedColumn] = "F：" + splitOperToolFeed[j];
+                        oRng[sRowColumn.ToolSpeedRow, sRowColumn.ToolSpeedColumn] = "S：" + splitOperToolSpeed[j];
+                        oRng[sRowColumn.PartStockRow, sRowColumn.PartStockColumn] = splitOperPartStock[j] + "/" + splitOperPartFloorStock[j];
+
+                        CuttingTimeStr = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(splitOperCuttingTime[j]) / 60)), (Convert.ToDouble(splitOperCuttingTime[j]) % 60));
+                        oRng[sRowColumn.CuttingTimeRow, sRowColumn.CuttingTimeColumn] = CuttingTimeStr;
+
+                        TotalCuttingTimeStr = string.Format("{0}m {1}s", Math.Truncate((ToTalCuttingTime / 60)), (ToTalCuttingTime % 60));
+                        oRng[sRowColumn.TotalCuttingTimeRow, sRowColumn.TotalCuttingTimeColumn] = TotalCuttingTimeStr;
+
+                        OperImgPosiSize sImgPosiSize = new OperImgPosiSize();
+                        GetOperImgPosiAndSize(j, sheet, oRng, out sImgPosiSize);
+
+                        //OperImg暫時使用版本
+                        string OperImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, splitOperName[j] + ".jpg");
+                        
+                        //發布使用版本
+                        //string OperImagePath = string.Format(@"{0}\{1}", Local_Folder_CAM, splitOperName[j] + ".jpg");
+
+                        sheet.Shapes.AddPicture(OperImagePath, Microsoft.Office.Core.MsoTriState.msoFalse,
+                            Microsoft.Office.Core.MsoTriState.msoTrue, sImgPosiSize.OperPosiLeft,
+                            sImgPosiSize.OperPosiTop, sImgPosiSize.OperImgWidth, sImgPosiSize.OperImgHeight);
+
+                        //System.IO.File.Delete(OperImagePath);
+                    }
+
+                    //貼治具圖片
+                    if (FixturePath.Text != "")
+                    {
+                        FixImgPosiSize sFixImgPosiSize = new FixImgPosiSize();
+                        GetFixImgPosiAndSize(out sFixImgPosiSize);
+                        for (int i = 0; i < book.Sheets.Count; i++)
                         {
-                            RowColumn sRowColumn;
-                            GetExcelRowColumn(j, out sRowColumn);
-                            switch(j/8)
-                            {
-                                case 0:
-                                    sheet = (Excel.Worksheet)book.Sheets[1];
-                                    break;
-                                case 1:
-                                    sheet = (Excel.Worksheet)book.Sheets[2];
-                                    break;
-                                case 2:
-                                    sheet = (Excel.Worksheet)book.Sheets[3];
-                                    break;
-                            }
-                            oRng = (Excel.Range)sheet.Cells;
-                            oRng[sRowColumn.ImgToolRow, sRowColumn.ImgToolColumn] = splitOperToolNumber[j] + "，" + splitOperName[j];
-                            //oRng[sRowColumn.ImgOperRow, sRowColumn.ImgOperColumn] = splitOperName[j];
-                            oRng[sRowColumn.ToolNumberRow, sRowColumn.ToolNumberColumn] = splitOperToolNumber[j];
-                            oRng[sRowColumn.ToolNameRow, sRowColumn.ToolNameColumn] = splitToolName[j];
-                            oRng[sRowColumn.OperNameRow, sRowColumn.OperNameColumn] = splitOperName[j];
-                            oRng[sRowColumn.HolderRow, sRowColumn.HolderColumn] = splitHolderDescription[j];
-                            oRng[sRowColumn.ToolFeedRow, sRowColumn.ToolFeedColumn] = "F：" + splitOperToolFeed[j];
-                            oRng[sRowColumn.ToolSpeedRow, sRowColumn.ToolSpeedColumn] = "S：" + splitOperToolSpeed[j];
-                            oRng[sRowColumn.CuttingTimeRow, sRowColumn.CuttingTimeColumn] = splitOperCuttingTime[j];
+                            sheet = (Excel.Worksheet)book.Sheets[i + 1];
 
-                            ImgPosiSize sImgPosiSize = new ImgPosiSize();
-                            GetImgPosiAndSize(j, sheet, oRng, out sImgPosiSize);
-
-
-                            string ImagePath = string.Format(@"{0}\{1}", Local_Folder_CAM, splitOperName[j] + ".jpg");
-
-                            sheet.Shapes.AddPicture(ImagePath, Microsoft.Office.Core.MsoTriState.msoFalse,
-                                Microsoft.Office.Core.MsoTriState.msoTrue, sImgPosiSize.PosiLeft,
-                                sImgPosiSize.PosiTop, sImgPosiSize.ImgWidth, sImgPosiSize.ImgHeight);
-
-                            System.IO.File.Delete(ImagePath);
+                            sheet.Shapes.AddPicture(FixturePath.Text, Microsoft.Office.Core.MsoTriState.msoFalse,
+                                Microsoft.Office.Core.MsoTriState.msoTrue, sFixImgPosiSize.FixPosiLeft,
+                                sFixImgPosiSize.FixPosiTop, sFixImgPosiSize.FixImgWidth, sFixImgPosiSize.FixImgHeight);
                         }
-                    /*}*/
+                    }
                     
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow(ex.ToString());
                 }
             }
 
@@ -803,9 +965,9 @@ namespace ExportShopDoc
             x.Quit();
 
             //this.Hide();
-
-            //UI.GetUI().NXMessageBox.Show("恭喜", NXMessageBox.DialogType.Information, "刀具路徑與清單輸出完成！");
-
+            CaxPart.Save();
+            UI.GetUI().NXMessageBox.Show("恭喜", NXMessageBox.DialogType.Information, "刀具路徑與清單輸出完成！");
+            this.Close();
             //this.Show();
         }
 
@@ -817,14 +979,18 @@ namespace ExportShopDoc
         private void GetExcelRowColumn(int i,out RowColumn sRowColumn)
         {
             sRowColumn = new RowColumn();
+            sRowColumn.TotalCuttingTimeRow = 51;
+            sRowColumn.TotalCuttingTimeColumn = 2;
 
-            if (i == 0 || i == 8 || i == 16)
+            int currentNo = (i % 8);
+
+            if (currentNo == 0)
             {
-                sRowColumn.ImgToolRow = 5;
-                sRowColumn.ImgToolColumn = 1;
+                sRowColumn.PartStockRow = 27;
+                sRowColumn.PartStockColumn = 4;
 
-                //sRowColumn.ImgOperRow = 5;
-                //sRowColumn.ImgOperColumn = 2;
+                sRowColumn.OperImgToolRow = 5;
+                sRowColumn.OperImgToolColumn = 1;
 
                 sRowColumn.ToolNumberRow = 23;
                 sRowColumn.ToolNumberColumn = 2;
@@ -847,13 +1013,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 28;
                 sRowColumn.CuttingTimeColumn = 2;
             }
-            else if (i == 1 || i == 9 || i == 17)
+            else if (currentNo == 1)
             {
-                sRowColumn.ImgToolRow = 5;
-                sRowColumn.ImgToolColumn = 4;
+                sRowColumn.PartStockRow = 33;
+                sRowColumn.PartStockColumn = 4;
 
-                //sRowColumn.ImgOperRow = 5;
-                //sRowColumn.ImgOperColumn = 5;
+                sRowColumn.OperImgToolRow = 5;
+                sRowColumn.OperImgToolColumn = 4;
 
                 sRowColumn.ToolNumberRow = 29;
                 sRowColumn.ToolNumberColumn = 2;
@@ -876,13 +1042,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 34;
                 sRowColumn.CuttingTimeColumn = 2;
             }
-            else if (i == 2 || i == 10 || i == 18)
+            else if (currentNo == 2)
             {
-                sRowColumn.ImgToolRow = 5;
-                sRowColumn.ImgToolColumn = 7;
+                sRowColumn.PartStockRow = 39;
+                sRowColumn.PartStockColumn = 4;
 
-                //sRowColumn.ImgOperRow = 5;
-                //sRowColumn.ImgOperColumn = 8;
+                sRowColumn.OperImgToolRow = 5;
+                sRowColumn.OperImgToolColumn = 7;
 
                 sRowColumn.ToolNumberRow = 35;
                 sRowColumn.ToolNumberColumn = 2;
@@ -905,13 +1071,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 40;
                 sRowColumn.CuttingTimeColumn = 2;
             }
-            else if (i == 3 || i == 11 || i == 19)
+            else if (currentNo == 3)
             {
-                sRowColumn.ImgToolRow = 5;
-                sRowColumn.ImgToolColumn = 10;
+                sRowColumn.PartStockRow = 45;
+                sRowColumn.PartStockColumn = 4;
 
-                //sRowColumn.ImgOperRow = 5;
-                //sRowColumn.ImgOperColumn = 11;
+                sRowColumn.OperImgToolRow = 5;
+                sRowColumn.OperImgToolColumn = 10;
 
                 sRowColumn.ToolNumberRow = 41;
                 sRowColumn.ToolNumberColumn = 2;
@@ -934,13 +1100,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 46;
                 sRowColumn.CuttingTimeColumn = 2;
             }
-            else if (i == 4 || i == 12 || i == 20)
+            else if (currentNo == 4)
             {
-                sRowColumn.ImgToolRow = 13;
-                sRowColumn.ImgToolColumn = 1;
+                sRowColumn.PartStockRow = 27;
+                sRowColumn.PartStockColumn = 8;
 
-                //sRowColumn.ImgOperRow = 13;
-                //sRowColumn.ImgOperColumn = 2;
+                sRowColumn.OperImgToolRow = 13;
+                sRowColumn.OperImgToolColumn = 1;
 
                 sRowColumn.ToolNumberRow = 23;
                 sRowColumn.ToolNumberColumn = 6;
@@ -963,13 +1129,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 28;
                 sRowColumn.CuttingTimeColumn = 6;
             }
-            else if (i == 5 || i == 13 || i == 21)
+            else if (currentNo == 5)
             {
-                sRowColumn.ImgToolRow = 13;
-                sRowColumn.ImgToolColumn = 4;
+                sRowColumn.PartStockRow = 33;
+                sRowColumn.PartStockColumn = 8;
 
-                //sRowColumn.ImgOperRow = 13;
-                //sRowColumn.ImgOperColumn = 5;
+                sRowColumn.OperImgToolRow = 13;
+                sRowColumn.OperImgToolColumn = 4;
 
                 sRowColumn.ToolNumberRow = 29;
                 sRowColumn.ToolNumberColumn = 6;
@@ -992,13 +1158,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 34;
                 sRowColumn.CuttingTimeColumn = 6;
             }
-            else if (i == 6 || i == 14 || i == 22)
+            else if (currentNo == 6)
             {
-                sRowColumn.ImgToolRow = 13;
-                sRowColumn.ImgToolColumn = 7;
+                sRowColumn.PartStockRow = 39;
+                sRowColumn.PartStockColumn = 8;
 
-                //sRowColumn.ImgOperRow = 13;
-                //sRowColumn.ImgOperColumn = 8;
+                sRowColumn.OperImgToolRow = 13;
+                sRowColumn.OperImgToolColumn = 7;
 
                 sRowColumn.ToolNumberRow = 35;
                 sRowColumn.ToolNumberColumn = 6;
@@ -1021,13 +1187,13 @@ namespace ExportShopDoc
                 sRowColumn.CuttingTimeRow = 40;
                 sRowColumn.CuttingTimeColumn = 6;
             }
-            else if (i == 7 || i == 15 || i == 23)
+            else if (currentNo == 7)
             {
-                sRowColumn.ImgToolRow = 13;
-                sRowColumn.ImgToolColumn = 10;
+                sRowColumn.PartStockRow = 45;
+                sRowColumn.PartStockColumn = 8;
 
-                //sRowColumn.ImgOperRow = 13;
-                //sRowColumn.ImgOperColumn = 11;
+                sRowColumn.OperImgToolRow = 13;
+                sRowColumn.OperImgToolColumn = 10;
 
                 sRowColumn.ToolNumberRow = 41;
                 sRowColumn.ToolNumberColumn = 6;
@@ -1052,81 +1218,76 @@ namespace ExportShopDoc
             }
         }
 
-        private void GetImgPosiAndSize(int i, Excel.Worksheet sheet, Excel.Range oRng, out ImgPosiSize sImgPosiSize)
+        private void GetOperImgPosiAndSize(int i, Excel.Worksheet sheet, Excel.Range oRng, out OperImgPosiSize sOperImgPosiSize)
         {
-            sImgPosiSize = new ImgPosiSize();
-            //oRng = (Excel.Range)sheet.get_Range("A1");
-            //CaxLog.ShowListingWindow("oRng.ColumnWidth：" + oRng.ColumnWidth.ToString());
-            //CaxLog.ShowListingWindow("oRng.Width：" + oRng.Width.ToString());
-            //CaxLog.ShowListingWindow("oRng.Height：" + oRng.Height.ToString());
-            //CaxLog.ShowListingWindow("oRng.Left：" + oRng.Left.ToString());
-            //CaxLog.ShowListingWindow("oRng.Width.GetType()：" + oRng.Width.GetType().ToString());
-            //CaxLog.ShowListingWindow("oRng.Top：" + oRng.Top.ToString());
-            //float xx = System.Convert.ToSingle(oRng.Width.ToString());
-            //float yy = System.Convert.ToSingle(oRng.Height.ToString());
+            sOperImgPosiSize = new OperImgPosiSize();
+            int currentNo = (i % 8);
 
-            //sheet.Shapes.AddPicture(jpgpath, Microsoft.Office.Core.MsoTriState.msoFalse,
-            //    Microsoft.Office.Core.MsoTriState.msoTrue, System.Convert.ToSingle(oRng.Left.ToString()) + 100,
-            //    System.Convert.ToSingle(oRng.Top.ToString()), xx, yy);
+            if (currentNo == 0)
+            {
+                sOperImgPosiSize.OperPosiLeft = 10;
+                sOperImgPosiSize.OperPosiTop = 108;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 1)
+            {
+                sOperImgPosiSize.OperPosiLeft = 190;
+                sOperImgPosiSize.OperPosiTop = 108;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 2)
+            {
+                sOperImgPosiSize.OperPosiLeft = 370;
+                sOperImgPosiSize.OperPosiTop = 108;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 3)
+            {
+                sOperImgPosiSize.OperPosiLeft = 545;
+                sOperImgPosiSize.OperPosiTop = 108;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 4)
+            {
+                sOperImgPosiSize.OperPosiLeft = 10;
+                sOperImgPosiSize.OperPosiTop = 235;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 5)
+            {
+                sOperImgPosiSize.OperPosiLeft = 190;
+                sOperImgPosiSize.OperPosiTop = 235;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 6)
+            {
+                sOperImgPosiSize.OperPosiLeft = 370;
+                sOperImgPosiSize.OperPosiTop = 235;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+            else if (currentNo == 7)
+            {
+                sOperImgPosiSize.OperPosiLeft = 545;
+                sOperImgPosiSize.OperPosiTop = 235;
+                sOperImgPosiSize.OperImgWidth = 155;
+                sOperImgPosiSize.OperImgHeight = 105;
+            }
+        }
 
-
-
-            if (i == 0 || i == 8 || i == 16)
-            {
-                sImgPosiSize.PosiLeft = 10;
-                sImgPosiSize.PosiTop = 108;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 1 || i == 9 || i == 17)
-            {
-                sImgPosiSize.PosiLeft = 190;
-                sImgPosiSize.PosiTop = 108;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 2 || i == 10 || i == 18)
-            {
-                sImgPosiSize.PosiLeft = 370;
-                sImgPosiSize.PosiTop = 108;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 3 || i == 11 || i == 19)
-            {
-                sImgPosiSize.PosiLeft = 545;
-                sImgPosiSize.PosiTop = 108;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 4 || i == 12 || i == 20)
-            {
-                sImgPosiSize.PosiLeft = 10;
-                sImgPosiSize.PosiTop = 235;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 5 || i == 13 || i == 21)
-            {
-                sImgPosiSize.PosiLeft = 190;
-                sImgPosiSize.PosiTop = 235;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 6 || i == 14 || i == 22)
-            {
-                sImgPosiSize.PosiLeft = 370;
-                sImgPosiSize.PosiTop = 235;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
-            else if (i == 7 || i == 15 || i == 23)
-            {
-                sImgPosiSize.PosiLeft = 545;
-                sImgPosiSize.PosiTop = 235;
-                sImgPosiSize.ImgWidth = 155;
-                sImgPosiSize.ImgHeight = 105;
-            }
+        private void GetFixImgPosiAndSize(out FixImgPosiSize sFixImgPosiSize)
+        {
+            sFixImgPosiSize = new FixImgPosiSize();
+            sFixImgPosiSize.FixPosiLeft = 485;
+            sFixImgPosiSize.FixPosiTop = 381;
+            sFixImgPosiSize.FixImgWidth = 225;
+            sFixImgPosiSize.FixImgHeight = 162;
         }
 
         public class SetView : GridButtonXEditControl
@@ -1147,31 +1308,66 @@ namespace ExportShopDoc
             public void SetViewClick(object sender, EventArgs e)
             {
                 SetView cSetView = (SetView)sender;
-                int index = cSetView.EditorCell.RowIndex;
-                string CurrentOperName = panel.GetCell(index, 0).Value.ToString();
+                CurrentRowIndex = cSetView.EditorCell.RowIndex;
+                CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+                //SelectedElementCollection a = panel.GetSelectedElements();
+                //ListSelOper = new List<string>();
+                //foreach (GridRow item in a)
+                //{
+                //    ListSelOper.Add(item.Cells[0].Value.ToString());
+                //    //CaxLog.ShowListingWindow(item.Cells[0].Value.ToString());//可以看出debug中item的值會顯示GridRow的型態
+                //}
 
                 foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
                 {
-                    if (CurrentNCGroup == ncGroup.Name)
+                    if (CurrentNCGroup != ncGroup.Name)
                     {
-                        for (int i = 0; i < OperationAry.Length; i++)
-                        {
-                            //取得父層的群組(回傳：NCGroup XXXX)
-                            string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
-                            NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
-                            NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
-                            string ImagePath = "";
-                            if (NCProgramTag == ncGroup.Tag.ToString() && CurrentOperName == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
-                            {
-                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
-                                
-                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
-                                
-                                ImagePath = string.Format(@"{0}\{1}", Local_Folder_CAM, OperationAry[i].Name);
-                                theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
-                            }
-                        }
+                        continue;
                     }
+
+                    for (int i = 0; i < OperationAry.Length; i++)
+                    {
+                        //取得父層的群組(回傳：NCGroup XXXX)
+                        string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                        NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                        if (NCProgramTag != ncGroup.Tag.ToString())
+                        {
+                            continue;
+                        }
+
+                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                        string ImagePath = "";
+                        if (CurrentSelOperName == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                        {
+                            //暫時使用版本
+                            tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+
+                            ImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, OperationAry[i].Name);
+                            theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
+                        }
+
+                        /*
+                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                        string ImagePath = "";
+                        if (CurrentSelOperName == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                        {
+                            //暫時使用版本
+                            tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            ImagePath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), OperationAry[i].Name);
+                            theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
+
+                            //------發布使用版本
+                            tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            ImagePath = string.Format(@"{0}\{1}", Local_Folder_CAM, OperationAry[i].Name);
+                            theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
+                            
+                        }
+                        */
+                    }
+                   
                 }
 
 
@@ -1184,5 +1380,165 @@ namespace ExportShopDoc
 
             }
         }
+
+        public void superGridProg_RowClick(object sender, GridRowClickEventArgs e)
+        {
+            //取得點選的RowIndex
+            CurrentRowIndex = e.GridRow.Index;
+            CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+            SelectedElementCollection a = panel.GetSelectedElements();
+            ListSelOper = new List<string>();
+            foreach (GridRow item in a)
+            {
+                ListSelOper.Add(item.Cells[0].Value.ToString());
+                //CaxLog.ShowListingWindow(item.Cells[0].Value.ToString());//可以看出debug中item的值會顯示GridRow的型態
+            }
+            
+            if (ListSelOper.Count == 1)
+            {
+                GroupSaveView.Enabled = false;
+                panel.Columns["拍照"].ReadOnly = false;
+                //panel.ReadOnly = false;
+                foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+                {
+                    if (CurrentNCGroup == ncGroup.Name)
+                    {
+                        for (int i = 0; i < OperationAry.Length; i++)
+                        {
+                            //取得父層的群組(回傳：NCGroup XXXX)
+                            string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                            NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                            NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                            if (NCProgramTag == ncGroup.Tag.ToString() && ListSelOper[0] == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            {
+                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (ListSelOper.Count > 1)
+            {
+                GroupSaveView.Enabled = true;
+                panel.Columns["拍照"].ReadOnly = true;
+                //panel.ReadOnly = true;
+            }
+            
+            /*
+            //取得點選的RowIndex
+            CurrentRowIndex = e.GridRow.Index;
+            CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+            SelectedElementCollection a = panel.GetSelectedElements();
+            foreach (GridRow item in a)
+            {
+                CaxLog.ShowListingWindow(item.Cells[0].Value.ToString());  
+            }
+
+            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            {
+                if (CurrentNCGroup == ncGroup.Name)
+                {
+                    for (int i = 0; i < OperationAry.Length; i++)
+                    {
+                        //取得父層的群組(回傳：NCGroup XXXX)
+                        string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                        NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                        if (NCProgramTag == ncGroup.Tag.ToString() && CurrentSelOperName == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                        {
+                            tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                        }
+                    }
+                }
+            }
+            */
+        }
+
+        private void superGridProg_RowMouseUp(object sender, GridRowMouseEventArgs e)
+        {
+            /*
+            //取得點選的RowIndex
+            CurrentRowIndex = e.GridRow.Index;
+            CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+            SelectedElementCollection a = panel.GetSelectedElements();
+            ListSelOper = new List<string>();
+            foreach (GridRow item in a)
+            {
+                ListSelOper.Add(item.Cells[0].Value.ToString());
+                //CaxLog.ShowListingWindow(item.Cells[0].Value.ToString());//可以看出debug中item的值會顯示GridRow的型態
+            }
+
+            if (ListSelOper.Count == 1)
+            {
+                CaxLog.ShowListingWindow("123");
+                foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+                {
+                    if (CurrentNCGroup == ncGroup.Name)
+                    {
+                        for (int i = 0; i < OperationAry.Length; i++)
+                        {
+                            //取得父層的群組(回傳：NCGroup XXXX)
+                            string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                            NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                            NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                            if (NCProgramTag == ncGroup.Tag.ToString() && ListSelOper[0] == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            {
+                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            }
+                        }
+                    }
+                }
+            }
+            */
+        }
+
+        private void GroupSaveView_Click(object sender, EventArgs e)
+        {
+            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            {
+                if (CurrentNCGroup != ncGroup.Name)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < OperationAry.Length; i++)
+                {
+                    //取得父層的群組(回傳：NCGroup XXXX)
+                    string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                    NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                    if (NCProgramTag != ncGroup.Tag.ToString())
+                    {
+                        continue;
+                    }
+
+                    NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                    string ImagePath = "";
+                    foreach (string item in ListSelOper)
+                    {
+                        if (item == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                        {
+                            //暫時使用版本
+                            tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            ImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, OperationAry[i].Name);
+                            theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private void SelFixtuePath_Click(object sender, EventArgs e)
+        {
+            string FixtureFilter = "jpg Files (*.jpg)|*.jpg|eps Files (*.eps)|*.eps|gif Files (*.gif)|*.gif|bmp Files (*.bmp)|*.bmp|png Files (*.png)|*.png|All Files (*.*)|*.*";
+            CaxPublic.OpenFileDialog(out FixtureNameStr, out FixturePathStr, FixtureFilter);
+            FixturePath.Text = FixturePathStr;
+        }
+
+        
     }
 }

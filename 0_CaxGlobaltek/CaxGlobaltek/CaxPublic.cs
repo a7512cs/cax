@@ -146,19 +146,19 @@ namespace CaxGlobaltek
         }
 
         /// <summary>
-        /// fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)
+        /// 預設為Part檔，使用者可自行定義，fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static bool OpenFileDialog(out string fileName, out string filePath)
+        public static bool OpenFileDialog(out string fileName, out string filePath, string filter = "Part Files (*.prt)|*.prt|All Files (*.*)|*.*")
         {
             fileName = "";
             filePath = "";
             try
             {
                 OpenFileDialog cOpenFileDialog = new OpenFileDialog();
-                cOpenFileDialog.Filter = "Part Files (*.prt)|*.prt|All Files (*.*)|*.*";
+                cOpenFileDialog.Filter = filter;
                 DialogResult result = cOpenFileDialog.ShowDialog();
                 if (result == DialogResult.OK)
                 {

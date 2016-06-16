@@ -20,4 +20,3 @@ D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NXOpen.xml
 D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NXOpen.Utilities.xml
 D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NXOpenUI.xml
 D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\obj\Release\CaxGlobaltek.pdb
-D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\CaxGlobaltek.XML

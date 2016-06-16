@@ -18,6 +18,12 @@
             <param name="cMETEDownloadData"></param>
             <returns></returns>
         </member>
+        <member name="M:CaxGlobaltek.CaxGetDatData.GetTemplatePostData">
+            <summary>
+            取得template_post.dat內容
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:CaxGlobaltek.CaxCheckDat.CheckMETEDownload_Upload">
             <summary>
             檢查METEDownload_Upload.dat是否存在
@@ -42,9 +48,15 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:CaxGlobaltek.CaxPublic.OpenFileDialog(System.String@,System.String@)">
+        <member name="M:CaxGlobaltek.CaxCheckDat.CheckTemplatePostDat">
             <summary>
-            fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)
+            檢查template_post.dat是否存在
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPublic.OpenFileDialog(System.String@,System.String@,System.String)">
+            <summary>
+            預設為Part檔，使用者可自行定義，fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)
             </summary>
             <param name="fileName"></param>
             <param name="filePath"></param>
@@ -134,6 +146,29 @@
             <param name="singleOper"></param>
             <returns></returns>
         </member>
+        <member name="M:CaxGlobaltek.CaxOper.AskOperStock(NXOpen.CAM.Operation,System.String@,System.String@)">
+            <summary>
+            取得Operation的預留量
+            </summary>
+            <param name="singleOper"></param>
+            <param name="StockStr"></param>
+            <param name="FloorStockStr"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxOper.AskOperTotalCuttingTime(NXOpen.CAM.Operation)">
+            <summary>
+            取得Operation總加工時間
+            </summary>
+            <param name="singleOper"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxOper.AskOperTotalCuttingLength(NXOpen.CAM.Operation)">
+            <summary>
+            取得Operation總加工長度
+            </summary>
+            <param name="singleOper"></param>
+            <returns></returns>
+        </member>
         <member name="M:CaxGlobaltek.CaxEnv.GetGlobaltekEnvDir">
             <summary>
             回傳：IP\Globaltek
@@ -149,6 +184,12 @@
         <member name="M:CaxGlobaltek.CaxEnv.GetLocalTaskDir">
             <summary>
             回傳：[Local]\Globaltek\Task
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxEnv.GetGlobaltekPostProcessorDir">
+            <summary>
+            回傳：IP\Globaltek\MACH\resource\postprocessor
             </summary>
             <returns></returns>
         </member>
