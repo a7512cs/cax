@@ -492,5 +492,54 @@ namespace CaxGlobaltek
                 return TotalCuttingLength;
             }
         }
+
+        /// <summary>
+        /// 輸出Post
+        /// </summary>
+        /// <param name="OperObject">程式物件</param>
+        /// <param name="PostName">後處理器名稱</param>
+        /// <param name="OutputPath">輸出路徑</param>
+        public static bool CreatePost(NXOpen.CAM.CAMObject OperObject, string PostName, string OutputPath)
+        {
+            try
+            {
+                NXOpen.CAM.CAMObject[] objects1 = new NXOpen.CAM.CAMObject[1];
+                objects1[0] = OperObject;
+                workPart.CAMSetup.Postprocess(objects1, PostName, OutputPath, NXOpen.CAM.CAMSetup.OutputUnits.PostDefined);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取得NCGroupMessage
+        /// </summary>
+        /// <param name="nCGroup"></param>
+        /// <returns></returns>
+        public static string AskNCGroupMessage(NXOpen.CAM.NCGroup nCGroup)
+        {
+            string NCGroupMessage = "";
+            try
+            {
+                NXOpen.CAM.ProgramOrderGroupBuilder programOrderGroupBuilder1;
+                programOrderGroupBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateProgramOrderGroupBuilder(nCGroup);
+                TaggedObject taggedObject1;
+                taggedObject1 = programOrderGroupBuilder1.StartUdeSet.UdeList.FindItem(0);
+                NXOpen.CAM.Ude ude1 = (NXOpen.CAM.Ude)taggedObject1;
+                NXOpen.CAM.UdeParameter udeParameter1;
+                udeParameter1 = ude1.GetParameter("operator_message");
+                NCGroupMessage = udeParameter1.StringValue;
+                programOrderGroupBuilder1.Destroy();
+
+                return NCGroupMessage;
+            }
+            catch (System.Exception ex)
+            {
+                return NCGroupMessage;
+            }
+        }
     }
 }

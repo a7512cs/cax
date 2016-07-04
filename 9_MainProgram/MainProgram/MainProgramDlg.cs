@@ -1,0 +1,987 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Drawing.Drawing2D;
+using NXOpen;
+using NXOpen.UF;
+using DevComponents.DotNetBar.SuperGrid;
+using NXOpen.CAM;
+using System.Text.RegularExpressions;
+using CaxGlobaltek;
+using System.IO;
+
+namespace MainProgram
+{
+    public partial class MainProgramDlg : DevComponents.DotNetBar.Office2007Form
+    {
+        public static Session theSession = Session.GetSession();
+        public static UI theUI;
+        public static UFSession theUfSession = UFSession.GetUFSession();
+        public static Part workPart = theSession.Parts.Work;
+        public static Part displayPart = theSession.Parts.Display;
+
+        public static NXOpen.CAM.NCGroup[] NCGroupAry = new NXOpen.CAM.NCGroup[] { };
+        public static NXOpen.CAM.Operation[] OperationAry = new NXOpen.CAM.Operation[] { };
+        public static Dictionary<string, string> DicNCData = new Dictionary<string, string>();
+        public static string CurrentNCGroup = "";
+        public static NXOpen.CAM.NCGroup SelectNCGroup;
+        public static NXOpen.CAM.CAMObject[] OperObjAry = new NXOpen.CAM.CAMObject[] { };
+        public static List<string> ListSelOper = new List<string>();
+        public static Dictionary<int, ListViewItem> DicSelOper = new Dictionary<int, ListViewItem>();
+        public static string NCGroupMessage = "";
+        public static ControlerConfig cControlerConfig = new ControlerConfig();
+        public static string NewGroupName = "";
+
+        public struct SelectOper
+        {
+            public string OperName { get; set; }
+            public int OperIndex { get; set; }
+        }
+        
+        public MainProgramDlg()
+        {
+            InitializeComponent();
+            ButtonShape.RightArrowBtn(AddButton);
+            ButtonShape.LeftArrowBtn(RemoveButton);
+            ButtonShape.UpArrowBtn(UpButton);
+            ButtonShape.DownArrowBtn(DownButton);
+            chb_M98.Enabled = false;
+            chb_M198.Enabled = false;
+            NCGroup.Enabled = false;
+            AddCondition.Enabled = false;
+            //listView1.ListViewItemSorter = new ListViewIndexComparer();
+
+            //取得控制器配置資料(暫時註解，發布使用)
+            //CaxGetDatData.GetControlerConfigData(out cControlerConfig);
+
+            //測試使用
+            string ControlerConfig_dat = "ControlerConfig.dat";
+            string ControlerConfigPath = string.Format(@"{0}\{1}", "D:", ControlerConfig_dat);
+            CaxPublic.ReadControlerConfig(ControlerConfigPath, out cControlerConfig);
+
+        }
+
+        private class ListViewIndexComparer : System.Collections.IComparer
+        {
+            public int Compare(object x, object y)
+            {
+                return ((ListViewItem)x).Index - ((ListViewItem)y).Index;
+            }
+        }
+
+        private void MainProgramDlg_Load(object sender, EventArgs e)
+        {
+            AddButton.BackgroundImage = MainProgram.Properties.Resources.圖片1;
+            //取得所有GroupAry，用來判斷Group的Type決定是NC、Tool、Geometry
+            NCGroupAry = displayPart.CAMSetup.CAMGroupCollection.ToArray();
+            //取得所有operationAry
+            OperationAry = displayPart.CAMSetup.CAMOperationCollection.ToArray();
+
+            #region 取得相關資訊，填入Dic
+            DicNCData = new Dictionary<string, string>();
+            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            {
+                int type;
+                int subtype;
+                theUfSession.Obj.AskTypeAndSubtype(ncGroup.Tag, out type, out subtype);
+                //判斷是否為Program群組
+                if (type != UFConstants.UF_machining_task_type)
+                {
+                    continue;
+                }
+
+                foreach (NXOpen.CAM.Operation item in OperationAry)
+                {
+                    //取得父層的群組(回傳：NCGroup XXXX)
+                    string NCProgramTag = item.GetParent(CAMSetup.View.ProgramOrder).ToString();
+                    NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                    if (NCProgramTag == ncGroup.Tag.ToString())
+                    {
+                        bool cheValue;
+                        string OperName = "";
+                        cheValue = DicNCData.TryGetValue(ncGroup.Name, out OperName);
+                        if (!cheValue)
+                        {
+                            OperName = item.Name;
+                            DicNCData.Add(ncGroup.Name, OperName);
+                        }
+                        else
+                        {
+                            OperName = OperName + "," + item.Name;
+                            DicNCData[ncGroup.Name] = OperName;
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            //將DicProgName的key存入程式群組下拉選單中
+            comboBoxNCgroup.Items.AddRange(DicNCData.Keys.ToArray());
+        }
+
+        private void comboBoxNCgroup_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            
+            //清空listView資料
+            listView1.Items.Clear();
+            listView5.Items.Clear();
+            //取得comboBox資料
+            CurrentNCGroup = comboBoxNCgroup.Text;
+
+            //取得選擇的NC
+            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            {
+                if (CurrentNCGroup != ncGroup.Name)
+                {
+                    continue;
+                }
+                NCGroupMessage = CaxOper.AskNCGroupMessage(ncGroup);
+                SelectNCGroup = ncGroup;
+            }
+
+            //當選擇海德漢控制器時，修改檔頭檔尾
+            NewGroupName = "O" + Regex.Replace(CurrentNCGroup, "[^0-9]", "") + "0";
+
+            if (chb_Heidenhain.Checked == true)
+            {
+                listView3.Items[0].Text = listView3.Items[0].Text.Replace("[NCGroupName]", NewGroupName);
+                listView3.Items.Add(";(" + NCGroupMessage + ")");
+                listView4.Items[1].Text = listView4.Items[1].Text.Replace("[NCGroupName]", NewGroupName);
+            }
+            else if (chb_Fanuc.Checked == true)
+            {
+                listView3.Items.Add(NewGroupName + "(" + NCGroupMessage + ")");
+            }
+
+            //取得Group下的所有OP
+            OperObjAry = SelectNCGroup.GetMembers();
+
+            #region 填值到ListView5
+
+            foreach (KeyValuePair<string, string> kvp in DicNCData)
+            {
+                if (CurrentNCGroup != kvp.Key)
+                {
+                    continue;
+                }
+
+                string[] splitOperName = kvp.Value.Split(',');
+
+                for (int i = 0; i < splitOperName.Length; i++)
+                {
+                    ListViewItem tempViewItem = new ListViewItem(splitOperName[i]);
+                    ListViewItem.ListViewSubItem tempViewSubItem = new ListViewItem.ListViewSubItem();
+                    foreach (CAMObject tempOper in OperObjAry)
+                    {
+                        if (splitOperName[i] == tempOper.Name)
+                        {
+                            tempViewSubItem = new ListViewItem.ListViewSubItem(tempViewItem, CaxOper.AskOperToolNumber((NXOpen.CAM.Operation)tempOper));
+                        }
+                    }
+                    
+                    tempViewItem.SubItems.Add(tempViewSubItem);
+                    listView5.Items.Add(tempViewItem);
+                }
+                
+            }
+
+            #endregion
+
+        }
+
+        private void chb_Simens_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chb_Simens.Checked == true)
+            {
+                chb_Heidenhain.Checked = false;
+                chb_Fanuc.Checked = false;
+                chb_M98.Checked = false;
+                chb_M198.Checked = false;
+                NCGroup.Enabled = true;
+                AddCondition.Enabled = true;
+
+                listView1.Items.Clear();
+                listView3.Items.Clear();
+                listView4.Items.Clear();
+                listView5.Items.Clear();
+                comboBoxNCgroup.Text = "";
+
+                for (int i = 0; i < cControlerConfig.Controler.Count; i++ )
+                {
+                    if (cControlerConfig.Controler[i].CompanyName == chb_Simens.Text)
+                    {
+                        if (cControlerConfig.Controler[i].MasterValue1 != "")
+                        {
+                            listView3.Items.Add(cControlerConfig.Controler[i].MasterValue1);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue2 != "")
+                        {
+                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue2);
+                        } 
+                        if (cControlerConfig.Controler[i].MasterValue3 != "")
+                        {
+                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue3);
+                        }
+                        
+                        
+                        break; 
+                    }
+                }
+            }
+        }
+
+        private void chb_Heidenhain_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chb_Heidenhain.Checked == true)
+            {
+                chb_Simens.Checked = false;
+                chb_Fanuc.Checked = false;
+                chb_M98.Checked = false;
+                chb_M198.Checked = false;
+                NCGroup.Enabled = true;
+                AddCondition.Enabled = true;
+
+                listView1.Items.Clear();
+                listView3.Items.Clear();
+                listView4.Items.Clear();
+                listView5.Items.Clear();
+                comboBoxNCgroup.Text = "";
+
+                for (int i = 0; i < cControlerConfig.Controler.Count; i++)
+                {
+                    if (cControlerConfig.Controler[i].CompanyName == chb_Heidenhain.Text)
+                    {
+                        if (cControlerConfig.Controler[i].MasterValue1 != "")
+                        {
+                            listView3.Items.Add(cControlerConfig.Controler[i].MasterValue1);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue2 != "")
+                        {
+                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue2);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue3 != "")
+                        {
+                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue3);
+                        }
+                        break; 
+                    }
+                }
+            }
+        }
+
+        private void chb_Fanuc_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chb_Fanuc.Checked == true)
+            {
+                chb_Simens.Checked = false;
+                chb_Heidenhain.Checked = false;
+                chb_M98.Enabled = true;
+                chb_M198.Enabled = true;
+                NCGroup.Enabled = true;
+                AddCondition.Enabled = true;
+
+                listView1.Items.Clear();
+                listView3.Items.Clear();
+                listView4.Items.Clear();
+                listView5.Items.Clear();
+                comboBoxNCgroup.Text = "";
+
+                
+                for (int i = 0; i < cControlerConfig.Controler.Count; i++)
+                {
+                    if (cControlerConfig.Controler[i].CompanyName == chb_Fanuc.Text)
+                    {
+                        if (cControlerConfig.Controler[i].MasterValue1 != "")
+                        {
+                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue1);
+                            listView3.Items.Add(tempViewItem);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue2 != "")
+                        {
+                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue2);
+                            listView4.Items.Add(tempViewItem);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue3 != "")
+                        {
+                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue3);
+                            listView4.Items.Add(tempViewItem);
+                        }
+                        break; 
+                    }
+                }
+            }
+            else
+            {
+                chb_M98.Checked = false;
+                chb_M198.Checked = false;
+                chb_M98.Enabled = false;
+                chb_M198.Enabled = false;
+            }
+        }
+
+        private void chb_M98_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chb_M98.Checked == true)
+            {
+                chb_M198.Checked = false;
+                NCGroup.Enabled = true;
+            }
+        }
+
+        private void chb_M198_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chb_M198.Checked == true)
+            {
+                chb_M98.Checked = false;
+                NCGroup.Enabled = true;
+            }
+        }
+
+        private void AddButton_Click(object sender, EventArgs e)
+        {
+
+            //CaxLog.ShowListingWindow(ListSelOper.Count.ToString());
+            if (DicSelOper.Count == 0)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇程式");
+                this.Show();
+                return;
+            }
+
+            //判斷選到的Oper只能是listView5裡面的Oper
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Value.ListView.Name == listView1.Name)
+                {
+                    return;
+                }
+            }
+
+            if (chb_Fanuc.Checked == true)
+            {
+                if (chb_M198.Checked == false && chb_M98.Checked == false)
+                {
+                    this.Hide();
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇M98或M198");
+                    this.Show();
+                    return;
+                }
+            }
+
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                ListViewItem tempViewItem = new ListViewItem(kvp.Value.Text);
+
+                //如果選擇發那科控制器，則取代O為P
+                if (chb_Fanuc.Checked == true)
+                {
+                    tempViewItem.Text = kvp.Value.Text.Replace("O", "P");
+                    if (chb_M198.Checked == true)
+                    {
+                        tempViewItem.Text = chb_M198.Text + " " + tempViewItem.Text;
+                    }
+                    if (chb_M98.Checked == true)
+                    {
+                        tempViewItem.Text = chb_M98.Text + " " + tempViewItem.Text;
+                    }
+                }
+                listView1.Items.Add(tempViewItem);
+            }
+
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                foreach (ListViewItem tmpLstView in listView5.Items)
+                {
+                    if (kvp.Value.Text == tmpLstView.Text)
+                    {
+                        listView5.Items.Remove(tmpLstView);
+                    }
+                    listView5.Update();
+                }
+            }
+            DicSelOper = new Dictionary<int, ListViewItem>();
+
+            //如果選擇海德漢控制器，則寫入順序
+
+            
+            //if (chb_Heidenhain.Checked == true)
+            //{
+            //    UpdateSeqHeidenhain();
+            //}
+
+
+        }
+
+        private void UpdateSeqHeidenhain()
+        {
+            int countNum = 1;
+            for (int i = 0; i < listView1.Items.Count; i++)
+            {
+                if (listView1.Items[i].Text.Split().Length == 1)
+                {
+                    listView1.Items[i].Text = countNum.ToString() + " " + listView1.Items[i].Text;
+                }
+                else
+                {
+                    string SplitListView1Items = listView1.Items[i].Text.Split()[0];
+                    listView1.Items[i].Text = listView1.Items[i].Text.Replace(SplitListView1Items, countNum.ToString());
+                }
+                countNum++;
+            }
+
+            for (int i = 0; i < listView4.Items.Count; i++)
+            {
+                string SplitListView4Items = listView4.Items[i].Text.Split()[0];
+                listView4.Items[i].Text = listView4.Items[i].Text.Replace(SplitListView4Items, countNum.ToString());
+                countNum++;
+            }
+        }
+
+        private void listView1_MouseUp(object sender, MouseEventArgs e)
+        {
+            foreach (ListViewItem tmpLstView in listView1.Items)
+            {
+                tmpLstView.BackColor = Color.White;
+            }
+
+            DicSelOper = new Dictionary<int, ListViewItem>();
+            foreach (ListViewItem tmpLstView in listView1.Items)
+            {
+                if (tmpLstView.Selected == true)
+                {
+                    DicSelOper.Add(tmpLstView.Index, tmpLstView);
+                }
+            }
+
+            //顯示加工路徑
+            ShowToolPath();
+
+        }
+
+        private void ShowToolPath()
+        {
+            NXOpen.CAM.Preferences preferences1 = theSession.CAMSession.CreateCamPreferences();
+            if (DicSelOper.Count == 1)
+            {
+                preferences1.ReplayRefreshBeforeEachPath = true;
+                preferences1.Commit();
+                preferences1.Destroy();
+            }
+            else if (DicSelOper.Count > 1)
+            {
+                preferences1.ReplayRefreshBeforeEachPath = false;
+                preferences1.Commit();
+                preferences1.Destroy();
+            }
+
+            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            {
+                if (CurrentNCGroup != ncGroup.Name)
+                {
+                    continue;
+                }
+                for (int i = 0; i < OperationAry.Length; i++)
+                {
+                    //取得父層的群組(回傳：NCGroup XXXX)
+                    string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                    NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                    NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                    
+                    foreach (KeyValuePair<int,ListViewItem> kvp in DicSelOper)
+                    {
+                        //如果選擇發那科控制器，則取代P為O才能看路徑
+                        if (chb_Fanuc.Checked == true)
+                        {
+                            string tempOper = kvp.Value.Text.Replace("P", "O");
+                            if (tempOper.Split().Length>1)
+                            {
+                                tempOper = tempOper.Split()[1];
+                            }
+                            if (NCProgramTag == ncGroup.Tag.ToString() && tempOper == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            {
+                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            }
+                        }
+                        else
+                        {
+                            if (NCProgramTag == ncGroup.Tag.ToString() && kvp.Value.Text == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            {
+                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void RemoveButton_Click(object sender, EventArgs e)
+        {
+            if (DicSelOper.Count == 0)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇程式");
+                this.Show();
+                return;
+            }
+
+            //判斷選到的Oper只能是listView1裡面的Oper
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Value.ListView.Name == listView5.Name)
+                {
+                    return;
+                }
+            }
+
+            #region 將listView1選到的Oper填回listView5中，並重新取得刀號
+
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                ListViewItem tempViewItem = new ListViewItem(kvp.Value.Text);
+
+                //如果選擇發那科控制器，則取代P為O
+                if (chb_Fanuc.Checked == true)
+                {
+                    //先將M98或M198移除
+                    string splitSel = kvp.Value.Text.Split()[1];
+                    //kvp.Value.Text = splitSel.Replace("P", "O");
+                    tempViewItem.Text = splitSel.Replace("P", "O");
+                }
+
+                //如果選擇海德漢控制器，則將順序移除再填回listView5中
+                //if (chb_Heidenhain.Checked == true)
+                //{
+                //    kvp.Value.Text = kvp.Value.Text.Split()[1];
+                //    tempViewItem.Text = kvp.Value.Text;
+                //}
+
+                ListViewItem.ListViewSubItem tempViewSubItem = new ListViewItem.ListViewSubItem();
+                foreach (CAMObject tempOper in OperObjAry)
+                {
+                    if (tempViewItem.Text == tempOper.Name)
+                    {
+                        tempViewSubItem = new ListViewItem.ListViewSubItem(tempViewItem, CaxOper.AskOperToolNumber((NXOpen.CAM.Operation)tempOper));
+                    }
+                }
+
+                tempViewItem.SubItems.Add(tempViewSubItem);
+                listView5.Items.Add(tempViewItem);
+            }
+
+            #endregion
+
+            int count = 0;
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                foreach (ListViewItem tmpLstView in listView1.Items)
+                {
+                    if (kvp.Value.Text != tmpLstView.Text || kvp.Key != (tmpLstView.Index + count))
+                    {
+                        continue;
+                    }
+                    count++;
+                    listView1.Items.Remove(tmpLstView);
+                    listView1.Update();
+                    break;
+                }
+            }
+            DicSelOper = new Dictionary<int, ListViewItem>();
+        }
+
+        private void listView1_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            //啟始拖放作業
+            //listView1.DoDragDrop(e.Item, DragDropEffects.Move);
+        }
+
+        private void listView1_DragEnter(object sender, DragEventArgs e)
+        {
+            //e.Effect = e.AllowedEffect;
+        }
+
+        private void listView1_DragDrop(object sender, DragEventArgs e)
+        {   
+            /*
+            //取得要拖曳的資料所在的Index
+            int targetIndex = listView1.InsertionMark.Index;
+            
+            if (targetIndex == -1)
+            {
+                return;
+            }
+            if (listView1.InsertionMark.AppearsAfterItem)
+            {
+                targetIndex++;
+            }
+            
+            ListViewItem draggedItem = (ListViewItem)e.Data.GetData(typeof(ListViewItem));
+            listView1.BeginUpdate();
+
+            listView1.Items.Insert(targetIndex, (ListViewItem)draggedItem.Clone());
+            listView1.Items.Remove(draggedItem);
+            listView1.EndUpdate();
+            */
+        }
+
+        private void listView1_DragOver(object sender, DragEventArgs e)
+        {
+            /*
+            System.Drawing.Point ptScreen = new System.Drawing.Point(e.X, e.Y);
+            System.Drawing.Point pt = listView1.PointToClient(ptScreen);
+            ListViewItem item = listView1.GetItemAt(pt.X, pt.Y);
+
+            int targetIndex = listView1.InsertionMark.NearestIndex(pt);
+            if (targetIndex > -1)
+            {
+                Rectangle itemBounds = listView1.GetItemRect(targetIndex);
+                if (pt.X > itemBounds.Left + (itemBounds.Width / 2))
+                {
+                    listView1.InsertionMark.AppearsAfterItem = true;
+                }
+                else
+                {
+                    listView1.InsertionMark.AppearsAfterItem = false;
+                }
+            }
+            listView1.InsertionMark.Index = targetIndex;
+            */
+        }
+
+        private void listView1_DragLeave(object sender, EventArgs e)
+        {
+            //listView1.InsertionMark.Index = -1;
+        }
+
+        private void CopyItem_Click(object sender, EventArgs e)
+        {
+            if (DicSelOper.Count == 0)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇程式");
+                this.Show();
+                return;
+            }
+
+            if (DicSelOper.Count > 1)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "僅能選擇一條程式做複製");
+                this.Show();
+                return;
+            }
+
+            //判斷選到的Oper只能是listView1裡面的Oper
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Value.ListView.Name == listView5.Name)
+                {
+                    return;
+                }
+            }
+
+            foreach (KeyValuePair<int,ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Value.ListView.Name != listView1.Name)
+                {
+                    this.Hide();
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "僅能選擇右邊主視窗中的程式做複製");
+                    this.Show();
+                    return;
+                }
+                listView1.Items.Insert(listView1.Items.Count, kvp.Value.Text);
+            }
+            listView1.Update();
+        }
+
+        private void UpButton_Click(object sender, EventArgs e)
+        {
+            
+            if (DicSelOper.Count == 0)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇程式");
+                this.Show();
+                return;
+            }
+
+            List<int> ListSeleIndex = new List<int>();
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                ListSeleIndex.Add(kvp.Key);
+            }
+            for (int i = 0; i < ListSeleIndex.Count; i++)
+            {
+                if (i + 1 == ListSeleIndex.Count)
+                {
+                    break;
+                }
+                if (ListSeleIndex[i + 1] - ListSeleIndex[i] > 1)
+                {
+                    this.Hide();
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "不可跳著挑選程式");
+                    this.Show();
+                    DicSelOper = new Dictionary<int, ListViewItem>();
+                    return;
+                }
+            }
+
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Key == 0)
+                {
+                    return;
+                }
+            }
+            
+            List<ListViewItem> ListTempListViewItem = new List<ListViewItem>();
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                //ListViewItem tempItem = listView1.Items.Insert(kvp.Key - 1, kvp.Value.Text);
+                ListViewItem tempItem = listView1.Items.Insert(kvp.Value.Index - 1, kvp.Value.Text);
+                ListTempListViewItem.Add(tempItem);
+                tempItem.BackColor = Color.Bisque;
+                //listView1.Items.RemoveAt(kvp.Key + 1);
+                listView1.Items.RemoveAt(kvp.Value.Index);
+            }
+
+            DicSelOper = new Dictionary<int, ListViewItem>();
+            foreach (ListViewItem i in ListTempListViewItem)
+            {
+                DicSelOper[i.Index] = i;
+            }
+            
+
+            
+
+        }
+
+        private void DownButton_Click(object sender, EventArgs e)
+        {
+            if (DicSelOper.Count == 0)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇程式");
+                this.Show();
+                return;
+            }
+
+            List<int> ListSeleIndex = new List<int>();
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                ListSeleIndex.Add(kvp.Key);
+            }
+            for (int i = 0; i < ListSeleIndex.Count; i++)
+            {
+                if (i + 1 == ListSeleIndex.Count)
+                {
+                    break;
+                }
+                if (ListSeleIndex[i + 1] - ListSeleIndex[i] > 1)
+                {
+                    this.Hide();
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "不可跳著挑選程式");
+                    this.Show();
+                    DicSelOper = new Dictionary<int, ListViewItem>();
+                    return;
+                }
+            }
+
+
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Key == listView1.Items.Count-1)
+                {
+                    return;
+                }
+            }
+
+            int SelectCount = DicSelOper.Count;
+            int smallestIndex = -1;
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                smallestIndex = kvp.Key;
+                break;
+            }
+
+            List<ListViewItem> ListTempListViewItem = new List<ListViewItem>();
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                //當執行往下移動時，需要插入的index為(目前所在index + 選擇幾條程式做移動 + 1)
+                ListViewItem tempItem = listView1.Items.Insert(kvp.Value.Index + SelectCount + 1, kvp.Value.Text);
+                ListTempListViewItem.Add(tempItem);
+                tempItem.BackColor = Color.Bisque;
+                listView1.Items.RemoveAt(smallestIndex);
+            }
+
+            DicSelOper = new Dictionary<int, ListViewItem>();
+            foreach (ListViewItem i in ListTempListViewItem)
+            {
+                DicSelOper[i.Index] = i;
+            }
+                     
+            /*
+            int index = -1;
+            ListViewItem OperStr = new ListViewItem();
+
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                index = kvp.Key + 1;
+                OperStr = kvp.Value;
+                ListViewItem tempItem = listView1.Items.Insert(kvp.Key + 2, kvp.Value.Text);
+                tempItem.BackColor = Color.Bisque;
+                listView1.Items.RemoveAt(kvp.Key);
+            }
+
+            DicSelOper = new Dictionary<int, ListViewItem>();
+            DicSelOper.Add(index, OperStr);
+            */
+
+
+        }
+
+        private void CloseDlg_Click(object sender, EventArgs e)
+        {
+            NXOpen.CAM.Preferences preferences1 = theSession.CAMSession.CreateCamPreferences();
+            preferences1.ReplayRefreshBeforeEachPath = true;
+            preferences1.Commit();
+            preferences1.Destroy();
+            this.Close();
+        }
+
+        private void listView5_MouseUp(object sender, MouseEventArgs e)
+        {
+            DicSelOper = new Dictionary<int, ListViewItem>();
+            foreach (ListViewItem tmpLstView in listView5.Items)
+            {
+                if (tmpLstView.Selected == true)
+                {
+                    DicSelOper.Add(tmpLstView.Index, tmpLstView);
+                }
+            }
+
+            //顯示加工路徑
+            ShowToolPath();
+        }
+
+        private void UserAddCondition_Click(object sender, EventArgs e)
+        {
+            if (UserCondition.Text == "")
+            {
+                return;
+            }
+
+            if (DicSelOper.Count > 1)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇一條程式當參考");
+                this.Show();
+                return;
+            }
+
+            if (DicSelOper.Count == 0)
+            {
+                ListViewItem tempViewItem = new ListViewItem(UserCondition.Text);
+                listView1.Items.Add(tempViewItem);
+            }
+            else
+            {
+                foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+                {
+                    ListViewItem tempItem = listView1.Items.Insert(kvp.Key + 1, UserCondition.Text);
+                }
+            }
+            UserCondition.Text = "";
+        }
+
+        private void DeleteSel_Click(object sender, EventArgs e)
+        {
+            if (DicSelOper.Count == 0)
+            {
+                this.Hide();
+                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "請選擇程式");
+                this.Show();
+                return;
+            }
+
+            //判斷選到的Oper只能是listView1裡面的Oper
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                if (kvp.Value.ListView.Name == listView5.Name)
+                {
+                    return;
+                }
+            }
+
+            int count = 0;
+            foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
+            {
+                foreach (ListViewItem tmpLstView in listView1.Items)
+                {
+                    if (kvp.Value.Text != tmpLstView.Text || kvp.Key != (tmpLstView.Index + count))
+                    {
+                        continue;
+                    }
+                    count++;
+                    listView1.Items.Remove(tmpLstView);
+                    listView1.Update();
+                    break;
+                }
+            }
+            DicSelOper = new Dictionary<int, ListViewItem>();
+        }
+
+        private void ExportMainProg_Click(object sender, EventArgs e)
+        {
+            List<string> ExportData = new List<string>();
+            for (int i = 0; i < listView3.Items.Count; i++)
+            {
+                ExportData.Add(listView3.Items[i].Text);
+            }
+            for (int i = 0; i < listView1.Items.Count; i++)
+            {
+                ExportData.Add(listView1.Items[i].Text);
+            }
+            for (int i = 0; i < listView4.Items.Count; i++)
+            {
+                ExportData.Add(listView4.Items[i].Text);
+            }
+
+            //設定輸出路徑
+            string ExportPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), NewGroupName);
+
+            if (chb_Heidenhain.Checked == true)
+            {
+                for (int i = 0; i < ExportData.Count; i++)
+                {
+                    ExportData[i] = i.ToString() + " " + ExportData[i];
+                }
+                ExportPath = ExportPath + ".h";
+            }
+            else if (chb_Simens.Checked == true)
+            {
+                ExportPath = ExportPath + ".MPF";
+            }
+            
+            System.IO.StreamWriter file = new System.IO.StreamWriter(ExportPath);
+            for (int i = 0; i < ExportData.Count; i++)
+            {
+                file.Write(ExportData[i]+"\r\n");
+            }
+            file.Close();
+
+        }
+
+
+        
+
+
+    }
+}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 
 namespace CaxGlobaltek
@@ -66,6 +67,33 @@ namespace CaxGlobaltek
             {
                 return DatData;
             }
+        }
+
+        /// <summary>
+        /// 取得ControlerConfig.dat資料  (路徑：IP:Globaltek\TE_Config\ControlerConfig.dat)
+        /// </summary>
+        /// <param name="cControlerConfig"></param>
+        /// <returns></returns>
+        public static bool GetControlerConfigData(out ControlerConfig cControlerConfig)
+        {
+            cControlerConfig = new ControlerConfig();
+            try
+            {
+                string ControlerConfig_dat = "ControlerConfig.dat";
+                string ControlerConfig_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "TE_Config", ControlerConfig_dat);
+                if (!System.IO.File.Exists(ControlerConfig_Path))
+                {
+                    MessageBox.Show("路徑：" + ControlerConfig_Path + "不存在");
+                    return false;
+                }
+
+                CaxPublic.ReadControlerConfig(ControlerConfig_Path, out cControlerConfig);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

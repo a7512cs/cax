@@ -52,6 +52,23 @@ namespace CaxGlobaltek
 
     #endregion
 
+    #region 控制器MasterValue Json 結構
+
+    public class Controler
+    {
+        public string CompanyName { get; set; }
+        public string MasterValue1 { get; set; }
+        public string MasterValue2 { get; set; }
+        public string MasterValue3 { get; set; }
+    }
+
+    public class ControlerConfig
+    {
+        public List<Controler> Controler { get; set; }
+    }
+
+    #endregion
+
     public class CaxPublic
     {
         public static bool ReadMETEDownloadData(string jsonPath, out METEDownloadData cOperationArray)
@@ -142,6 +159,34 @@ namespace CaxGlobaltek
             }
             file.Close();
 
+            return true;
+        }
+
+        public static bool ReadControlerConfig(string jsonPath, out ControlerConfig cControlerConfig)
+        {
+            cControlerConfig = null;
+            try
+            {
+                if (!System.IO.File.Exists(jsonPath))
+                {
+                    return false;
+                }
+
+                bool status;
+
+                string jsonText;
+                status = ReadFileDataUTF8(jsonPath, out jsonText);
+                if (!status)
+                {
+                    return false;
+                }
+
+                cControlerConfig = JsonConvert.DeserializeObject<ControlerConfig>(jsonText);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
             return true;
         }
 

@@ -1,0 +1,10 @@
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\NewCaxUGforEspritt.csprojResolveAssemblyReference.cache
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.ChkGeom.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.CreateWEPoint.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.mainControl.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.ModifyGeometry.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.PingType.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.Properties.Resources.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.SelectWorkPart.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\CaxUGforEspritt.ZMachining.resources
+D:\TaskCode\17_NewCaxUGforEspritt\CaxUGforEspritt\obj\Debug\NewCaxUGforEspritt.csproj.GenerateResource.Cache

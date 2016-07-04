@@ -24,6 +24,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:CaxGlobaltek.CaxGetDatData.GetControlerConfigData(CaxGlobaltek.ControlerConfig@)">
+            <summary>
+            取得ControlerConfig.dat資料
+            </summary>
+            <param name="cControlerConfig"></param>
+            <returns></returns>
+        </member>
         <member name="M:CaxGlobaltek.CaxCheckDat.CheckMETEDownload_Upload">
             <summary>
             檢查METEDownload_Upload.dat是否存在
@@ -51,6 +58,12 @@
         <member name="M:CaxGlobaltek.CaxCheckDat.CheckTemplatePostDat">
             <summary>
             檢查template_post.dat是否存在
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxCheckDat.CheckControlerConfigDat">
+            <summary>
+            檢查ControlerConfig.dat是否存在
             </summary>
             <returns></returns>
         </member>
@@ -167,6 +180,21 @@
             取得Operation總加工長度
             </summary>
             <param name="singleOper"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxOper.CreatePost(NXOpen.CAM.CAMObject,System.String,System.String)">
+            <summary>
+            輸出Post
+            </summary>
+            <param name="OperObject">程式物件</param>
+            <param name="PostName">後處理器名稱</param>
+            <param name="OutputPath">輸出路徑</param>
+        </member>
+        <member name="M:CaxGlobaltek.CaxOper.AskNCGroupMessage(NXOpen.CAM.NCGroup)">
+            <summary>
+            取得NCGroupMessage
+            </summary>
+            <param name="nCGroup"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxEnv.GetGlobaltekEnvDir">

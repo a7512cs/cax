@@ -70,7 +70,6 @@ public class Program
 
             #endregion
             
-
             Application.EnableVisualStyles();
             ExportShopDocDlg cExportShopDocDlg = new ExportShopDocDlg();
             FormUtilities.ReparentForm(cExportShopDocDlg);

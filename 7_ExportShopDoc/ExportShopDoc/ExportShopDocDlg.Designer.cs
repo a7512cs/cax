@@ -214,6 +214,7 @@
             // gridColumn10
             // 
             this.gridColumn10.AutoSizeMode = DevComponents.DotNetBar.SuperGrid.ColumnAutoSizeMode.Fill;
+            this.gridColumn10.CellStyles.Default.TextColor = System.Drawing.Color.White;
             this.gridColumn10.ColumnSortMode = DevComponents.DotNetBar.SuperGrid.ColumnSortMode.None;
             this.gridColumn10.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridButtonXEditControl);
             this.gridColumn10.HeaderText = "拍照";
@@ -323,7 +324,7 @@
             this.Controls.Add(this.groupBox1);
             this.DoubleBuffered = true;
             this.Name = "ExportShopDocDlg";
-            this.Text = "ExportShopDocDlg";
+            this.Text = " ";
             this.Load += new System.EventHandler(this.ExportShopDocDlg_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

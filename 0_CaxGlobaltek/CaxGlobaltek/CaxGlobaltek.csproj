@@ -33,7 +33,8 @@
     <DocumentationFile>bin\Release\CaxGlobaltek.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\安裝檔\Json80r3\Bin\Net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NXOpen">
@@ -49,10 +50,7 @@
       <HintPath>..\..\..\Program Files (x86)\UGS\NX 7.5\UGII\managed\NXOpenUI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
