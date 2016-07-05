@@ -35,7 +35,7 @@ namespace MainProgram
         public static Dictionary<int, ListViewItem> DicSelOper = new Dictionary<int, ListViewItem>();
         public static string NCGroupMessage = "";
         public static ControlerConfig cControlerConfig = new ControlerConfig();
-        public static string NewGroupName = "";
+        public static string NewGroupName = "", UserDefineTxtPath = "";
 
         public struct SelectOper
         {
@@ -64,6 +64,29 @@ namespace MainProgram
             string ControlerConfigPath = string.Format(@"{0}\{1}", "D:", ControlerConfig_dat);
             CaxPublic.ReadControlerConfig(ControlerConfigPath, out cControlerConfig);
 
+            //取得使用者自定義的txt
+            UserDefineTxtPath = string.Format(@"{0}\{1}", "D:", "UserDefine");
+            if (!Directory.Exists(UserDefineTxtPath))
+            {
+                UserDefineTxt.Items.Add("尚未定義");
+            }
+            else
+            {
+                string[] UserDefineTxtAry = System.IO.Directory.GetFileSystemEntries(UserDefineTxtPath, "*.txt");
+                if (UserDefineTxtAry.Length == 0)
+                {
+                    UserDefineTxt.Items.Add("尚未定義");
+                }
+                else
+                {
+                    foreach (string i in UserDefineTxtAry)
+                    {
+                        UserDefineTxt.Items.Add(Path.GetFileNameWithoutExtension(i));
+                    }
+                }
+            }
+            
+           
         }
 
         private class ListViewIndexComparer : System.Collections.IComparer
@@ -126,9 +149,10 @@ namespace MainProgram
 
         private void comboBoxNCgroup_SelectedIndexChanged(object sender, EventArgs e)
         {
-            
             //清空listView資料
             listView1.Items.Clear();
+            listView3.Items.Clear();
+            listView4.Items.Clear();
             listView5.Items.Clear();
             //取得comboBox資料
             CurrentNCGroup = comboBoxNCgroup.Text;
@@ -147,14 +171,58 @@ namespace MainProgram
             //當選擇海德漢控制器時，修改檔頭檔尾
             NewGroupName = "O" + Regex.Replace(CurrentNCGroup, "[^0-9]", "") + "0";
 
+
+
             if (chb_Heidenhain.Checked == true)
             {
+                for (int i = 0; i < cControlerConfig.Controler.Count; i++)
+                {
+                    if (cControlerConfig.Controler[i].CompanyName == chb_Heidenhain.Text)
+                    {
+                        if (cControlerConfig.Controler[i].MasterValue1 != "")
+                        {
+                            listView3.Items.Add(cControlerConfig.Controler[i].MasterValue1);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue2 != "")
+                        {
+                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue2);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue3 != "")
+                        {
+                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue3);
+                        }
+                        break;
+                    }
+                }
+
                 listView3.Items[0].Text = listView3.Items[0].Text.Replace("[NCGroupName]", NewGroupName);
                 listView3.Items.Add(";(" + NCGroupMessage + ")");
                 listView4.Items[1].Text = listView4.Items[1].Text.Replace("[NCGroupName]", NewGroupName);
             }
             else if (chb_Fanuc.Checked == true)
             {
+                for (int i = 0; i < cControlerConfig.Controler.Count; i++)
+                {
+                    if (cControlerConfig.Controler[i].CompanyName == chb_Fanuc.Text)
+                    {
+                        if (cControlerConfig.Controler[i].MasterValue1 != "")
+                        {
+                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue1);
+                            listView3.Items.Add(tempViewItem);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue2 != "")
+                        {
+                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue2);
+                            listView4.Items.Add(tempViewItem);
+                        }
+                        if (cControlerConfig.Controler[i].MasterValue3 != "")
+                        {
+                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue3);
+                            listView4.Items.Add(tempViewItem);
+                        }
+                        break;
+                    }
+                }
                 listView3.Items.Add(NewGroupName + "(" + NCGroupMessage + ")");
             }
 
@@ -251,26 +319,6 @@ namespace MainProgram
                 listView4.Items.Clear();
                 listView5.Items.Clear();
                 comboBoxNCgroup.Text = "";
-
-                for (int i = 0; i < cControlerConfig.Controler.Count; i++)
-                {
-                    if (cControlerConfig.Controler[i].CompanyName == chb_Heidenhain.Text)
-                    {
-                        if (cControlerConfig.Controler[i].MasterValue1 != "")
-                        {
-                            listView3.Items.Add(cControlerConfig.Controler[i].MasterValue1);
-                        }
-                        if (cControlerConfig.Controler[i].MasterValue2 != "")
-                        {
-                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue2);
-                        }
-                        if (cControlerConfig.Controler[i].MasterValue3 != "")
-                        {
-                            listView4.Items.Add(cControlerConfig.Controler[i].MasterValue3);
-                        }
-                        break; 
-                    }
-                }
             }
         }
 
@@ -290,30 +338,6 @@ namespace MainProgram
                 listView4.Items.Clear();
                 listView5.Items.Clear();
                 comboBoxNCgroup.Text = "";
-
-                
-                for (int i = 0; i < cControlerConfig.Controler.Count; i++)
-                {
-                    if (cControlerConfig.Controler[i].CompanyName == chb_Fanuc.Text)
-                    {
-                        if (cControlerConfig.Controler[i].MasterValue1 != "")
-                        {
-                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue1);
-                            listView3.Items.Add(tempViewItem);
-                        }
-                        if (cControlerConfig.Controler[i].MasterValue2 != "")
-                        {
-                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue2);
-                            listView4.Items.Add(tempViewItem);
-                        }
-                        if (cControlerConfig.Controler[i].MasterValue3 != "")
-                        {
-                            ListViewItem tempViewItem = new ListViewItem(cControlerConfig.Controler[i].MasterValue3);
-                            listView4.Items.Add(tempViewItem);
-                        }
-                        break; 
-                    }
-                }
             }
             else
             {
@@ -390,6 +414,14 @@ namespace MainProgram
                     {
                         tempViewItem.Text = chb_M98.Text + " " + tempViewItem.Text;
                     }
+                }
+                else if (chb_Heidenhain.Checked == true)
+                {
+                    tempViewItem.Text = "CALL PGM" + " " + tempViewItem.Text;
+                }
+                else if (chb_Simens.Checked == true)
+                {
+                    tempViewItem.Text = "extcall" + " " + tempViewItem.Text;
                 }
                 listView1.Items.Add(tempViewItem);
             }
@@ -495,28 +527,57 @@ namespace MainProgram
                     
                     foreach (KeyValuePair<int,ListViewItem> kvp in DicSelOper)
                     {
+                        string tempOper = kvp.Value.Text;
                         //如果選擇發那科控制器，則取代P為O才能看路徑
                         if (chb_Fanuc.Checked == true)
                         {
-                            string tempOper = kvp.Value.Text.Replace("P", "O");
-                            if (tempOper.Split().Length>1)
-                            {
-                                tempOper = tempOper.Split()[1];
-                            }
-                            if (NCProgramTag == ncGroup.Tag.ToString() && tempOper == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
-                            {
-                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
-                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
-                            }
+                            tempOper = tempOper.Replace("P", "O");
                         }
-                        else
+                        if (tempOper.Split().Length > 1)
                         {
-                            if (NCProgramTag == ncGroup.Tag.ToString() && kvp.Value.Text == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            tempOper = tempOper.Split()[tempOper.Split().Length - 1];
+                        }
+                        if (NCProgramTag == ncGroup.Tag.ToString() && tempOper == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                        {
+                            tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                        }
+                        /*
+                        if (chb_Fanuc.Checked == true)
+                        {
+                            tempOper = tempOper.Replace("P", "O");
+                            if (tempOper.Split().Length > 1)
                             {
-                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
-                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                                tempOper = tempOper.Split()[tempOper.Split().Length - 1];
+                            }
+                            //if (NCProgramTag == ncGroup.Tag.ToString() && tempOper == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            //{
+                            //    tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            //    workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            //}
+                        }
+                        else if (chb_Heidenhain.Checked == true)
+                        {
+                            if (tempOper.Split().Length > 1)
+                            {
+                                tempOper = tempOper.Split()[tempOper.Split().Length - 1];
+                            }
+                            //if (NCProgramTag == ncGroup.Tag.ToString() && kvp.Value.Text == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                            //{
+                            //    tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                            //    workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+                            //}
+                        }
+                        else if (chb_Simens.Checked == true)
+                        {
+                            if (tempOper.Split().Length > 1)
+                            {
+                                tempOper = tempOper.Split()[tempOper.Split().Length - 1];
                             }
                         }
+                        */
+
+                        
                     }
                 }
             }
@@ -539,14 +600,29 @@ namespace MainProgram
                 {
                     return;
                 }
+                if (!kvp.Value.Text.Contains(chb_M198.Text) & 
+                    !kvp.Value.Text.Contains(chb_M98.Text) &
+                    !kvp.Value.Text.Contains("extcall") &
+                    !kvp.Value.Text.Contains("CALL PGM"))
+                {
+                    this.Hide();
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Warning, "如欲移除" + kvp.Value.Text + "請使用刪除功能");
+                    this.Show();
+                    return;
+                }
             }
 
             #region 將listView1選到的Oper填回listView5中，並重新取得刀號
 
             foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
             {
-                ListViewItem tempViewItem = new ListViewItem(kvp.Value.Text);
-
+                ListViewItem tempViewItem = new ListViewItem();
+                tempViewItem.Text = kvp.Value.Text.Split()[kvp.Value.Text.Split().Length - 1];
+                if (chb_Fanuc.Checked == true)
+                {
+                    tempViewItem.Text = tempViewItem.Text.Replace("P", "O");
+                }
+                /*
                 //如果選擇發那科控制器，則取代P為O
                 if (chb_Fanuc.Checked == true)
                 {
@@ -555,7 +631,7 @@ namespace MainProgram
                     //kvp.Value.Text = splitSel.Replace("P", "O");
                     tempViewItem.Text = splitSel.Replace("P", "O");
                 }
-
+                */
                 //如果選擇海德漢控制器，則將順序移除再填回listView5中
                 //if (chb_Heidenhain.Checked == true)
                 //{
@@ -886,16 +962,37 @@ namespace MainProgram
                 return;
             }
 
+            //將UserCondition中的訊息拆分字串
+            string[] SplitCondition = UserCondition.Text.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+
             if (DicSelOper.Count == 0)
             {
-                ListViewItem tempViewItem = new ListViewItem(UserCondition.Text);
-                listView1.Items.Add(tempViewItem);
+                foreach (string i in SplitCondition)
+                {
+                    if (i == "")
+                    {
+                        continue;
+                    }
+                    ListViewItem tempViewItem = new ListViewItem(i);
+                    listView1.Items.Add(tempViewItem);
+                }
             }
             else
             {
+                int selectindex = -1;
                 foreach (KeyValuePair<int, ListViewItem> kvp in DicSelOper)
                 {
-                    ListViewItem tempItem = listView1.Items.Insert(kvp.Key + 1, UserCondition.Text);
+                    selectindex = kvp.Key;
+                    //ListViewItem tempItem = listView1.Items.Insert(kvp.Key + 1, UserCondition.Text);
+                }
+                foreach (string i in SplitCondition)
+                {
+                    if (i == "")
+                    {
+                        continue;
+                    }
+                    selectindex++;
+                    ListViewItem tempItem = listView1.Items.Insert(selectindex, i);
                 }
             }
             UserCondition.Text = "";
@@ -967,6 +1064,10 @@ namespace MainProgram
             }
             else if (chb_Simens.Checked == true)
             {
+                for (int i = 0; i < ExportData.Count; i++)
+                {
+                    ExportData[i] = "N" + i.ToString() + " " + ExportData[i];
+                }
                 ExportPath = ExportPath + ".MPF";
             }
             
@@ -977,6 +1078,33 @@ namespace MainProgram
             }
             file.Close();
 
+            this.Hide();
+            UI.GetUI().NXMessageBox.Show("恭喜", NXMessageBox.DialogType.Information, "主程式編輯完成！");
+            this.Show();
+        }
+
+        private void UserDefineTxt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UserCondition.Clear();
+
+            string SelDefineTxt = string.Format(@"{0}\{1}", UserDefineTxtPath, UserDefineTxt.Text + ".txt");
+            string[] TxtData = System.IO.File.ReadAllLines(SelDefineTxt);
+            for (int i = 0; i < TxtData.Length;i++ )
+            {
+                if (i == 0)
+                {
+                    UserCondition.Text = TxtData[i];
+                }
+                else
+                {
+                    UserCondition.Text = UserCondition.Text + "\r\n" + TxtData[i];
+                }
+            }
+        }
+
+        private void ClearTextBox_Click(object sender, EventArgs e)
+        {
+            UserCondition.Clear();
         }
 
 

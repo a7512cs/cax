@@ -55,8 +55,8 @@
             this.AddButton = new DevComponents.DotNetBar.ButtonX();
             this.labelX2 = new DevComponents.DotNetBar.LabelX();
             this.AddCondition = new System.Windows.Forms.GroupBox();
-            this.comboBoxEx2 = new DevComponents.DotNetBar.Controls.ComboBoxEx();
-            this.labelX1 = new DevComponents.DotNetBar.LabelX();
+            this.ClearTextBox = new DevComponents.DotNetBar.ButtonX();
+            this.UserDefineTxt = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.UserAddCondition = new DevComponents.DotNetBar.ButtonX();
             this.UserCondition = new System.Windows.Forms.TextBox();
             this.ExportMainProg = new DevComponents.DotNetBar.ButtonX();
@@ -88,7 +88,7 @@
             // chb_M198
             // 
             this.chb_M198.AutoSize = true;
-            this.chb_M198.Location = new System.Drawing.Point(134, 68);
+            this.chb_M198.Location = new System.Drawing.Point(135, 68);
             this.chb_M198.Name = "chb_M198";
             this.chb_M198.Size = new System.Drawing.Size(52, 16);
             this.chb_M198.TabIndex = 9;
@@ -99,7 +99,7 @@
             // chb_M98
             // 
             this.chb_M98.AutoSize = true;
-            this.chb_M98.Location = new System.Drawing.Point(82, 68);
+            this.chb_M98.Location = new System.Drawing.Point(83, 68);
             this.chb_M98.Name = "chb_M98";
             this.chb_M98.Size = new System.Drawing.Size(46, 16);
             this.chb_M98.TabIndex = 8;
@@ -110,7 +110,7 @@
             // chb_Fanuc
             // 
             this.chb_Fanuc.AutoSize = true;
-            this.chb_Fanuc.Location = new System.Drawing.Point(17, 68);
+            this.chb_Fanuc.Location = new System.Drawing.Point(18, 68);
             this.chb_Fanuc.Name = "chb_Fanuc";
             this.chb_Fanuc.Size = new System.Drawing.Size(52, 16);
             this.chb_Fanuc.TabIndex = 7;
@@ -121,7 +121,7 @@
             // chb_Heidenhain
             // 
             this.chb_Heidenhain.AutoSize = true;
-            this.chb_Heidenhain.Location = new System.Drawing.Point(17, 46);
+            this.chb_Heidenhain.Location = new System.Drawing.Point(18, 46);
             this.chb_Heidenhain.Name = "chb_Heidenhain";
             this.chb_Heidenhain.Size = new System.Drawing.Size(77, 16);
             this.chb_Heidenhain.TabIndex = 6;
@@ -132,7 +132,7 @@
             // chb_Simens
             // 
             this.chb_Simens.AutoSize = true;
-            this.chb_Simens.Location = new System.Drawing.Point(17, 24);
+            this.chb_Simens.Location = new System.Drawing.Point(18, 24);
             this.chb_Simens.Name = "chb_Simens";
             this.chb_Simens.Size = new System.Drawing.Size(62, 16);
             this.chb_Simens.TabIndex = 5;
@@ -344,8 +344,8 @@
             // 
             // AddCondition
             // 
-            this.AddCondition.Controls.Add(this.comboBoxEx2);
-            this.AddCondition.Controls.Add(this.labelX1);
+            this.AddCondition.Controls.Add(this.ClearTextBox);
+            this.AddCondition.Controls.Add(this.UserDefineTxt);
             this.AddCondition.Controls.Add(this.UserAddCondition);
             this.AddCondition.Controls.Add(this.UserCondition);
             this.AddCondition.Location = new System.Drawing.Point(208, 12);
@@ -355,37 +355,38 @@
             this.AddCondition.TabStop = false;
             this.AddCondition.Text = "新增條件";
             // 
-            // comboBoxEx2
+            // ClearTextBox
             // 
-            this.comboBoxEx2.DisplayMember = "Text";
-            this.comboBoxEx2.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboBoxEx2.FormattingEnabled = true;
-            this.comboBoxEx2.ItemHeight = 16;
-            this.comboBoxEx2.Location = new System.Drawing.Point(58, 61);
-            this.comboBoxEx2.Name = "comboBoxEx2";
-            this.comboBoxEx2.Size = new System.Drawing.Size(171, 22);
-            this.comboBoxEx2.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.comboBoxEx2.TabIndex = 2;
+            this.ClearTextBox.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.ClearTextBox.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.ClearTextBox.Location = new System.Drawing.Point(229, 42);
+            this.ClearTextBox.Name = "ClearTextBox";
+            this.ClearTextBox.Size = new System.Drawing.Size(45, 46);
+            this.ClearTextBox.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.ClearTextBox.TabIndex = 5;
+            this.ClearTextBox.Text = "清空";
+            this.ClearTextBox.Click += new System.EventHandler(this.ClearTextBox_Click);
             // 
-            // labelX1
+            // UserDefineTxt
             // 
-            // 
-            // 
-            // 
-            this.labelX1.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.labelX1.Location = new System.Drawing.Point(6, 63);
-            this.labelX1.Name = "labelX1";
-            this.labelX1.Size = new System.Drawing.Size(75, 23);
-            this.labelX1.TabIndex = 3;
-            this.labelX1.Text = "自定義：";
+            this.UserDefineTxt.DisplayMember = "Text";
+            this.UserDefineTxt.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.UserDefineTxt.FormattingEnabled = true;
+            this.UserDefineTxt.ItemHeight = 16;
+            this.UserDefineTxt.Location = new System.Drawing.Point(178, 18);
+            this.UserDefineTxt.Name = "UserDefineTxt";
+            this.UserDefineTxt.Size = new System.Drawing.Size(96, 22);
+            this.UserDefineTxt.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.UserDefineTxt.TabIndex = 2;
+            this.UserDefineTxt.SelectedIndexChanged += new System.EventHandler(this.UserDefineTxt_SelectedIndexChanged);
             // 
             // UserAddCondition
             // 
             this.UserAddCondition.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.UserAddCondition.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.UserAddCondition.Location = new System.Drawing.Point(235, 23);
+            this.UserAddCondition.Location = new System.Drawing.Point(178, 42);
             this.UserAddCondition.Name = "UserAddCondition";
-            this.UserAddCondition.Size = new System.Drawing.Size(39, 61);
+            this.UserAddCondition.Size = new System.Drawing.Size(45, 46);
             this.UserAddCondition.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.UserAddCondition.TabIndex = 1;
             this.UserAddCondition.Text = "新增";
@@ -393,10 +394,13 @@
             // 
             // UserCondition
             // 
-            this.UserCondition.Location = new System.Drawing.Point(6, 24);
+            this.UserCondition.Location = new System.Drawing.Point(6, 18);
+            this.UserCondition.Multiline = true;
             this.UserCondition.Name = "UserCondition";
-            this.UserCondition.Size = new System.Drawing.Size(223, 22);
+            this.UserCondition.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.UserCondition.Size = new System.Drawing.Size(166, 70);
             this.UserCondition.TabIndex = 0;
+            this.UserCondition.WordWrap = false;
             // 
             // ExportMainProg
             // 
@@ -464,8 +468,7 @@
         private DevComponents.DotNetBar.ButtonX DownButton;
         private DevComponents.DotNetBar.ButtonX UpButton;
         private DevComponents.DotNetBar.ButtonX CopyItem;
-        private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxEx2;
-        private DevComponents.DotNetBar.LabelX labelX1;
+        private DevComponents.DotNetBar.Controls.ComboBoxEx UserDefineTxt;
         private DevComponents.DotNetBar.ButtonX UserAddCondition;
         private System.Windows.Forms.TextBox UserCondition;
         private DevComponents.DotNetBar.ButtonX ExportMainProg;
@@ -479,5 +482,6 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private DevComponents.DotNetBar.ButtonX DeleteSel;
+        private DevComponents.DotNetBar.ButtonX ClearTextBox;
     }
 }
