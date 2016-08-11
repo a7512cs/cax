@@ -26,9 +26,30 @@
         </member>
         <member name="M:CaxGlobaltek.CaxGetDatData.GetControlerConfigData(CaxGlobaltek.ControlerConfig@)">
             <summary>
-            取得ControlerConfig.dat資料
+            取得ControlerConfig.dat資料  (路徑：IP:Globaltek\TE_Config\ControlerConfig.dat)
             </summary>
             <param name="cControlerConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxGetDatData.GetDraftingConfigData(CaxGlobaltek.DraftingConfig@)">
+            <summary>
+            取得DraftingConfig.dat資料  (路徑：IP:Globaltek\ME_Config\DraftingConfig.dat)
+            </summary>
+            <param name="cControlerConfig"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxGetDatData.GetAssignGaugeData(System.String[]@)">
+            <summary>
+            取得AssignGaugeData.dat資料  (路徑：IP:Globaltek\ME_Config\AssignGaugeData.dat)
+            </summary>
+            <param name="AGtxt"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxGetDatData.GetDraftingCoordinateData(CaxGlobaltek.CoordinateData@)">
+            <summary>
+            取得圖紙區域資料
+            </summary>
+            <param name="cCoordinateData"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxCheckDat.CheckMETEDownload_Upload">
@@ -63,7 +84,7 @@
         </member>
         <member name="M:CaxGlobaltek.CaxCheckDat.CheckControlerConfigDat">
             <summary>
-            檢查ControlerConfig.dat是否存在
+            檢查ControlerConfig.dat是否存在  (路徑：IP:Globaltek\TE_Config\ControlerConfig.dat)
             </summary>
             <returns></returns>
         </member>
@@ -73,6 +94,28 @@
             </summary>
             <param name="fileName"></param>
             <param name="filePath"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPublic.SelectObjects(NXOpen.NXObject[]@)">
+            <summary>
+            多選物件
+            </summary>
+            <param name="objary"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPublic.DelectObject(NXOpen.NXObject)">
+            <summary>
+            刪除指定的Object
+            </summary>
+            <param name="Nxobject"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPublic.ReadCoordinateData(System.String,CaxGlobaltek.CoordinateData@)">
+            <summary>
+            取得圖紙各區域座標
+            </summary>
+            <param name="jsonPath"></param>
+            <param name="cCoordinateData"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxOper.AskOperNameFromTag(NXOpen.Tag)">
@@ -195,6 +238,60 @@
             取得NCGroupMessage
             </summary>
             <param name="nCGroup"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxME.GetDimensionColor(NXOpen.NXObject)">
+            <summary>
+            回傳標註尺寸的顏色
+            </summary>
+            <param name="nNXObject"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxME.SetDimensionColor(NXOpen.NXObject,System.Int32)">
+            <summary>
+            設定標註尺寸顏色
+            </summary>
+            <param name="nNXObject"></param>
+            <param name="color"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxME.DrawTextBox(NXOpen.Tag)">
+            <summary>
+            畫Annotation的方框
+            </summary>
+            <param name="AnnotationTag"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxME.GetTextBoxCoordinate(NXOpen.Tag,CaxGlobaltek.CaxME.BoxCoordinate@)">
+            <summary>
+            取得TextBox的四個角落座標
+            </summary>
+            <param name="AnnotationTag"></param>
+            <param name="cBoxCoordinate"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d)">
+            <summary>
+            建立泡泡在圖紙上
+            </summary>
+            <param name="Number"></param>
+            <param name="BallonPt"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxME.GetFcfData(NXOpen.Annotations.DraftingFcf,CaxGlobaltek.CaxME.FcfData@)">
+            <summary>
+            取得Fcf的資料
+            Characteristic
+            ZoneShape
+            ToleranceValue
+            MaterialModifier
+            PrimaryDatum/PrimaryMaterialModifier
+            SecondaryDatum/SecondaryMaterialModifier
+            TertiaryDatum/TertiaryMaterialModifier
+            </summary>
+            <param name="temp"></param>
+            <param name="Characteristic"></param>
+            <param name="ToleranceValue"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxEnv.GetGlobaltekEnvDir">

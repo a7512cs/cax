@@ -60,6 +60,9 @@ public class Program
             
             #endregion
 
+            //Tag a;
+            //theUfSession.Drf.CreateNote(0, new string[] { "012" }, new double[] { 0, 0, 0 }, 0, out a);
+
             Application.EnableVisualStyles();
             MainProgramDlg cPostProcessorDlg = new MainProgramDlg();
             FormUtilities.ReparentForm(cPostProcessorDlg);

@@ -1,5 +1,0 @@
-{
-	"companyName":"DEPO",
-	"hasCMM":"0",
-	"hasMultiFixture":"1"
-}

@@ -7,6 +7,8 @@ using System.Windows.Forms;
 
 namespace CaxGlobaltek
 {
+    
+
     public class CaxGetDatData
     {
         /// <summary>
@@ -95,5 +97,81 @@ namespace CaxGlobaltek
             }
             return true;
         }
+
+        /// <summary>
+        /// 取得DraftingConfig.dat資料  (路徑：IP:Globaltek\ME_Config\DraftingConfig.dat)
+        /// </summary>
+        /// <param name="cControlerConfig"></param>
+        /// <returns></returns>
+        public static bool GetDraftingConfigData(out DraftingConfig cDraftingData)
+        {
+            cDraftingData = new DraftingConfig();
+            try
+            {
+                string DraftingConfig_dat = "DraftingConfig.dat";
+                string DraftingConfig_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", DraftingConfig_dat);
+                if (!System.IO.File.Exists(DraftingConfig_Path))
+                {
+                    MessageBox.Show("路徑：" + DraftingConfig_Path + "不存在");
+                    return false;
+                }
+
+                CaxPublic.ReadDraftingConfig(DraftingConfig_Path, out cDraftingData);
+            }
+            catch (System.Exception ex)
+            {
+            	return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取得AssignGaugeData.dat資料  (路徑：IP:Globaltek\ME_Config\AssignGaugeData.dat)
+        /// </summary>
+        /// <param name="AGtxt"></param>
+        /// <returns></returns>
+        public static bool GetAssignGaugeData(out string[] AGData)
+        {
+            AGData = new string[] { };
+            try
+            {
+                string AssignGaugeData_dat = "AssignGaugeData.dat";
+                string AssignGaugeData_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", AssignGaugeData_dat);
+                AGData = System.IO.File.ReadAllLines(AssignGaugeData_Path);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取得圖紙區域資料
+        /// </summary>
+        /// <param name="cCoordinateData"></param>
+        /// <returns></returns>
+        public static bool GetDraftingCoordinateData(out CoordinateData cCoordinateData)
+        {
+            cCoordinateData = new CoordinateData();
+            try
+            {
+                string DraftingCoordinate_dat = "DraftingCoordinate.dat";
+                string DraftingCoordinate_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", DraftingCoordinate_dat);
+                if (!System.IO.File.Exists(DraftingCoordinate_Path))
+                {
+                    MessageBox.Show("路徑：" + DraftingCoordinate_Path + "不存在");
+                    return false;
+                }
+
+                CaxPublic.ReadCoordinateData(DraftingCoordinate_Path, out cCoordinateData);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

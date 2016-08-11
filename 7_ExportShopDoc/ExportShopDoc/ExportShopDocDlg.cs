@@ -382,11 +382,11 @@ namespace ExportShopDoc
             #region 設定輸出路徑
 
             //暫時使用的路徑
-            string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
-            OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), 
-                                                        Path.GetFileNameWithoutExtension(displayPart.FullPath) + "_" + (FolderFile.Length + 1) + ".xls");
+            //string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
+            //OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), 
+            //                                            Path.GetFileNameWithoutExtension(displayPart.FullPath) + "_" + (FolderFile.Length + 1) + ".xls");
             
-           
+            
 
             /*-------以下發布版本
             //取得總組立名稱與全路徑
@@ -440,11 +440,16 @@ namespace ExportShopDoc
             panel.Rows.Clear();
             //取得comboBox資料
             CurrentNCGroup = comboBoxNCgroup.Text;
+            //變更路徑
+            string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
+            OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath),
+                                                        Path.GetFileNameWithoutExtension(displayPart.FullPath) + "_" + CurrentNCGroup + "_" + (FolderFile.Length + 1) + ".xls");
+
             //拆群組名稱字串取得製程序(EX：OP210=>210)
-            string OperNum = Regex.Replace(CurrentNCGroup, "[^0-9]", "");
-
-            #region 拍Oper刀具路徑圖
-
+            string[] splitCurrentNCGroup = CurrentNCGroup.Split('_');
+            string OperNum = Regex.Replace(splitCurrentNCGroup[0], "[^0-9]", "");
+            
+            #region (註解中)拍Oper刀具路徑圖
             //foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
             //{
             //    if (CurrentNCGroup == ncGroup.Name)
@@ -475,18 +480,23 @@ namespace ExportShopDoc
             GridRow row = new GridRow();
             foreach (KeyValuePair<string, OperData> kvp in DicNCData)
             {
-                if (CurrentNCGroup == kvp.Key)
+                if (CurrentNCGroup != kvp.Key)
                 {
-                    string[] splitOperName = kvp.Value.OperName.Split(',');
-                    string[] splitToolName = kvp.Value.ToolName.Split(',');
-                    string[] splitHolderDescription = kvp.Value.HolderDescription.Split(',');
-                    string[] splitOperCuttingLength = kvp.Value.CuttingLength.Split(',');
-                    string[] splitOperToolFeed = kvp.Value.ToolFeed.Split(',');
-                    string[] splitOperCuttingTime = kvp.Value.CuttingTime.Split(',');
-                    string[] splitOperToolNumber = kvp.Value.ToolNumber.Split(',');
-                    string[] splitOperToolSpeed = kvp.Value.ToolSpeed.Split(',');
+                    continue;
+                }
+                string[] splitOperName = kvp.Value.OperName.Split(',');
+                string[] splitToolName = kvp.Value.ToolName.Split(',');
+                string[] splitHolderDescription = kvp.Value.HolderDescription.Split(',');
+                string[] splitOperCuttingLength = kvp.Value.CuttingLength.Split(',');
+                string[] splitOperToolFeed = kvp.Value.ToolFeed.Split(',');
+                string[] splitOperCuttingTime = kvp.Value.CuttingTime.Split(',');
+                string[] splitOperToolNumber = kvp.Value.ToolNumber.Split(',');
+                string[] splitOperToolSpeed = kvp.Value.ToolSpeed.Split(',');
 
-                    for (int i = 0; i < splitOperName.Length; i++)
+                for (int i = 0; i < splitOperName.Length; i++)
+                {
+                    //處理單主軸or多主軸中的第一主軸OPxxx_1
+                    if (splitCurrentNCGroup.Length == 1 || (splitCurrentNCGroup.Length == 2 && splitCurrentNCGroup[1] == "1"))
                     {
                         int y = i + 1;
                         if (i < 9)
@@ -500,9 +510,15 @@ namespace ExportShopDoc
                             row = new GridRow(splitOperName[i], "O" + tempOperNum + y, splitOperToolNumber[i], splitToolName[i],
                                 splitHolderDescription[i], splitOperCuttingLength[i], splitOperToolFeed[i], splitOperToolSpeed[i], splitOperCuttingTime[i], "拍照");
                         }
-
-                        panel.Rows.Add(row);
                     }
+                    else//處理多主軸中的第二主軸
+                    {
+                        int y = 50 + (i + 1);
+                        string tempOperNum = (Convert.ToDouble(OperNum) * 0.1).ToString();
+                        row = new GridRow(splitOperName[i], "O" + tempOperNum + y, splitOperToolNumber[i], splitToolName[i],
+                            splitHolderDescription[i], splitOperCuttingLength[i], splitOperToolFeed[i], splitOperToolSpeed[i], splitOperCuttingTime[i], "拍照");
+                    }
+                    panel.Rows.Add(row);
                 }
             }
 
@@ -885,6 +901,11 @@ namespace ExportShopDoc
 
             foreach (KeyValuePair<string,OperData> kvp in DicNCData)
             {
+                if (CurrentNCGroup != kvp.Key)
+                {
+                    continue;
+                } 
+
                 string[] splitOperName = kvp.Value.OperName.Split(',');
                 
                 int needSheetNo = (splitOperName.Length / 8);
@@ -979,8 +1000,8 @@ namespace ExportShopDoc
                     {
                         RowColumn sRowColumn;
                         GetExcelRowColumn(j, out sRowColumn);
-                        int currentSheet_Value = (j / 8); 
-                        int currentSheet_Reserve = (j % 8); 
+                        int currentSheet_Value = (j / 8);
+                        int currentSheet_Reserve = (j % 8);
                         if (currentSheet_Value == 0)
                         {
                             sheet = (Excel.Worksheet)book.Sheets[1];

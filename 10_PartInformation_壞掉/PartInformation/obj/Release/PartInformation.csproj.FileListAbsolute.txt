@@ -1,0 +1,13 @@
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\PartInformation.dll
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\PartInformation.pdb
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\CaxGlobaltek.dll
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\Newtonsoft.Json.dll
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\CaxGlobaltek.pdb
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\CaxGlobaltek.xml
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\Newtonsoft.Json.pdb
+D:\GlobalCode\10_PartInformation\PartInformation\bin\Release\Newtonsoft.Json.xml
+D:\GlobalCode\10_PartInformation\PartInformation\obj\Release\PartInformation.PartInformationDlg.resources
+D:\GlobalCode\10_PartInformation\PartInformation\obj\Release\PartInformation.Properties.Resources.resources
+D:\GlobalCode\10_PartInformation\PartInformation\obj\Release\PartInformation.csproj.GenerateResource.Cache
+D:\GlobalCode\10_PartInformation\PartInformation\obj\Release\PartInformation.dll
+D:\GlobalCode\10_PartInformation\PartInformation\obj\Release\PartInformation.pdb
