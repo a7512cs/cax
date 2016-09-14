@@ -150,6 +150,10 @@ namespace CaxGlobaltek
                 Tool.Types type;
                 Tool.Subtypes subtype;
                 tool.GetTypeAndSubtype(out type, out subtype);
+                //CaxLog.ShowListingWindow(type.ToString());
+                //CaxLog.ShowListingWindow(subtype.ToString());
+                //CaxLog.ShowListingWindow("---");
+                //CaxLog.ShowListingWindow(singleOper.Name.ToString());
                 if (type == Tool.Types.Barrel)
                 {
                     NXOpen.CAM.BarrelToolBuilder ToolBuilder1;
@@ -159,9 +163,10 @@ namespace CaxGlobaltek
                 }
                 else if (type == Tool.Types.Drill)
                 {
-                    NXOpen.CAM.DrillStdToolBuilder ToolBuilder1;
+                    NXOpen.CAM.DrillStdToolBuilder ToolBuilder1; 
                     ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateDrillStdToolBuilder(tool);
                     operHolderDescription = ToolBuilder1.TlHolderDescription;
+                    //CaxLog.ShowListingWindow(operHolderDescription);
                     return operHolderDescription;
                 }
                 else if (type == Tool.Types.DrillSpcGroove)
@@ -198,11 +203,23 @@ namespace CaxGlobaltek
                 }
                 else if (type == Tool.Types.Thread)
                 {
-                    
+                    NXOpen.CAM.ThreadToolBuilder ToolBuilder1;
+                    ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateThreadToolBuilder(tool);
+                    operHolderDescription = ToolBuilder1.TlDescription; //CaxLog.ShowListingWindow(operHolderDescription);
+                    //operHolderDescription = ToolBuilder1.HolderHand.ToString(); CaxLog.ShowListingWindow(operHolderDescription);
+                    //operHolderDescription = ToolBuilder1.HolderGrooveHand.ToString(); CaxLog.ShowListingWindow(operHolderDescription);
+                    //CaxLog.ShowListingWindow("---");
+                    return operHolderDescription;
                 }
                 else if (type == Tool.Types.Turn)
                 {
-                    
+                    NXOpen.CAM.TurningToolBuilder ToolBuilder1;
+                    ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateTurnToolBuilder(tool);
+                    operHolderDescription = ToolBuilder1.TlDescription; //CaxLog.ShowListingWindow(operHolderDescription);
+                    //operHolderDescription = ToolBuilder1.HolderHand.ToString(); CaxLog.ShowListingWindow(operHolderDescription);
+                    //operHolderDescription = ToolBuilder1.HolderGrooveHand.ToString(); CaxLog.ShowListingWindow(operHolderDescription);
+                    //CaxLog.ShowListingWindow("---");
+                    return operHolderDescription;
                 }
                 else if (type == Tool.Types.Wedm)
                 {
@@ -210,7 +227,13 @@ namespace CaxGlobaltek
                 }
                 else if (type == Tool.Types.Groove)
                 {
-
+                    NXOpen.CAM.GrooveToolBuilder ToolBuilder1;
+                    ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateGrooveToolBuilder(tool);
+                    operHolderDescription = ToolBuilder1.TlDescription; //CaxLog.ShowListingWindow(operHolderDescription);
+                    //operHolderDescription = ToolBuilder1.HolderHand.ToString(); CaxLog.ShowListingWindow(operHolderDescription);
+                    //operHolderDescription = ToolBuilder1.HolderGrooveHand.ToString(); CaxLog.ShowListingWindow(operHolderDescription);
+                    //CaxLog.ShowListingWindow("---");
+                    return operHolderDescription;
                 }
                 
             }
@@ -238,6 +261,7 @@ namespace CaxGlobaltek
                 Tool.Types type;
                 Tool.Subtypes subtype;
                 tool.GetTypeAndSubtype(out type, out subtype);
+                //CaxLog.ShowListingWindow(type.ToString());
                 if (type == Tool.Types.Barrel)
                 {
                     NXOpen.CAM.BarrelToolBuilder ToolBuilder1;
@@ -250,6 +274,7 @@ namespace CaxGlobaltek
                     NXOpen.CAM.DrillStdToolBuilder ToolBuilder1;
                     ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateDrillStdToolBuilder(tool);
                     operToolNumber = ToolBuilder1.TlNumberBuilder.Value.ToString();
+                    //CaxLog.ShowListingWindow(operToolNumber);
                     return operToolNumber;
                 }
                 else if (type == Tool.Types.DrillSpcGroove)
@@ -286,11 +311,17 @@ namespace CaxGlobaltek
                 }
                 else if (type == Tool.Types.Thread)
                 {
-
+                    NXOpen.CAM.ThreadToolBuilder ToolBuilder1;
+                    ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateThreadToolBuilder(tool);
+                    operToolNumber = ToolBuilder1.TlNumberBuilder.Value.ToString();
+                    return operToolNumber;
                 }
                 else if (type == Tool.Types.Turn)
                 {
-
+                    NXOpen.CAM.TurningToolBuilder ToolBuilder1;
+                    ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateTurnToolBuilder(tool);
+                    operToolNumber = ToolBuilder1.TlNumberBuilder.Value.ToString(); 
+                    return operToolNumber;
                 }
                 else if (type == Tool.Types.Wedm)
                 {
@@ -298,7 +329,10 @@ namespace CaxGlobaltek
                 }
                 else if (type == Tool.Types.Groove)
                 {
-
+                    NXOpen.CAM.GrooveToolBuilder ToolBuilder1;
+                    ToolBuilder1 = workPart.CAMSetup.CAMGroupCollection.CreateGrooveToolBuilder(tool);
+                    operToolNumber = ToolBuilder1.TlNumberBuilder.Value.ToString();
+                    return operToolNumber;
                 }
 
             }
@@ -356,7 +390,13 @@ namespace CaxGlobaltek
             string OperToolFeed = "";
             try
             {
-                OperToolFeed = (Convert.ToDouble(AskOperCuttingLength(singleOper)) / Convert.ToDouble(AskOperCuttingTime(singleOper))).ToString();
+                NXOpen.CAM.CAMObject[] params1 = new NXOpen.CAM.CAMObject[1];
+                params1[0] = singleOper;
+                NXOpen.CAM.ObjectsFeedsBuilder objectsFeedsBuilder1;
+                objectsFeedsBuilder1 = workPart.CAMSetup.CreateFeedsBuilder(params1);
+                OperToolFeed = objectsFeedsBuilder1.FeedsBuilder.FeedCutBuilder.Value.ToString(); 
+                //CaxLog.ShowListingWindow(OperToolFeed);
+                //OperToolFeed = (Convert.ToDouble(AskOperCuttingLength(singleOper)) / Convert.ToDouble(AskOperCuttingTime(singleOper))).ToString();
                 return OperToolFeed;
             }
             catch (System.Exception ex)
@@ -379,7 +419,19 @@ namespace CaxGlobaltek
                 params1[0] = singleOper;
                 NXOpen.CAM.ObjectsFeedsBuilder objectsFeedsBuilder1;
                 objectsFeedsBuilder1 = workPart.CAMSetup.CreateFeedsBuilder(params1);
-                return OperToolSpeed = objectsFeedsBuilder1.FeedsBuilder.SpindleRpmBuilder.Value.ToString();
+                string OutPutMode = objectsFeedsBuilder1.FeedsBuilder.SpindleModeBuilder.Value.ToString();
+                //CaxLog.ShowListingWindow(objectsFeedsBuilder1.FeedsBuilder.SpindleModeBuilder.Value.ToString());
+                if (OutPutMode == "0")
+                {
+                    OperToolSpeed = objectsFeedsBuilder1.FeedsBuilder.SpindleRpmBuilder.Value.ToString();
+                }
+                else
+                {
+                    OperToolSpeed = objectsFeedsBuilder1.FeedsBuilder.SurfaceSpeedBuilder.Value.ToString();
+                }
+                //OperToolSpeed = objectsFeedsBuilder1.FeedsBuilder.SurfaceSpeedBuilder.Value.ToString(); CaxLog.ShowListingWindow(OperToolSpeed);
+                //string aa = objectsFeedsBuilder1.FeedsBuilder.SpindleRpmBuilder.Value.ToString(); CaxLog.ShowListingWindow(aa); CaxLog.ShowListingWindow("--");
+                return OperToolSpeed;
             }
             catch (System.Exception ex)
             {

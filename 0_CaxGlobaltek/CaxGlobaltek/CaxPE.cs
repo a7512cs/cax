@@ -22,17 +22,17 @@ namespace CaxGlobaltek
     {
         public string Oper1 { get; set; }
         public string Oper2 { get; set; }
-        public string CAMFolderPath { get; set; }
-        public string OISFolderPath { get; set; }
-        public string ThridOperPartPath { get; set; }
+        //public string CAMFolderPath { get; set; }
+        //public string OISFolderPath { get; set; }
+        //public string ThridOperPartPath { get; set; }
     }
 
-    public class PE_OutPutDat
+    public class PECreateData
     {
         public string CusName { get; set; }
         public string PartNo { get; set; }
         public string CusRev { get; set; }
-        public string PartPath { get; set; }
+        //public string PartPath { get; set; }
         public List<Operation> ListOperation { get; set; }
         public List<string> Oper1Ary { get; set; }
         public List<string> Oper2Ary { get; set; }
@@ -63,6 +63,40 @@ namespace CaxGlobaltek
         {
             string PEConfigPath = Environment.GetEnvironmentVariable(PE_ConfigVari);
             return PEConfigPath;
+        }
+
+        /// <summary>
+        /// 取得每一筆料號的製程資料
+        /// </summary>
+        /// <param name="cPECreateData"></param>
+        /// <returns></returns>
+        public static bool ReadPECreateData(string jsonPath, out PECreateData cPECreateData)
+        {
+            cPECreateData = new PECreateData();
+            try
+            {
+                if (!System.IO.File.Exists(jsonPath))
+                {
+                    return false;
+                }
+
+                bool status;
+
+                string jsonText;
+                status = ReadFileDataUTF8(jsonPath, out jsonText);
+                if (!status)
+                {
+                    return false;
+                }
+
+                cPECreateData = JsonConvert.DeserializeObject<PECreateData>(jsonText);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public static bool ReadCustomerNameData(string jsonPath, out CusName cCusName)

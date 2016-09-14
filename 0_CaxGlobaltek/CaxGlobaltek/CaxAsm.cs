@@ -197,7 +197,13 @@ namespace CaxGlobaltek
             return true;
         }
 
-        public static bool GetCompChilden(out List<NXOpen.Assemblies.Component> compAry, Component comp = null)
+        /// <summary>
+        /// 取得子Comp集合(只找下一層)
+        /// </summary>
+        /// <param name="compAry"></param>
+        /// <param name="comp"></param>
+        /// <returns></returns>
+        public static bool GetCompChildren(out List<NXOpen.Assemblies.Component> compAry, Component comp = null)
         {
             compAry = new List<NXOpen.Assemblies.Component>();
             try
@@ -342,6 +348,30 @@ namespace CaxGlobaltek
                 return false;
             }
 
+            return true;
+        }
+
+        /// <summary>
+        /// 取得子Comp集合(遞迴搜尋)
+        /// </summary>
+        /// <param name="FatherComp"></param>
+        /// <param name="ListChildrenComp"></param>
+        /// <returns></returns>
+        public static bool GetCompChildren(NXOpen.Assemblies.Component FatherComp, ref List<NXOpen.Assemblies.Component> ListChildrenComp)
+        {
+            try
+            {
+                NXOpen.Assemblies.Component[] ChildrenCompAry = FatherComp.GetChildren();
+                ListChildrenComp.AddRange(ChildrenCompAry.ToArray());
+                foreach (NXOpen.Assemblies.Component i in ChildrenCompAry)
+                {
+                    GetCompChildren(i, ref ListChildrenComp);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
             return true;
         }
     }

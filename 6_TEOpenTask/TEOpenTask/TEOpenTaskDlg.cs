@@ -280,8 +280,12 @@ namespace TEOpenTask
 
         private void button001SelPart_Click(object sender, EventArgs e)
         {
+            string ServerPartPath = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekTaskDir(),
+                                                                      CurrentCusName,
+                                                                      CurrentPartNo,
+                                                                      CurrentCusVer);
             string tempFileName = "";
-            status = CaxPublic.OpenFileDialog(out tempFileName, out label001BilletPath);
+            status = CaxPublic.OpenFileDialog(out tempFileName, out label001BilletPath, ServerPartPath);
             if (!status)
             {
                 MessageBox.Show("選擇檔案失敗，請聯繫開發工程師");
@@ -292,8 +296,12 @@ namespace TEOpenTask
 
         private void buttonWSelPart_Click(object sender, EventArgs e)
         {
+            string ServerPartPath = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekTaskDir(),
+                                                                      CurrentCusName,
+                                                                      CurrentPartNo,
+                                                                      CurrentCusVer);
             string tempFileName = "";
-            status = CaxPublic.OpenFileDialog(out tempFileName, out labelWBilletPath);
+            status = CaxPublic.OpenFileDialog(out tempFileName, out labelWBilletPath, ServerPartPath);
             if (!status)
             {
                 MessageBox.Show("選擇檔案失敗，請聯繫開發工程師");

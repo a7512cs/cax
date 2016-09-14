@@ -82,7 +82,7 @@ namespace CaxGlobaltek
             try
             {
                 string ControlerConfig_dat = "ControlerConfig.dat";
-                string ControlerConfig_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "TE_Config", ControlerConfig_dat);
+                string ControlerConfig_Path = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "TE_Config", "Config", ControlerConfig_dat);
                 if (!System.IO.File.Exists(ControlerConfig_Path))
                 {
                     MessageBox.Show("路徑：" + ControlerConfig_Path + "不存在");
@@ -109,7 +109,7 @@ namespace CaxGlobaltek
             try
             {
                 string DraftingConfig_dat = "DraftingConfig.dat";
-                string DraftingConfig_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", DraftingConfig_dat);
+                string DraftingConfig_Path = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", "Config", DraftingConfig_dat);
                 if (!System.IO.File.Exists(DraftingConfig_Path))
                 {
                     MessageBox.Show("路徑：" + DraftingConfig_Path + "不存在");
@@ -136,7 +136,7 @@ namespace CaxGlobaltek
             try
             {
                 string AssignGaugeData_dat = "AssignGaugeData.dat";
-                string AssignGaugeData_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", AssignGaugeData_dat);
+                string AssignGaugeData_Path = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", "Config", AssignGaugeData_dat);
                 AGData = System.IO.File.ReadAllLines(AssignGaugeData_Path);
             }
             catch (System.Exception ex)
@@ -157,7 +157,7 @@ namespace CaxGlobaltek
             try
             {
                 string DraftingCoordinate_dat = "DraftingCoordinate.dat";
-                string DraftingCoordinate_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", DraftingCoordinate_dat);
+                string DraftingCoordinate_Path = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", "Config", DraftingCoordinate_dat);
                 if (!System.IO.File.Exists(DraftingCoordinate_Path))
                 {
                     MessageBox.Show("路徑：" + DraftingCoordinate_Path + "不存在");
@@ -172,6 +172,8 @@ namespace CaxGlobaltek
             }
             return true;
         }
+
+        
 
     }
 }

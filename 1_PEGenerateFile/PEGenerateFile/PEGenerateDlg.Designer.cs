@@ -59,24 +59,30 @@
             this.check210 = new System.Windows.Forms.CheckBox();
             this.check001 = new System.Windows.Forms.CheckBox();
             this.groupPanel2 = new DevComponents.DotNetBar.Controls.GroupPanel();
+            this.comboBoxCusName = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.labelX4 = new DevComponents.DotNetBar.LabelX();
             this.labelPartFileName = new DevComponents.DotNetBar.LabelX();
             this.groupPanel3 = new DevComponents.DotNetBar.Controls.GroupPanel();
-            this.comboBoxEx1 = new DevComponents.DotNetBar.Controls.ComboBoxEx();
+            this.comboBoxOldCusRev = new DevComponents.DotNetBar.Controls.ComboBoxEx();
+            this.labelX7 = new DevComponents.DotNetBar.LabelX();
+            this.comboBoxOldCusName = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.labelX5 = new DevComponents.DotNetBar.LabelX();
-            this.buttonX3 = new DevComponents.DotNetBar.ButtonX();
-            this.comboBoxEx3 = new DevComponents.DotNetBar.Controls.ComboBoxEx();
+            this.OldPartOK = new DevComponents.DotNetBar.ButtonX();
+            this.comboBoxOldPartNo = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.labelX6 = new DevComponents.DotNetBar.LabelX();
             this.OK = new DevComponents.DotNetBar.ButtonX();
             this.OperSuperGridControl = new DevComponents.DotNetBar.SuperGrid.SuperGridControl();
             this.gridColumn1 = new DevComponents.DotNetBar.SuperGrid.GridColumn();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.groupPanel4 = new DevComponents.DotNetBar.Controls.GroupPanel();
+            this.UserDefine = new DevComponents.DotNetBar.ButtonX();
+            this.UserDefineProcess = new DevComponents.DotNetBar.Controls.TextBoxX();
             this.Oper2Ary = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             this.Delete = new DevComponents.DotNetBar.SuperGrid.GridColumn();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.comboBoxCusName = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.groupPanel1.SuspendLayout();
             this.groupPanel2.SuspendLayout();
             this.groupPanel3.SuspendLayout();
+            this.groupPanel4.SuspendLayout();
             this.SuspendLayout();
             // 
             // styleManager1
@@ -502,7 +508,20 @@
             // 
             this.groupPanel2.StyleMouseOver.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.groupPanel2.TabIndex = 8;
-            this.groupPanel2.Text = "檔案設定";
+            this.groupPanel2.Text = "新料號設定";
+            // 
+            // comboBoxCusName
+            // 
+            this.comboBoxCusName.DisplayMember = "Text";
+            this.comboBoxCusName.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxCusName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxCusName.FormattingEnabled = true;
+            this.comboBoxCusName.ItemHeight = 16;
+            this.comboBoxCusName.Location = new System.Drawing.Point(49, 6);
+            this.comboBoxCusName.Name = "comboBoxCusName";
+            this.comboBoxCusName.Size = new System.Drawing.Size(198, 22);
+            this.comboBoxCusName.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.comboBoxCusName.TabIndex = 8;
             // 
             // labelX4
             // 
@@ -532,10 +551,12 @@
             // 
             this.groupPanel3.CanvasColor = System.Drawing.SystemColors.Control;
             this.groupPanel3.ColorSchemeStyle = DevComponents.DotNetBar.eDotNetBarStyle.Office2007;
-            this.groupPanel3.Controls.Add(this.comboBoxEx1);
+            this.groupPanel3.Controls.Add(this.comboBoxOldCusRev);
+            this.groupPanel3.Controls.Add(this.labelX7);
+            this.groupPanel3.Controls.Add(this.comboBoxOldCusName);
             this.groupPanel3.Controls.Add(this.labelX5);
-            this.groupPanel3.Controls.Add(this.buttonX3);
-            this.groupPanel3.Controls.Add(this.comboBoxEx3);
+            this.groupPanel3.Controls.Add(this.OldPartOK);
+            this.groupPanel3.Controls.Add(this.comboBoxOldPartNo);
             this.groupPanel3.Controls.Add(this.labelX6);
             this.groupPanel3.DisabledBackColor = System.Drawing.Color.Empty;
             this.groupPanel3.Location = new System.Drawing.Point(283, 12);
@@ -570,19 +591,48 @@
             // 
             this.groupPanel3.StyleMouseOver.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.groupPanel3.TabIndex = 9;
-            this.groupPanel3.Text = "樣板";
+            this.groupPanel3.Text = "舊料號";
             // 
-            // comboBoxEx1
+            // comboBoxOldCusRev
             // 
-            this.comboBoxEx1.DisplayMember = "Text";
-            this.comboBoxEx1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboBoxEx1.FormattingEnabled = true;
-            this.comboBoxEx1.ItemHeight = 16;
-            this.comboBoxEx1.Location = new System.Drawing.Point(12, 29);
-            this.comboBoxEx1.Name = "comboBoxEx1";
-            this.comboBoxEx1.Size = new System.Drawing.Size(121, 22);
-            this.comboBoxEx1.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.comboBoxEx1.TabIndex = 4;
+            this.comboBoxOldCusRev.DisplayMember = "Text";
+            this.comboBoxOldCusRev.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxOldCusRev.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxOldCusRev.FormattingEnabled = true;
+            this.comboBoxOldCusRev.ItemHeight = 16;
+            this.comboBoxOldCusRev.Location = new System.Drawing.Point(52, 69);
+            this.comboBoxOldCusRev.Name = "comboBoxOldCusRev";
+            this.comboBoxOldCusRev.Size = new System.Drawing.Size(81, 22);
+            this.comboBoxOldCusRev.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.comboBoxOldCusRev.TabIndex = 6;
+            this.comboBoxOldCusRev.SelectedIndexChanged += new System.EventHandler(this.comboBoxOldCusRev_SelectedIndexChanged);
+            // 
+            // labelX7
+            // 
+            this.labelX7.BackColor = System.Drawing.Color.Transparent;
+            // 
+            // 
+            // 
+            this.labelX7.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
+            this.labelX7.Location = new System.Drawing.Point(12, 72);
+            this.labelX7.Name = "labelX7";
+            this.labelX7.Size = new System.Drawing.Size(47, 23);
+            this.labelX7.TabIndex = 5;
+            this.labelX7.Text = "版次：";
+            // 
+            // comboBoxOldCusName
+            // 
+            this.comboBoxOldCusName.DisplayMember = "Text";
+            this.comboBoxOldCusName.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxOldCusName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxOldCusName.FormattingEnabled = true;
+            this.comboBoxOldCusName.ItemHeight = 16;
+            this.comboBoxOldCusName.Location = new System.Drawing.Point(52, 6);
+            this.comboBoxOldCusName.Name = "comboBoxOldCusName";
+            this.comboBoxOldCusName.Size = new System.Drawing.Size(81, 22);
+            this.comboBoxOldCusName.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.comboBoxOldCusName.TabIndex = 4;
+            this.comboBoxOldCusName.SelectedIndexChanged += new System.EventHandler(this.comboBoxOldCusName_SelectedIndexChanged);
             // 
             // labelX5
             // 
@@ -591,34 +641,36 @@
             // 
             // 
             this.labelX5.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.labelX5.Location = new System.Drawing.Point(42, 9);
+            this.labelX5.Location = new System.Drawing.Point(12, 9);
             this.labelX5.Name = "labelX5";
-            this.labelX5.Size = new System.Drawing.Size(75, 23);
+            this.labelX5.Size = new System.Drawing.Size(47, 23);
             this.labelX5.TabIndex = 3;
-            this.labelX5.Text = "選擇客戶";
+            this.labelX5.Text = "客戶：";
             // 
-            // buttonX3
+            // OldPartOK
             // 
-            this.buttonX3.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.buttonX3.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.buttonX3.Location = new System.Drawing.Point(33, 102);
-            this.buttonX3.Name = "buttonX3";
-            this.buttonX3.Size = new System.Drawing.Size(75, 23);
-            this.buttonX3.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.buttonX3.TabIndex = 2;
-            this.buttonX3.Text = "確定";
+            this.OldPartOK.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.OldPartOK.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.OldPartOK.Location = new System.Drawing.Point(33, 102);
+            this.OldPartOK.Name = "OldPartOK";
+            this.OldPartOK.Size = new System.Drawing.Size(75, 23);
+            this.OldPartOK.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.OldPartOK.TabIndex = 2;
+            this.OldPartOK.Text = "確定";
             // 
-            // comboBoxEx3
+            // comboBoxOldPartNo
             // 
-            this.comboBoxEx3.DisplayMember = "Text";
-            this.comboBoxEx3.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboBoxEx3.FormattingEnabled = true;
-            this.comboBoxEx3.ItemHeight = 16;
-            this.comboBoxEx3.Location = new System.Drawing.Point(12, 75);
-            this.comboBoxEx3.Name = "comboBoxEx3";
-            this.comboBoxEx3.Size = new System.Drawing.Size(121, 22);
-            this.comboBoxEx3.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.comboBoxEx3.TabIndex = 1;
+            this.comboBoxOldPartNo.DisplayMember = "Text";
+            this.comboBoxOldPartNo.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxOldPartNo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxOldPartNo.FormattingEnabled = true;
+            this.comboBoxOldPartNo.ItemHeight = 16;
+            this.comboBoxOldPartNo.Location = new System.Drawing.Point(52, 38);
+            this.comboBoxOldPartNo.Name = "comboBoxOldPartNo";
+            this.comboBoxOldPartNo.Size = new System.Drawing.Size(81, 22);
+            this.comboBoxOldPartNo.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.comboBoxOldPartNo.TabIndex = 1;
+            this.comboBoxOldPartNo.SelectedIndexChanged += new System.EventHandler(this.comboBoxOldPartNo_SelectedIndexChanged);
             // 
             // labelX6
             // 
@@ -628,11 +680,11 @@
             // 
             this.labelX6.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.labelX6.Font = new System.Drawing.Font("新細明體", 9F);
-            this.labelX6.Location = new System.Drawing.Point(42, 57);
+            this.labelX6.Location = new System.Drawing.Point(12, 40);
             this.labelX6.Name = "labelX6";
-            this.labelX6.Size = new System.Drawing.Size(63, 23);
+            this.labelX6.Size = new System.Drawing.Size(52, 23);
             this.labelX6.TabIndex = 0;
-            this.labelX6.Text = "選擇料號";
+            this.labelX6.Text = "料號：";
             // 
             // OK
             // 
@@ -649,7 +701,7 @@
             // OperSuperGridControl
             // 
             this.OperSuperGridControl.FilterExprColors.SysFunction = System.Drawing.Color.DarkRed;
-            this.OperSuperGridControl.Location = new System.Drawing.Point(166, 170);
+            this.OperSuperGridControl.Location = new System.Drawing.Point(166, 230);
             this.OperSuperGridControl.Name = "OperSuperGridControl";
             // 
             // 
@@ -658,17 +710,87 @@
             this.OperSuperGridControl.PrimaryGrid.Columns.Add(this.Oper2Ary);
             this.OperSuperGridControl.PrimaryGrid.Columns.Add(this.Delete);
             this.OperSuperGridControl.PrimaryGrid.MultiSelect = false;
-            this.OperSuperGridControl.Size = new System.Drawing.Size(266, 352);
+            this.OperSuperGridControl.Size = new System.Drawing.Size(266, 292);
             this.OperSuperGridControl.TabIndex = 13;
             // 
             // gridColumn1
             // 
-            this.gridColumn1.ColumnSortMode = DevComponents.DotNetBar.SuperGrid.ColumnSortMode.None;
             this.gridColumn1.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridLabelXEditControl);
             this.gridColumn1.HeaderText = "製程序";
             this.gridColumn1.Name = "Oper1Ary";
             this.gridColumn1.ResizeMode = DevComponents.DotNetBar.SuperGrid.ColumnResizeMode.None;
+            this.gridColumn1.SortCycle = DevComponents.DotNetBar.SuperGrid.SortCycle.AscDesc;
             this.gridColumn1.Width = 50;
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // groupPanel4
+            // 
+            this.groupPanel4.CanvasColor = System.Drawing.SystemColors.Control;
+            this.groupPanel4.ColorSchemeStyle = DevComponents.DotNetBar.eDotNetBarStyle.Office2007;
+            this.groupPanel4.Controls.Add(this.UserDefine);
+            this.groupPanel4.Controls.Add(this.UserDefineProcess);
+            this.groupPanel4.DisabledBackColor = System.Drawing.Color.Empty;
+            this.groupPanel4.Location = new System.Drawing.Point(166, 170);
+            this.groupPanel4.Name = "groupPanel4";
+            this.groupPanel4.Size = new System.Drawing.Size(266, 54);
+            // 
+            // 
+            // 
+            this.groupPanel4.Style.BackColor2SchemePart = DevComponents.DotNetBar.eColorSchemePart.PanelBackground2;
+            this.groupPanel4.Style.BackColorGradientAngle = 90;
+            this.groupPanel4.Style.BackColorSchemePart = DevComponents.DotNetBar.eColorSchemePart.PanelBackground;
+            this.groupPanel4.Style.BorderBottom = DevComponents.DotNetBar.eStyleBorderType.Solid;
+            this.groupPanel4.Style.BorderBottomWidth = 1;
+            this.groupPanel4.Style.BorderColorSchemePart = DevComponents.DotNetBar.eColorSchemePart.PanelBorder;
+            this.groupPanel4.Style.BorderLeft = DevComponents.DotNetBar.eStyleBorderType.Solid;
+            this.groupPanel4.Style.BorderLeftWidth = 1;
+            this.groupPanel4.Style.BorderRight = DevComponents.DotNetBar.eStyleBorderType.Solid;
+            this.groupPanel4.Style.BorderRightWidth = 1;
+            this.groupPanel4.Style.BorderTop = DevComponents.DotNetBar.eStyleBorderType.Solid;
+            this.groupPanel4.Style.BorderTopWidth = 1;
+            this.groupPanel4.Style.CornerDiameter = 4;
+            this.groupPanel4.Style.CornerType = DevComponents.DotNetBar.eCornerType.Rounded;
+            this.groupPanel4.Style.TextAlignment = DevComponents.DotNetBar.eStyleTextAlignment.Center;
+            this.groupPanel4.Style.TextColorSchemePart = DevComponents.DotNetBar.eColorSchemePart.PanelText;
+            this.groupPanel4.Style.TextLineAlignment = DevComponents.DotNetBar.eStyleTextAlignment.Near;
+            // 
+            // 
+            // 
+            this.groupPanel4.StyleMouseDown.CornerType = DevComponents.DotNetBar.eCornerType.Square;
+            // 
+            // 
+            // 
+            this.groupPanel4.StyleMouseOver.CornerType = DevComponents.DotNetBar.eCornerType.Square;
+            this.groupPanel4.TabIndex = 14;
+            this.groupPanel4.Text = "自定義製程";
+            // 
+            // UserDefine
+            // 
+            this.UserDefine.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.UserDefine.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.UserDefine.Location = new System.Drawing.Point(150, 5);
+            this.UserDefine.Name = "UserDefine";
+            this.UserDefine.Size = new System.Drawing.Size(75, 23);
+            this.UserDefine.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.UserDefine.TabIndex = 1;
+            this.UserDefine.Text = "新增";
+            this.UserDefine.Click += new System.EventHandler(this.UserDefine_Click);
+            // 
+            // UserDefineProcess
+            // 
+            // 
+            // 
+            // 
+            this.UserDefineProcess.Border.Class = "TextBoxBorder";
+            this.UserDefineProcess.Border.CornerType = DevComponents.DotNetBar.eCornerType.Square;
+            this.UserDefineProcess.Location = new System.Drawing.Point(28, 5);
+            this.UserDefineProcess.Name = "UserDefineProcess";
+            this.UserDefineProcess.PreventEnterBeep = true;
+            this.UserDefineProcess.Size = new System.Drawing.Size(100, 22);
+            this.UserDefineProcess.TabIndex = 0;
             // 
             // Oper2Ary
             // 
@@ -688,27 +810,12 @@
             this.Delete.HeaderText = "Delete";
             this.Delete.Name = "Delete";
             // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // comboBoxCusName
-            // 
-            this.comboBoxCusName.DisplayMember = "Text";
-            this.comboBoxCusName.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboBoxCusName.FormattingEnabled = true;
-            this.comboBoxCusName.ItemHeight = 16;
-            this.comboBoxCusName.Location = new System.Drawing.Point(49, 6);
-            this.comboBoxCusName.Name = "comboBoxCusName";
-            this.comboBoxCusName.Size = new System.Drawing.Size(198, 22);
-            this.comboBoxCusName.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.comboBoxCusName.TabIndex = 8;
-            // 
             // PEGenerateDlg
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(445, 563);
+            this.Controls.Add(this.groupPanel4);
             this.Controls.Add(this.OperSuperGridControl);
             this.Controls.Add(this.OK);
             this.Controls.Add(this.groupPanel3);
@@ -720,11 +827,13 @@
             this.MinimizeBox = false;
             this.Name = "PEGenerateDlg";
             this.Text = "PE建立檔案架構";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PEGenerateDlg_FormClosing);
             this.Load += new System.EventHandler(this.PEGenerateDlg_Load);
             this.groupPanel1.ResumeLayout(false);
             this.groupPanel1.PerformLayout();
             this.groupPanel2.ResumeLayout(false);
             this.groupPanel3.ResumeLayout(false);
+            this.groupPanel4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -742,8 +851,8 @@
         private DevComponents.DotNetBar.ButtonX OperCreateBtn;
         private DevComponents.DotNetBar.Controls.GroupPanel groupPanel2;
         private DevComponents.DotNetBar.Controls.GroupPanel groupPanel3;
-        private DevComponents.DotNetBar.ButtonX buttonX3;
-        private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxEx3;
+        private DevComponents.DotNetBar.ButtonX OldPartOK;
+        private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxOldPartNo;
         private DevComponents.DotNetBar.LabelX labelX6;
         private DevComponents.DotNetBar.ButtonX OK;
         private System.Windows.Forms.CheckBox check999;
@@ -773,8 +882,13 @@
         private System.Windows.Forms.CheckBox check310;
         private System.Windows.Forms.CheckBox check300;
         private DevComponents.DotNetBar.LabelX labelX4;
-        private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxEx1;
+        private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxOldCusName;
         private DevComponents.DotNetBar.LabelX labelX5;
         private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxCusName;
+        private DevComponents.DotNetBar.Controls.GroupPanel groupPanel4;
+        private DevComponents.DotNetBar.ButtonX UserDefine;
+        private DevComponents.DotNetBar.Controls.TextBoxX UserDefineProcess;
+        private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxOldCusRev;
+        private DevComponents.DotNetBar.LabelX labelX7;
     }
 }

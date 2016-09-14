@@ -1,8 +1,0 @@
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\bin\Debug\NX7_Open_CS_Wizard3.dll
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\bin\Debug\NX7_Open_CS_Wizard3.pdb
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\bin\Debug\Newtonsoft.Json.dll
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\bin\Debug\Newtonsoft.Json.pdb
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\bin\Debug\Newtonsoft.Json.xml
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\obj\Debug\ResolveAssemblyReference.cache
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\obj\Debug\NX7_Open_CS_Wizard3.dll
-D:\GlobalCode\NX7_Open_CS_Wizard3\NX7_Open_CS_Wizard3\obj\Debug\NX7_Open_CS_Wizard3.pdb

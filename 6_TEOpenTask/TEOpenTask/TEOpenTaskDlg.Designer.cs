@@ -274,12 +274,12 @@
             // 
             this.buttonWSelPart.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.buttonWSelPart.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.buttonWSelPart.Location = new System.Drawing.Point(125, 21);
+            this.buttonWSelPart.Location = new System.Drawing.Point(112, 21);
             this.buttonWSelPart.Name = "buttonWSelPart";
-            this.buttonWSelPart.Size = new System.Drawing.Size(59, 23);
+            this.buttonWSelPart.Size = new System.Drawing.Size(96, 23);
             this.buttonWSelPart.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.buttonWSelPart.TabIndex = 0;
-            this.buttonWSelPart.Text = "瀏覽";
+            this.buttonWSelPart.Text = "瀏覽伺服器";
             this.buttonWSelPart.Click += new System.EventHandler(this.buttonWSelPart_Click);
             // 
             // checkWNoBillet
@@ -293,7 +293,7 @@
             this.checkWNoBillet.Size = new System.Drawing.Size(127, 23);
             this.checkWNoBillet.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.checkWNoBillet.TabIndex = 3;
-            this.checkWNoBillet.Text = "無前段工序製程圖";
+            this.checkWNoBillet.Text = "無前段製程圖";
             this.checkWNoBillet.CheckedChanged += new System.EventHandler(this.checkWNoBillet_CheckedChanged);
             // 
             // labelW
@@ -303,9 +303,9 @@
             // 
             // 
             this.labelW.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.labelW.Location = new System.Drawing.Point(190, 21);
+            this.labelW.Location = new System.Drawing.Point(214, 21);
             this.labelW.Name = "labelW";
-            this.labelW.Size = new System.Drawing.Size(192, 23);
+            this.labelW.Size = new System.Drawing.Size(168, 23);
             this.labelW.TabIndex = 2;
             // 
             // checkWHasBillet
@@ -319,7 +319,7 @@
             this.checkWHasBillet.Size = new System.Drawing.Size(127, 23);
             this.checkWHasBillet.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.checkWHasBillet.TabIndex = 1;
-            this.checkWHasBillet.Text = "有前段工序製程圖";
+            this.checkWHasBillet.Text = "有前段製程圖";
             this.checkWHasBillet.CheckedChanged += new System.EventHandler(this.checkWHasBillet_CheckedChanged);
             // 
             // groupBox001
@@ -340,12 +340,12 @@
             // 
             this.button001SelPart.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.button001SelPart.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.button001SelPart.Location = new System.Drawing.Point(90, 21);
+            this.button001SelPart.Location = new System.Drawing.Point(112, 21);
             this.button001SelPart.Name = "button001SelPart";
-            this.button001SelPart.Size = new System.Drawing.Size(59, 23);
+            this.button001SelPart.Size = new System.Drawing.Size(96, 23);
             this.button001SelPart.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.button001SelPart.TabIndex = 2;
-            this.button001SelPart.Text = "瀏覽";
+            this.button001SelPart.Text = "瀏覽伺服器";
             this.button001SelPart.Click += new System.EventHandler(this.button001SelPart_Click);
             // 
             // label001
@@ -355,9 +355,9 @@
             // 
             // 
             this.label001.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.label001.Location = new System.Drawing.Point(155, 21);
+            this.label001.Location = new System.Drawing.Point(214, 21);
             this.label001.Name = "label001";
-            this.label001.Size = new System.Drawing.Size(227, 23);
+            this.label001.Size = new System.Drawing.Size(168, 23);
             this.label001.TabIndex = 3;
             // 
             // check001NoBillet

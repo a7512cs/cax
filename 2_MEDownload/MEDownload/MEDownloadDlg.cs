@@ -26,6 +26,9 @@ namespace MEDownload
         public static List<string> ListSeleOper1 = new List<string>();
         public static string tempServer_MEDownloadPart = "", tempLocal_Folder_CAM = "", tempLocal_Folder_OIS = "";
         public static int IndexofCusName = -1, IndexofPartNo = -1;
+        public static string Server_IPQC = "", Server_SelfCheck = "", Server_IQC = "", Server_FAI = "";
+        public static List<string> ListDownloadPartPath = new List<string>();
+        public static PECreateData cPECreateData = new PECreateData();
 
         #endregion
 
@@ -33,6 +36,18 @@ namespace MEDownload
         {
             InitializeComponent();
 
+            #region 客戶資料填入
+            string[] S_Task_CusName = Directory.GetDirectories(CaxEnv.GetGlobaltekTaskDir());
+            foreach (string item in S_Task_CusName)
+            {
+                comboBoxCusName.Items.Add(Path.GetFileNameWithoutExtension(item));//走訪每個元素只取得目錄名稱(不含路徑)並加入dirlist集合中
+            }
+            PartNocomboBox.Enabled = false;
+            CusRevcomboBox.Enabled = false;
+            Oper1comboBox.Enabled = false;
+            #endregion
+
+            /*
             //取得METEDownloadData資料
             status = CaxGetDatData.GetMETEDownloadData(out cMETEDownloadData);
             if (!status)
@@ -46,16 +61,11 @@ namespace MEDownload
             {
                 comboBoxCusName.Items.Add(cMETEDownloadData.EntirePartAry[i].CusName);
             }
-            
-            //存入下拉選單-料號
-            //for (int i = 0; i < cME_TE_Download.EntirePartAry.Count;i++ )
-            //{
-            //    PartNocomboBox.Items.Add(cME_TE_Download.EntirePartAry[i].PartNo);
-            //}
-
             PartNocomboBox.Enabled = false;
             CusRevcomboBox.Enabled = false;
             Oper1comboBox.Enabled = false;
+            */
+
 
             //取得METEDownload_Upload資料
             status = CaxGetDatData.GetMETEDownload_Upload(out cMETE_Download_Upload_Path);
@@ -85,8 +95,15 @@ namespace MEDownload
             Oper1comboBox.Enabled = false;
             Oper1comboBox.Items.Clear();
             Oper1comboBox.Text = "";
-            
 
+            string S_Task_CusName_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekTaskDir(), CurrentCusName);
+            string[] S_Task_PartNo = Directory.GetDirectories(S_Task_CusName_Path);
+            foreach (string item in S_Task_PartNo)
+            {
+                PartNocomboBox.Items.Add(Path.GetFileNameWithoutExtension(item));//走訪每個元素只取得目錄名稱(不含路徑)並加入dirlist集合中
+            }
+
+            /*
             //比對選擇的客戶取得對應的料號並塞入料號下拉選單中
             for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
             {
@@ -99,6 +116,7 @@ namespace MEDownload
                     }
                 }
             }
+            */
         }
 
         private void PartNocomboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -116,6 +134,14 @@ namespace MEDownload
             Oper1comboBox.Items.Clear();
             Oper1comboBox.Text = "";
 
+            string S_Task_PartNo_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekTaskDir(), CurrentCusName, CurrentPartNo);
+            string[] S_Task_CusRev = Directory.GetDirectories(S_Task_PartNo_Path);
+            foreach (string item in S_Task_CusRev)
+            {
+                CusRevcomboBox.Items.Add(Path.GetFileNameWithoutExtension(item));//走訪每個元素只取得目錄名稱(不含路徑)並加入dirlist集合中
+            }
+
+            /*
             //比對選擇的客戶與料號取得對應的客戶版次並塞入客戶版次下拉選單中
             for (int i = 0; i < cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart.Count; i++ )
             {
@@ -128,6 +154,7 @@ namespace MEDownload
                     }
                 }
             }
+            */
         }
 
         private void CusRevcomboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -141,6 +168,19 @@ namespace MEDownload
             Oper1comboBox.Items.Clear();
             Oper1comboBox.Text = "";
 
+            //取得PECreateData.dat
+            string PECreateData_Path = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekTaskDir(), CurrentCusName, CurrentPartNo, CurrentCusRev, "MODEL", "PECreateData.dat");
+            if (!File.Exists(PECreateData_Path))
+            {
+                CaxLog.ShowListingWindow("此料號沒有舊資料檔案，請檢查PECreateData.dat");
+                return;
+            }
+            CaxPE.ReadPECreateData(PECreateData_Path, out cPECreateData);
+
+            Oper1comboBox.Items.AddRange(cPECreateData.Oper1Ary.ToArray());
+            Oper1comboBox.Items.Add("全部下載");
+
+            /*
             //比對選擇的客戶、料號、版次取得對應的製程序並塞入下拉選單中
             for (int i = 0; i < cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[IndexofPartNo].CusRev.Count; i++ )
             {
@@ -150,6 +190,7 @@ namespace MEDownload
                 }
             }
             Oper1comboBox.Items.Add("全部下載");
+            */
         }
 
         private void Oper1comboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -164,6 +205,10 @@ namespace MEDownload
             string Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr;
             Server_MODEL = cMETE_Download_Upload_Path.Server_MODEL;
             Server_MEDownloadPart = cMETE_Download_Upload_Path.Server_MEDownloadPart;
+            Server_IPQC = cMETE_Download_Upload_Path.Server_IPQC;
+            Server_SelfCheck = cMETE_Download_Upload_Path.Server_SelfCheck;
+            Server_IQC = cMETE_Download_Upload_Path.Server_IQC;
+            Server_FAI = cMETE_Download_Upload_Path.Server_FAI;
 
             //取代字串成正確路徑
             Server_ShareStr = Server_ShareStr.Replace("[Server_IP]", Server_IP);
@@ -174,20 +219,65 @@ namespace MEDownload
             Server_MODEL = Server_MODEL.Replace("[PartNo]", CurrentPartNo);
             Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Server_ShareStr]", Server_ShareStr);
             Server_MEDownloadPart = Server_MEDownloadPart.Replace("[PartNo]", CurrentPartNo);
+            Server_IPQC = Server_IPQC.Replace("[Server_IP]", Server_IP);
+            Server_SelfCheck = Server_SelfCheck.Replace("[Server_IP]", Server_IP);
+            Server_IQC = Server_IQC.Replace("[Server_IP]", Server_IP);
+            Server_FAI = Server_FAI.Replace("[Server_IP]", Server_IP);
 
-            //先判斷客戶檔案是否存在
+            #region 判斷IPQC.xls是否存在
+            if (!File.Exists(Server_IPQC))
+            {
+                listView.Items.Add("IPQC樣板(IPQC.xls)不存在，無法下載");
+                return;
+            }
+            listView.Items.Add("IPQC樣板：" + Path.GetFileName(Server_IPQC));
+            #endregion
+
+            #region 判斷SelfCheck.xls是否存在
+            if (!File.Exists(Server_SelfCheck))
+            {
+                listView.Items.Add("SelfCheck樣板(SelfCheck.xls)不存在，無法下載");
+                return;
+            }
+            listView.Items.Add("SelfCheck樣板：" + Path.GetFileName(Server_SelfCheck));
+            #endregion
+
+            #region 判斷IQC.xls是否存在
+            if (!File.Exists(Server_IQC))
+            {
+                listView.Items.Add("IQC樣板(IQC.xls)不存在，無法下載");
+                return;
+            }
+            listView.Items.Add("IQC樣板：" + Path.GetFileName(Server_IQC));
+            #endregion
+
+            #region 判斷FAI.xls是否存在
+            if (!File.Exists(Server_FAI))
+            {
+                listView.Items.Add("FAI樣板(FAI.xls)不存在，無法下載");
+                return;
+            }
+            listView.Items.Add("FAI樣板：" + Path.GetFileName(Server_FAI));
+            #endregion
+
+            #region 判斷客戶檔案是否存在
             if (!File.Exists(Server_MODEL))
             {
                 listView.Items.Add("客戶檔案不存在，無法下載");
                 return;
             }
             listView.Items.Add("客戶檔案：" + Path.GetFileName(Server_MODEL));
+            #endregion
 
             //暫存一個Server_MEDownloadPart，目的要讓程式每次都能有[Oper1]可取代
             tempServer_MEDownloadPart = Server_MEDownloadPart;
 
-            //將選取到的Oper1紀錄成DicSeleOper1(Key = 製程序,Value = ServerPartPath)
+            #region 將選取到的Oper1紀錄成DicSeleOper1(Key = 製程序,Value = ServerPartPath)
+
             DicSeleOper1 = new Dictionary<string, string>();
+            ListDownloadPartPath = new List<string>();
+
+            
             if (CurrentOper1 == "全部下載")
             {
                 for (int i = 0; i < Oper1comboBox.Items.Count; i++)
@@ -196,6 +286,28 @@ namespace MEDownload
                     {
                         continue;
                     }
+                    //判斷OP資料夾內是否有PartNameText_OIS.txt，如果有，表示有上傳過，則讀取裡面檔案資料進行下載
+                    string PartNameText_OISPath = string.Format(@"{0}\{1}\{2}", Server_ShareStr, "OP" + Oper1comboBox.Items[i].ToString(), "PartNameText_OIS.txt");
+                    if (File.Exists(PartNameText_OISPath))
+                    {
+                        //取得已上傳過的檔案名稱
+                        string[] PartNameText_OISData = System.IO.File.ReadAllLines(PartNameText_OISPath);
+                        //開始記錄每個零件的路徑
+                        foreach (string ii in PartNameText_OISData)
+                        {
+                            Server_MEDownloadPart = string.Format(@"{0}\{1}", Server_ShareStr, ii);
+                            ListDownloadPartPath.Add(Server_MEDownloadPart);
+                        }
+                    }
+                    else
+                    {
+                        Server_MEDownloadPart = tempServer_MEDownloadPart;
+                        Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
+                        ListDownloadPartPath.Add(Server_MEDownloadPart);
+                    }
+
+
+                    /*
                     Server_MEDownloadPart = tempServer_MEDownloadPart;
                     Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
 
@@ -205,17 +317,94 @@ namespace MEDownload
                     {
                         DicSeleOper1.Add(Oper1comboBox.Items[i].ToString(), Server_MEDownloadPart);
                     }
+                    */
                 }
             }
             else
             {
-                Server_MEDownloadPart = tempServer_MEDownloadPart;
-                Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", CurrentOper1);
-                DicSeleOper1.Add(CurrentOper1, Server_MEDownloadPart);
+                //判斷OP資料夾內是否有PartNameText_OIS.txt，如果有，表示有上傳過，則讀取裡面檔案資料進行下載
+                string PartNameText_OISPath = string.Format(@"{0}\{1}\{2}", Server_ShareStr, "OP" + CurrentOper1, "PartNameText_OIS.txt");
+                if (File.Exists(PartNameText_OISPath))
+                {
+                    //取得已上傳過的檔案名稱
+                    string[] PartNameText_OISData = System.IO.File.ReadAllLines(PartNameText_OISPath);
+                    //開始記錄每個零件的路徑
+                    foreach (string i in PartNameText_OISData)
+                    {
+                        Server_MEDownloadPart = string.Format(@"{0}\{1}", Server_ShareStr, i);
+                        ListDownloadPartPath.Add(Server_MEDownloadPart);
+                    }
+                }
+                else
+                {
+                    Server_MEDownloadPart = tempServer_MEDownloadPart;
+                    Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", CurrentOper1);
+                    ListDownloadPartPath.Add(Server_MEDownloadPart);
+                }
             }
 
-            //判斷製程檔案是否存在
-            foreach (KeyValuePair<string,string> kvp in DicSeleOper1)
+
+            /*
+            if (File.Exists(PartNameText_OISPath))
+            {
+                //取得已上傳過的檔案名稱
+                string[] PartNameText_OISData = System.IO.File.ReadAllLines(PartNameText_OISPath);
+                //開始記錄每個零件的路徑
+                foreach (string i in PartNameText_OISData)
+                {
+                    Server_MEDownloadPart = string.Format(@"{0}\{1}", Server_ShareStr, i);
+                    ListDownloadPartPath.Add(Server_MEDownloadPart);
+                    //DicSeleOper1.Add(CurrentOper1, Server_MEDownloadPart);
+                }
+            }
+            else
+            {
+                if (CurrentOper1 == "全部下載")
+                {
+                    for (int i = 0; i < Oper1comboBox.Items.Count; i++)
+                    {
+                        if (Oper1comboBox.Items[i].ToString() == "全部下載")
+                        {
+                            continue;
+                        }
+                        Server_MEDownloadPart = tempServer_MEDownloadPart;
+                        Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
+
+                        string ServerPartPath = "";
+                        status = DicSeleOper1.TryGetValue(Oper1comboBox.Items[i].ToString(), out ServerPartPath);
+                        if (!status)
+                        {
+                            DicSeleOper1.Add(Oper1comboBox.Items[i].ToString(), Server_MEDownloadPart);
+                        }
+                    }
+                }
+                else
+                {
+                    Server_MEDownloadPart = tempServer_MEDownloadPart;
+                    Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", CurrentOper1);
+                    DicSeleOper1.Add(CurrentOper1, Server_MEDownloadPart);
+                }
+            }
+            */
+
+            
+            #endregion
+
+            #region 判斷製程檔案是否存在
+
+            foreach (string i in ListDownloadPartPath)
+            {
+                //判斷Part檔案是否存在
+                if (!File.Exists(i))
+                {
+                    listView.Items.Add("Part檔案" + Path.GetFileName(i) + "不存在，請再次確認");
+                    return;
+                }
+                listView.Items.Add("Part檔案：" + Path.GetFileName(i));
+            }
+
+            /*
+            foreach (KeyValuePair<string, string> kvp in DicSeleOper1)
             {
                 if (!File.Exists(kvp.Value))
                 {
@@ -224,6 +413,10 @@ namespace MEDownload
                 }
                 listView.Items.Add("製程序檔案：" + Path.GetFileName(kvp.Value));
             }
+            */
+
+            #endregion
+            
         }
 
         private void buttonDownload_Click(object sender, EventArgs e)
@@ -245,7 +438,7 @@ namespace MEDownload
             Local_Folder_OIS = Local_Folder_OIS.Replace("[Local_ShareStr]", Local_ShareStr);
 
             #region 建立Local_Folder_MODEL資料夾
-
+            
             if (!File.Exists(Local_Folder_MODEL))
             {
                 try
@@ -262,13 +455,13 @@ namespace MEDownload
             #endregion
 
             #region 複製Server客戶檔案到Local_Folder_MODEL資料夾內
-
+            
             //判斷客戶檔案是否存在
             status = System.IO.File.Exists(Server_MODEL);
             if (!status)
             {
-                MessageBox.Show("指定的檔案不存在，請再次確認");
-                return;
+                CaxLog.ShowListingWindow("指定的檔案不存在，請再次確認");
+                this.Close();
             }
 
             //建立Local_Folder_MODEL資料夾內客戶檔案路徑
@@ -277,9 +470,132 @@ namespace MEDownload
             //判斷是否存在，不存在則開始複製
             if (!File.Exists(Local_CusPartFullPath))
             {
-                File.Copy(Server_MODEL, Local_CusPartFullPath, true);
+                try
+                {
+                    File.Copy(Server_MODEL, Local_CusPartFullPath, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow("客戶檔案複製失敗");
+                    this.Close();
+                }
+                
             }
             
+            #endregion
+
+            #region 複製IPQC.xls到Local_Folder_MODEL資料夾內
+            
+            //判斷IPQC.xls是否存在
+            if (!File.Exists(Server_IPQC))
+            {
+                listView.Items.Add("IPQC樣板(IPQC.xls)不存在，無法下載");
+                return;
+            }
+
+            //建立Local_Folder_MODEL資料夾內客戶檔案路徑
+            string Local_IPQCFullPath = string.Format(@"{0}\{1}", Local_Folder_MODEL, Path.GetFileName(Server_IPQC));
+
+            //判斷是否存在，不存在則開始複製
+            if (!File.Exists(Local_IPQCFullPath))
+            {
+                try
+                {
+                    File.Copy(Server_IPQC, Local_IPQCFullPath, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow("IPQC.xls下載失敗");
+                    this.Close();
+                }
+                
+            }
+            
+            #endregion
+
+            #region 複製SelfCheck.xls到Local_Folder_MODEL資料夾內
+            //判斷SelfCheck.xls是否存在
+            if (!File.Exists(Server_SelfCheck))
+            {
+                listView.Items.Add("SelfCheck樣板(SelfCheck.xls)不存在，無法下載");
+                return;
+            }
+
+            //建立Local_Folder_MODEL資料夾內客戶檔案路徑
+            string Local_SelfCheckFullPath = string.Format(@"{0}\{1}", Local_Folder_MODEL, Path.GetFileName(Server_SelfCheck));
+
+            //判斷是否存在，不存在則開始複製
+            if (!File.Exists(Local_SelfCheckFullPath))
+            {
+                try
+                {
+                    File.Copy(Server_SelfCheck, Local_SelfCheckFullPath, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow("SelfCheck.xls下載失敗");
+                    this.Close();
+                }
+                
+            }
+            #endregion
+
+            #region 複製IQC.xls到Local_Folder_MODEL資料夾內
+
+            //判斷IPQC.xls是否存在
+            if (!File.Exists(Server_IQC))
+            {
+                listView.Items.Add("IQC樣板(IQC.xls)不存在，無法下載");
+                return;
+            }
+
+            //建立Local_Folder_MODEL資料夾內客戶檔案路徑
+            string Local_IQCFullPath = string.Format(@"{0}\{1}", Local_Folder_MODEL, Path.GetFileName(Server_IQC));
+
+            //判斷是否存在，不存在則開始複製
+            if (!File.Exists(Local_IQCFullPath))
+            {
+                try
+                {
+                    File.Copy(Server_IQC, Local_IQCFullPath, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow("IQC.xls複製失敗");
+                    this.Close();
+                }
+                
+            }
+
+            #endregion
+
+            #region 複製FAI.xls到Local_Folder_MODEL資料夾內
+
+            //判斷IPQC.xls是否存在
+            if (!File.Exists(Server_FAI))
+            {
+                listView.Items.Add("FAI樣板(FAI.xls)不存在，無法下載");
+                return;
+            }
+
+            //建立Local_Folder_MODEL資料夾內客戶檔案路徑
+            string Local_FAIFullPath = string.Format(@"{0}\{1}", Local_Folder_MODEL, Path.GetFileName(Server_FAI));
+
+            //判斷是否存在，不存在則開始複製
+            if (!File.Exists(Local_FAIFullPath))
+            {
+                try
+                {
+                    File.Copy(Server_FAI, Local_FAIFullPath, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow("FAI.xls複製失敗");
+                    this.Close();
+                }
+
+            }
+
             #endregion
 
             #region 建立Local_Folder_CAM、Local_Folder_OIS資料夾
@@ -288,6 +604,76 @@ namespace MEDownload
             tempLocal_Folder_CAM = Local_Folder_CAM;
             tempLocal_Folder_OIS = Local_Folder_OIS;
 
+            if (CurrentOper1 == "全部下載")
+            {
+                for (int i = 0; i < Oper1comboBox.Items.Count; i++)
+                {
+                    if (Oper1comboBox.Items[i].ToString() == "全部下載")
+                    {
+                        continue;
+                    }
+                    Local_Folder_CAM = tempLocal_Folder_CAM;
+                    Local_Folder_OIS = tempLocal_Folder_OIS;
+                    Local_Folder_CAM = Local_Folder_CAM.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
+                    Local_Folder_OIS = Local_Folder_OIS.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
+                    if (!File.Exists(Local_Folder_CAM))
+                    {
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory(Local_Folder_CAM);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString());
+                            return;
+                        }
+                    }
+                    if (!File.Exists(Local_Folder_OIS))
+                    {
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory(Local_Folder_OIS);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString());
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Local_Folder_CAM = tempLocal_Folder_CAM;
+                Local_Folder_OIS = tempLocal_Folder_OIS;
+                Local_Folder_CAM = Local_Folder_CAM.Replace("[Oper1]", CurrentOper1);
+                Local_Folder_OIS = Local_Folder_OIS.Replace("[Oper1]", CurrentOper1);
+                if (!File.Exists(Local_Folder_CAM))
+                {
+                    try
+                    {
+                        System.IO.Directory.CreateDirectory(Local_Folder_CAM);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString());
+                        return;
+                    }
+                }
+                if (!File.Exists(Local_Folder_OIS))
+                {
+                    try
+                    {
+                        System.IO.Directory.CreateDirectory(Local_Folder_OIS);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString());
+                        return;
+                    }
+                }
+            }
+            /*
             //DicSeleOper1(Key = 製程序,Value = ServerPartPath)
             foreach (KeyValuePair<string,string> kvp in DicSeleOper1)
             {
@@ -320,16 +706,53 @@ namespace MEDownload
                     }
                 }
             }
-
+            */
             #endregion
             
-            #region 複製Server製程序檔案到Local資料夾內
+            #region 複製ServerPart檔案到Local資料夾內
+            foreach (string i in ListDownloadPartPath)
+            {
+                //判斷Part檔案是否存在
+                if (!File.Exists(i))
+                {
+                    CaxLog.ShowListingWindow("製程序檔案" + Path.GetFileName(i) + "不存在，請再次確認");
+                    //MessageBox.Show("製程序檔案" + Path.GetFileName(i) + "不存在，請再次確認");
+                    this.Close();
+                }
+                //建立Local_ShareStr資料夾內製程序檔案路徑
+                string Local_Oper1PartFullPath = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileName(i));
+                //開始複製
+                try
+                {
+                    File.Copy(i, Local_Oper1PartFullPath, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow(Path.GetFileName(i) + "下載失敗");
+                    this.Close();
+                }
+            }
 
+            /*
             foreach (KeyValuePair<string,string> kvp in DicSeleOper1)
             {
                 //判斷製程序檔案是否存在
-                Server_MEDownloadPart = tempServer_MEDownloadPart;
-                Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", kvp.Key);
+                //Server_MEDownloadPart = tempServer_MEDownloadPart;
+                //Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", kvp.Key);
+                status = System.IO.File.Exists(kvp.Value);
+                if (!status)
+                {
+                    MessageBox.Show("製程序檔案" + Path.GetFileName(kvp.Value) + "不存在，請再次確認");
+                    return;
+                }
+
+                //建立Local_ShareStr資料夾內製程序檔案路徑
+                string Local_Oper1PartFullPath = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileName(kvp.Value));
+
+                //開始複製
+                File.Copy(kvp.Value, Local_Oper1PartFullPath, true);
+
+                
                 status = System.IO.File.Exists(Server_MEDownloadPart);
                 if (!status)
                 {
@@ -342,7 +765,9 @@ namespace MEDownload
 
                 //開始複製
                 File.Copy(Server_MEDownloadPart, Local_Oper1PartFullPath, true);
+                
             }
+            */
 
             #endregion
 
@@ -380,15 +805,6 @@ namespace MEDownload
             //CaxPart.Save();
 
         }
-
-        
-
-
-
-
-
-
-
 
     }
 }

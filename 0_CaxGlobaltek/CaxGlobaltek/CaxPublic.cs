@@ -5,6 +5,8 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Windows.Forms;
 using NXOpen;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace CaxGlobaltek
 {
@@ -14,9 +16,17 @@ namespace CaxGlobaltek
     {
         public string Server_IP { get; set; }
         public string Server_ShareStr { get; set; }
-        public string Server_MODEL { get; set; }
+        public string Server_Folder_MODEL { get; set; }
+        public string Server_Folder_CAM { get; set; }
+        public string Server_Folder_OIS { get; set; }
         public string Server_MEDownloadPart { get; set; }
         public string Server_TEDownloadPart { get; set; }
+        public string Server_ShopDoc { get; set; }
+        public string Server_IPQC { get; set; }
+        public string Server_SelfCheck { get; set; }
+        public string Server_IQC { get; set; }
+        public string Server_FAI { get; set; }
+        public string Server_FQC { get; set; }
         public string Local_IP { get; set; }
         public string Local_ShareStr { get; set; }
         public string Local_Folder_MODEL { get; set; }
@@ -32,6 +42,7 @@ namespace CaxGlobaltek
     {
         public string RevNo { get; set; }
         public List<string> OperAry1 { get; set; }
+        public List<string> OperAry2 { get; set; }
     }
 
     public class CusPart
@@ -168,6 +179,18 @@ namespace CaxGlobaltek
     {
         public List<DraftingCoordinate> DraftingCoordinate { get; set; }
     }
+    #endregion
+
+    #region PartInfo 取得客戶、料號、客戶版次、製程序資料
+
+    public struct PartInfo
+    {
+        public static string CusName { get; set; }
+        public static string PartNo { get; set; }
+        public static string CusRev { get; set; }
+        public static string OpNum { get; set; }
+    }
+
     #endregion
 
     public class CaxPublic
@@ -320,18 +343,21 @@ namespace CaxGlobaltek
         }
 
         /// <summary>
-        /// 預設為Part檔，使用者可自行定義，fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)
+        /// fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)，defaultPath=預設開啟路徑，filter=預設為Part檔，使用者可自行定義，
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="filePath"></param>
+        /// <param name="defaultPath"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public static bool OpenFileDialog(out string fileName, out string filePath, string filter = "Part Files (*.prt)|*.prt|All Files (*.*)|*.*")
+        public static bool OpenFileDialog(out string fileName, out string filePath, string defaultPath = "", string filter = "Part Files (*.prt)|*.prt|All Files (*.*)|*.*")
         {
             fileName = "";
             filePath = "";
             try
             {
                 OpenFileDialog cOpenFileDialog = new OpenFileDialog();
+                cOpenFileDialog.InitialDirectory = defaultPath;
                 cOpenFileDialog.Filter = filter;
                 DialogResult result = cOpenFileDialog.ShowDialog();
                 if (result == DialogResult.OK)
@@ -473,6 +499,202 @@ namespace CaxGlobaltek
                 }
 
                 cCoordinateData = JsonConvert.DeserializeObject<CoordinateData>(jsonText);
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取得dat每一行的資料
+        /// </summary>
+        /// <param name="TxtPath">Dat的路徑</param>
+        /// <param name="IndexToRead">想要從哪一行開始抓取</param>
+        /// <param name="TxtData">抓取的資料</param>
+        /// <returns></returns>
+        public static bool ReadFileData(string DatPath, int IndexToRead, out string[] DatData)
+        {
+            DatData = new string[] { };
+            try
+            {
+                List<string> tempDataStr = new List<string>();
+                string[] TemplatePostData = System.IO.File.ReadAllLines(DatPath);
+                if (TemplatePostData.Length == 0)
+                {
+                    CaxLog.ShowListingWindow(Path.GetFileName(DatPath) + "資料為空，請檢查");
+                    DatData = new string[] { };
+                    return false;
+                }
+                DatData = new string[TemplatePostData.Length];
+                for (int i = 0; i < TemplatePostData.Length; i++)
+                {
+                    if (i >= IndexToRead)
+                    {
+                        tempDataStr.Add(TemplatePostData[i]);
+                    }
+                }
+                DatData = tempDataStr.ToArray();
+            }
+            catch (System.Exception ex)
+            {
+                DatData = new string[] { };
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 複製目錄到指定路徑，參數copySubDirs為是否複製子目錄內的檔案
+        /// </summary>
+        /// <param name="sourceDirName">原始目錄路徑</param>
+        /// <param name="destDirName">目的地目錄路徑</param>
+        /// <param name="copySubDirs">是否進行遞迴複製子目錄內的檔案</param>
+        /// <returns></returns>
+        public static bool DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            try
+            {
+                // Get the subdirectories for the specified directory.
+                DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+                if (!dir.Exists)
+                {
+                    throw new DirectoryNotFoundException(
+                        "Source directory does not exist or could not be found: "
+                        + sourceDirName);
+                }
+
+                DirectoryInfo[] dirs = dir.GetDirectories();
+                // If the destination directory doesn't exist, create it.
+                if (!Directory.Exists(destDirName))
+                {
+                    Directory.CreateDirectory(destDirName);
+                }
+
+                // Get the files in the directory and copy them to the new location.
+                FileInfo[] files = dir.GetFiles();
+                foreach (FileInfo file in files)
+                {
+                    string temppath = Path.Combine(destDirName, file.Name);
+                    file.CopyTo(temppath, false);
+                }
+
+                // If copying subdirectories, copy them and their contents to new location.
+                if (copySubDirs)
+                {
+                    foreach (DirectoryInfo subdir in dirs)
+                    {
+                        string temppath = Path.Combine(destDirName, subdir.Name);
+                        DirectoryCopy(subdir.FullName, temppath, copySubDirs);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 取得此料號所有資料的Server&Local路徑
+        /// </summary>
+        /// <param name="user">當前的工程師(輸入ME或TE)</param>
+        /// <param name="displayPartFullPath">此料號的全路徑</param>
+        /// <param name="cMETE_Download_Upload_Path">輸出路徑</param>
+        /// <returns></returns>
+        public static bool GetAllPath(string user, string displayPartFullPath, ref METE_Download_Upload_Path cMETE_Download_Upload_Path)
+        {
+            try
+            {
+                string PartFullPath = displayPartFullPath;
+                string[] SplitPath = PartFullPath.Split('\\');
+                PartInfo.CusName = SplitPath[3];
+                PartInfo.PartNo = SplitPath[4];
+                PartInfo.CusRev = SplitPath[5];
+
+                if (user == "ME")
+                {
+                    PartInfo.OpNum = Path.GetFileNameWithoutExtension(displayPartFullPath).Split(new string[] { "OIS" }, StringSplitOptions.RemoveEmptyEntries)[1];
+                }
+                else if (user == "TE")
+                {
+                    PartInfo.OpNum = Regex.Replace(Path.GetFileNameWithoutExtension(displayPartFullPath).Split('_')[1], "[^0-9]", "");
+                }
+
+                //Server路徑
+                cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[CusName]", PartInfo.CusName);
+                cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[PartNo]", PartInfo.PartNo);
+                cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[CusRev]", PartInfo.CusRev);
+                cMETE_Download_Upload_Path.Server_Folder_MODEL = cMETE_Download_Upload_Path.Server_Folder_MODEL.Replace("[Server_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
+                cMETE_Download_Upload_Path.Server_Folder_CAM = cMETE_Download_Upload_Path.Server_Folder_CAM.Replace("[Server_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
+                cMETE_Download_Upload_Path.Server_Folder_CAM = cMETE_Download_Upload_Path.Server_Folder_CAM.Replace("[Oper1]", PartInfo.OpNum);
+                cMETE_Download_Upload_Path.Server_Folder_OIS = cMETE_Download_Upload_Path.Server_Folder_OIS.Replace("[Server_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
+                cMETE_Download_Upload_Path.Server_Folder_OIS = cMETE_Download_Upload_Path.Server_Folder_OIS.Replace("[Oper1]", PartInfo.OpNum);
+                cMETE_Download_Upload_Path.Server_MEDownloadPart = cMETE_Download_Upload_Path.Server_MEDownloadPart.Replace("[Server_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
+                cMETE_Download_Upload_Path.Server_MEDownloadPart = cMETE_Download_Upload_Path.Server_MEDownloadPart.Replace("[PartNo]", PartInfo.PartNo);
+                cMETE_Download_Upload_Path.Server_MEDownloadPart = cMETE_Download_Upload_Path.Server_MEDownloadPart.Replace("[Oper1]", PartInfo.OpNum);
+                cMETE_Download_Upload_Path.Server_TEDownloadPart = cMETE_Download_Upload_Path.Server_TEDownloadPart.Replace("[Server_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
+                cMETE_Download_Upload_Path.Server_TEDownloadPart = cMETE_Download_Upload_Path.Server_TEDownloadPart.Replace("[PartNo]", PartInfo.PartNo);
+                cMETE_Download_Upload_Path.Server_TEDownloadPart = cMETE_Download_Upload_Path.Server_TEDownloadPart.Replace("[Oper1]", PartInfo.OpNum);
+                cMETE_Download_Upload_Path.Server_ShopDoc = cMETE_Download_Upload_Path.Server_ShopDoc.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                cMETE_Download_Upload_Path.Server_IPQC = cMETE_Download_Upload_Path.Server_IPQC.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                cMETE_Download_Upload_Path.Server_SelfCheck = cMETE_Download_Upload_Path.Server_SelfCheck.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                cMETE_Download_Upload_Path.Server_IQC = cMETE_Download_Upload_Path.Server_IQC.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                cMETE_Download_Upload_Path.Server_FAI = cMETE_Download_Upload_Path.Server_FAI.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                cMETE_Download_Upload_Path.Server_FQC = cMETE_Download_Upload_Path.Server_FQC.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
+                //Local路徑
+                cMETE_Download_Upload_Path.Local_ShareStr = cMETE_Download_Upload_Path.Local_ShareStr.Replace("[Local_IP]", cMETE_Download_Upload_Path.Local_IP);
+                cMETE_Download_Upload_Path.Local_ShareStr = cMETE_Download_Upload_Path.Local_ShareStr.Replace("[CusName]", PartInfo.CusName);
+                cMETE_Download_Upload_Path.Local_ShareStr = cMETE_Download_Upload_Path.Local_ShareStr.Replace("[PartNo]", PartInfo.PartNo);
+                cMETE_Download_Upload_Path.Local_ShareStr = cMETE_Download_Upload_Path.Local_ShareStr.Replace("[CusRev]", PartInfo.CusRev);
+                cMETE_Download_Upload_Path.Local_Folder_MODEL = cMETE_Download_Upload_Path.Local_Folder_MODEL.Replace("[Local_ShareStr]", cMETE_Download_Upload_Path.Local_ShareStr);
+
+                if (user == "ME")
+                {
+                    cMETE_Download_Upload_Path.Local_Folder_OIS = cMETE_Download_Upload_Path.Local_Folder_OIS.Replace("[Local_ShareStr]", cMETE_Download_Upload_Path.Local_ShareStr);
+                    cMETE_Download_Upload_Path.Local_Folder_OIS = cMETE_Download_Upload_Path.Local_Folder_OIS.Replace("[Oper1]", PartInfo.OpNum);
+                }
+                else if (user == "TE")
+                {
+                    cMETE_Download_Upload_Path.Local_Folder_CAM = cMETE_Download_Upload_Path.Local_Folder_CAM.Replace("[Local_ShareStr]", cMETE_Download_Upload_Path.Local_ShareStr);
+                    cMETE_Download_Upload_Path.Local_Folder_CAM = cMETE_Download_Upload_Path.Local_Folder_CAM.Replace("[Oper1]", PartInfo.OpNum);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 適用於所有Json檔案的讀取
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="JsonDatLoadPath"></param>
+        /// <param name="JsonRead"></param>
+        /// <returns></returns>
+        public static bool ReadJsonData<T>(string JsonDatLoadPath, out T JsonRead)
+        {
+            JsonRead = default(T);
+            try
+            {
+                bool status = false;
+                if (!System.IO.File.Exists(JsonDatLoadPath))
+                {
+                    return false;
+                }
+                string jsonText = "";
+                status = ReadFileDataUTF8(JsonDatLoadPath, out jsonText);
+                if (!status)
+                {
+                    return false;
+                }
+                JsonRead = JsonConvert.DeserializeObject<T>(jsonText);
             }
             catch (System.Exception ex)
             {

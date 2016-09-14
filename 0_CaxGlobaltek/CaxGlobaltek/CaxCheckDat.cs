@@ -89,7 +89,7 @@ namespace CaxGlobaltek
                 string METEDownloadData_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekTaskDir(), METEDownloadData_dat);
                 if (!System.IO.File.Exists(METEDownloadData_Path))
                 {
-                    MessageBox.Show("METEDownloadDat.dat不存在");
+                    MessageBox.Show("METEDownloadData.dat不存在");
                     return false;
                 }
             }
@@ -132,7 +132,7 @@ namespace CaxGlobaltek
             try
             {
                 string ControlerConfig_dat = "ControlerConfig.dat";
-                string ControlerConfig_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekEnvDir(), "TE_Config", ControlerConfig_dat);
+                string ControlerConfig_Path = string.Format(@"{0}\{1}\{2}{3}", CaxEnv.GetGlobaltekEnvDir(), "TE_Config", "Config", ControlerConfig_dat);
                 if (!System.IO.File.Exists(ControlerConfig_Path))
                 {
                     MessageBox.Show("ControlerConfig.dat不存在");

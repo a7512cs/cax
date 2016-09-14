@@ -4,6 +4,7 @@ using NXOpen.UF;
 using PEGenerateFile;
 using System.Windows.Forms;
 using CaxGlobaltek;
+using NXOpenUI;
 
 public class Program
 {
@@ -47,6 +48,7 @@ public class Program
             //TODO: Add your application code here 
             bool status;
 
+            
             //取得CustomerName配置檔
             //string CustomerName_dat = "CustomerName.dat";
             //string CustomerNameDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), CustomerName_dat);
@@ -56,7 +58,7 @@ public class Program
                 MessageBox.Show("取得CustomerNameDatPath失敗");
                 return retValue;
             }
-
+            
             //取得OperationArray配置檔
             //string OperationArray_dat = "OperationArray.dat";
             //string OperationArrayDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), OperationArray_dat);
@@ -67,8 +69,11 @@ public class Program
                 return retValue;
             }
 
-            PEGenerateDlg PEGenerateFileDialog = new PEGenerateDlg();
-            PEGenerateFileDialog.ShowDialog();
+            Application.EnableVisualStyles();
+            PEGenerateDlg cPEGenerateDlg = new PEGenerateDlg();
+            FormUtilities.ReparentForm(cPEGenerateDlg);
+            System.Windows.Forms.Application.Run(cPEGenerateDlg);
+            cPEGenerateDlg.Dispose();
 
             theProgram.Dispose();
         }

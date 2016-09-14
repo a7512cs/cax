@@ -32,13 +32,50 @@ namespace PEGenerateFile
         public static string PartNo = "";
         public static string CusRev = "";
         public static string PartPath = "-1";
-        public static Dictionary<string, PE_OutPutDat> DicDataSave = new Dictionary<string, PE_OutPutDat>();
-
-
+        public static Dictionary<string, PECreateData> DicDataSave = new Dictionary<string, PECreateData>();
+        public static METEDownloadData cMETEDownloadData = new METEDownloadData();
+        public static string CurrentOldCusName = "", CurrentOldPartNo = "", CurrentOldCusRev = "";
+        public static int IndexofCusName = -1, IndexofPartNo = -1, IndexofCusRev = -1;
+        public static bool Is_OldPart = false;
+        public static List<string> ListAddOper = new List<string>();
+        public static PECreateData cPECreateData = new PECreateData();
 
         public PEGenerateDlg()
         {
             InitializeComponent();
+
+            #region 舊客戶資料填入
+            string[] S_Task_CusName = Directory.GetDirectories(CaxEnv.GetGlobaltekTaskDir());
+            if (S_Task_CusName.Length == 0)
+            {
+                comboBoxOldCusName.Items.Add("沒有舊資料");
+            }
+            else
+            {
+                foreach (string item in S_Task_CusName)
+                {
+                    comboBoxOldCusName.Items.Add(Path.GetFileNameWithoutExtension(item));//走訪每個元素只取得目錄名稱(不含路徑)並加入dirlist集合中
+                }
+            }
+            comboBoxOldPartNo.Enabled = false;
+            comboBoxOldCusRev.Enabled = false;
+            #endregion
+
+
+            /*
+            #region 舊客戶資料填入
+            //取得METEDownloadData資料
+            CaxGetDatData.GetMETEDownloadData(out cMETEDownloadData);
+            //存入下拉選單-客戶
+            for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
+            {
+                comboBoxOldCusName.Items.Add(cMETEDownloadData.EntirePartAry[i].CusName);
+            }
+            comboBoxOldPartNo.Enabled = false;
+            comboBoxOldCusRev.Enabled = false;
+
+            #endregion
+            */
 
             //取得CustomerName配置檔
             string CustomerName_dat = "CustomerName.dat";
@@ -54,16 +91,16 @@ namespace PEGenerateFile
             //取得OperationArray配置檔
             string OperationArray_dat = "OperationArray.dat";
             string OperationArrayDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), OperationArray_dat);
-            
+
             //讀取OperationArray配置檔內容，並存入結構中
             CaxPE.ReadOperationArrayData(OperationArrayDatPath, out cOperationArray);
+
+            //將Operation2Array塞入陣列Oper2StringAry中
+            Oper2StringAry = cOperationArray.Operation2Array.ToArray();
             
             //建立GridPanel
             panel = OperSuperGridControl.PrimaryGrid;
             
-            //將Operation2Array塞入陣列Oper2StringAry中
-            Oper2StringAry = cOperationArray.Operation2Array.ToArray();
-
             //設定製程別的基礎型態與數據
             panel.Columns["Oper2Ary"].EditorType = typeof(PEComboBox);
             panel.Columns["Oper2Ary"].EditorParams = new object[] { Oper2StringAry };
@@ -289,7 +326,8 @@ namespace PEGenerateFile
 
         private void SelectPartFileBtn_Click(object sender, EventArgs e)
         {
-            openFileDialog1.InitialDirectory = @"D:\Globaltek";
+            //初始路徑
+            //openFileDialog1.InitialDirectory = @"C:";
 
             openFileDialog1.Filter = "Part Files (*.prt)|*.prt|All Files (*.*)|*.*";
             DialogResult result = openFileDialog1.ShowDialog();
@@ -299,462 +337,817 @@ namespace PEGenerateFile
                 labelPartFileName.Text = openFileDialog1.SafeFileName;
                 //取得檔案完整路徑(路徑+檔名+副檔名)
                 PartPath = openFileDialog1.FileName;
-                
-                //MessageBox.Show(textPartFileName.Text);
+                //開啟選擇的檔案
+                CaxPart.OpenBaseDisplay(PartPath);
             }
             
         }
 
         private void OK_Click(object sender, EventArgs e)
         {
+            //先關閉所有檔案
+            CaxPart.CloseAllParts();
 
-            #region 取得客戶名稱
-
-            CusName = comboBoxCusName.Text;
-            if (CusName == "")
+            try
             {
-                MessageBox.Show("尚未填寫客戶！");
-                return;
-            }
-
-            #endregion
-
-            #region 取得料號
-
-            PartNo = textPartNo.Text;
-            if (PartNo == "")
-            {
-                MessageBox.Show("尚未填寫料號！");
-                return;
-            }
-
-            #endregion
-
-            #region 取得客戶版次
-
-            CusRev = textCusRev.Text;
-            if (CusRev == "")
-            {
-                MessageBox.Show("尚未填寫客戶版次！");
-                return;
-            }
-
-            #endregion
-
-            #region 取得檔案路徑
-
-            if (PartPath == "-1")
-            {
-                MessageBox.Show("尚未選擇客戶檔案！");
-                return;
-            }
-
-            #endregion
-
-            #region 定義根目錄
-
-            //定義MODEL資料夾路徑
-            string ModelFolderFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", CusName, PartNo, CusRev.ToUpper(), "MODEL");
-            
-            //定義總組立檔案名稱
-            string AsmCompFileFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", CusName, PartNo, CusRev.ToUpper(), PartNo + "_MOT.prt");
-
-            //定義CAM資料夾路徑、OIS資料夾路徑、三階檔案路徑
-            string CAMFolderPath = "", OISFolderPath = "", ThridOperPartPath = "";
-
-            #endregion
-
-            #region 建立MODEL資料夾
-
-            if (!File.Exists(ModelFolderFullPath))
-            {
-                try
+                if (Is_OldPart == true)
                 {
-                    System.IO.Directory.CreateDirectory(ModelFolderFullPath);
-                }
-                catch (System.Exception ex)
-                {
-                    MessageBox.Show(ex.ToString());
-                    return;
-                }
-            }
+                    //定義總組立檔案、二階檔案、三階檔案名稱
+                    string AsmCompFileFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", comboBoxOldCusName.Text, comboBoxOldPartNo.Text, comboBoxOldCusRev.Text.ToUpper(), comboBoxOldPartNo.Text + "_MOT.prt");
+                    string SecondFileFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", comboBoxOldCusName.Text, comboBoxOldPartNo.Text, comboBoxOldCusRev.Text.ToUpper(), comboBoxOldPartNo.Text + "_OP" + "[Oper1]" + ".prt");
+                    string ThirdFileFullPath_OIS = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", comboBoxOldCusName.Text, comboBoxOldPartNo.Text, comboBoxOldCusRev.Text.ToUpper(), comboBoxOldPartNo.Text + "_OIS" + "[Oper1]" + ".prt");
+                    string ThirdFileFullPath_CAM = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", comboBoxOldCusName.Text, comboBoxOldPartNo.Text, comboBoxOldCusRev.Text.ToUpper(), comboBoxOldPartNo.Text + "_OP" + "[Oper1]" + "_CAM.prt");
+                    string OPFolderPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", comboBoxOldCusName.Text, comboBoxOldPartNo.Text, comboBoxOldCusRev.Text.ToUpper(), "OP" + "[Oper1]");
+                    string tempSecondFileFullPath = SecondFileFullPath;
+                    string tempThirdFileFullPath_OIS = ThirdFileFullPath_OIS;
+                    string tempThirdFileFullPath_CAM = ThirdFileFullPath_CAM;
+                    string tempOPFolderPath = OPFolderPath;
 
-            #endregion
 
-            #region 複製客戶檔案到MODEL資料夾內
-
-            //判斷客戶的檔案是否存在
-            status = System.IO.File.Exists(PartPath);
-            if (!status)
-            {
-                MessageBox.Show("指定的檔案不存在，請再次確認");
-                return;
-            }
-
-            //建立MODEL資料夾內客戶檔案路徑
-            string CustomerPartFullPath = string.Format(@"{0}\{1}", ModelFolderFullPath, PartNo + ".prt");
-
-            //開始複製
-            File.Copy(PartPath, CustomerPartFullPath, true);
-
-            #endregion
-            
-            #region 將值儲存起來(未存完)
-
-            PE_OutPutDat cPE_OutPutDat = new PE_OutPutDat();
-            cPE_OutPutDat.CusName = CusName;
-            cPE_OutPutDat.PartNo = PartNo;
-            cPE_OutPutDat.CusRev = CusRev.ToUpper();
-            cPE_OutPutDat.PartPath = PartPath;
-            cPE_OutPutDat.ListOperation = new List<Operation>();
-            Operation cOperation = new Operation();
-            cPE_OutPutDat.Oper1Ary = new List<string>();
-            cPE_OutPutDat.Oper2Ary = new List<string>(); 
-            for (int i = 0; i < panel.Rows.Count; i++)
-            {
-                if (panel.Rows.Count == 0)
-                {
-                    MessageBox.Show("尚未選擇製程序與製程別！");
-                    return;
-                }
-
-                if (panel.GetCell(i, 1).Value.ToString() == "")
-                {
-                    MessageBox.Show("製程序" + panel.GetCell(i, 0).Value + "尚未選取製程別！");
-                    return;
-                }
-
-                cOperation = new Operation();
-                cOperation.Oper1 = panel.GetCell(i, 0).Value.ToString();
-                cOperation.Oper2 = panel.GetCell(i, 1).Value.ToString();
-
-                //建立CAM資料夾路徑
-                CAMFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "CAM");
-
-                //儲存CAM資料夾路徑
-                cOperation.CAMFolderPath = CAMFolderPath;
-
-                //建立CAM資料夾
-                if (!File.Exists(CAMFolderPath))
-                {
-                    try
+                    #region 開啟總組立
+                    if (File.Exists(AsmCompFileFullPath))
                     {
-                        System.IO.Directory.CreateDirectory(CAMFolderPath);
+                        //組件存在，直接開啟任務組立
+                        BasePart newAsmPart;
+                        status = CaxPart.OpenBaseDisplay(AsmCompFileFullPath, out newAsmPart);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("組立開啟失敗，料號不可有中文字！");
+                            return;
+                        }
                     }
-                    catch (System.Exception ex)
+                    else
                     {
-                        MessageBox.Show(ex.ToString());
+                        CaxLog.ShowListingWindow("開啟失敗：找不到總組立" + Path.GetFileNameWithoutExtension(AsmCompFileFullPath));
                         return;
                     }
-                }
+                    #endregion
 
-                //建立OIS資料夾路徑
-                OISFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "OIS");
-
-                //儲存OIS資料夾路徑
-                cOperation.OISFolderPath = OISFolderPath;
-
-                //建立OIS資料夾
-                if (!File.Exists(OISFolderPath))
-                {
-                    try
+                    #region 建立新插入的製程
+                    NXOpen.Assemblies.Component tempComp;
+                    
+                    foreach (string i in ListAddOper)
                     {
-                        System.IO.Directory.CreateDirectory(OISFolderPath);
+                        //設定一階為WorkComp
+                        CaxAsm.SetWorkComponent(null);
+
+                        //建立二階檔案
+                        SecondFileFullPath = tempSecondFileFullPath;
+                        SecondFileFullPath = SecondFileFullPath.Replace("[Oper1]", i);
+                        status = CaxAsm.CreateNewEmptyComp(SecondFileFullPath, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("建立二階製程檔失敗");
+                            return;
+                        }
+
+                        //取得二階所有comp
+                        List<NXOpen.Assemblies.Component> ChildenComp = new List<NXOpen.Assemblies.Component>();
+                        CaxAsm.GetCompChildren(out ChildenComp);
+
+                        foreach (NXOpen.Assemblies.Component ii in ChildenComp)
+                        {
+                            if (ii.Name == Path.GetFileNameWithoutExtension(SecondFileFullPath).ToUpper())
+                            {
+                                CaxAsm.SetWorkComponent(ii);
+                            }
+                        }
+
+                        //建立三階檔案
+                        ThirdFileFullPath_OIS = tempThirdFileFullPath_OIS;
+                        ThirdFileFullPath_CAM = tempThirdFileFullPath_CAM;
+
+                        ThirdFileFullPath_OIS = ThirdFileFullPath_OIS.Replace("[Oper1]", i);
+                        ThirdFileFullPath_CAM = ThirdFileFullPath_CAM.Replace("[Oper1]", i);
+                        status = CaxAsm.CreateNewEmptyComp(ThirdFileFullPath_OIS, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("建立三階OIS檔失敗");
+                            return;
+                        }
+                        status = CaxAsm.CreateNewEmptyComp(ThirdFileFullPath_CAM, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("建立三階CAM檔失敗");
+                            return;
+                        }
                     }
-                    catch (System.Exception ex)
+                    #endregion
+
+                    #region 建立新插入的製程資料夾
+                    foreach (string i in ListAddOper)
                     {
-                        MessageBox.Show(ex.ToString());
+                        OPFolderPath = tempOPFolderPath;
+                        OPFolderPath = OPFolderPath.Replace("[Oper1]", i);
+                        string OISFolderPath = string.Format(@"{0}\{1}", OPFolderPath, "OIS");
+                        string CAMFolderPath = string.Format(@"{0}\{1}", OPFolderPath, "CAM");
+
+                        if (!File.Exists(OISFolderPath))
+                        {
+                            try
+                            {
+                                System.IO.Directory.CreateDirectory(OISFolderPath);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                MessageBox.Show(ex.ToString());
+                                return;
+                            }
+                        }
+                        if (!File.Exists(CAMFolderPath))
+                        {
+                            try
+                            {
+                                System.IO.Directory.CreateDirectory(CAMFolderPath);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                MessageBox.Show(ex.ToString());
+                                return;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region 將值儲存起來
+                    cPECreateData.CusName = comboBoxOldCusName.Text;
+                    cPECreateData.PartNo = comboBoxOldPartNo.Text;
+                    cPECreateData.CusRev = comboBoxOldCusRev.Text.ToUpper();
+                    cPECreateData.ListOperation = new List<Operation>();
+                    Operation cOperation = new Operation();
+                    cPECreateData.Oper1Ary = new List<string>();
+                    cPECreateData.Oper2Ary = new List<string>();
+                    for (int i = 0; i < panel.Rows.Count; i++)
+                    {
+                        if (panel.Rows.Count == 0)
+                        {
+                            MessageBox.Show("尚未選擇製程序與製程別！");
+                            return;
+                        }
+
+                        if (panel.GetCell(i, 1).Value.ToString() == "")
+                        {
+                            MessageBox.Show("製程序" + panel.GetCell(i, 0).Value + "尚未選取製程別！");
+                            return;
+                        }
+
+                        cOperation = new Operation();
+                        cOperation.Oper1 = panel.GetCell(i, 0).Value.ToString();
+                        cOperation.Oper2 = panel.GetCell(i, 1).Value.ToString();
+
+                        cPECreateData.ListOperation.Add(cOperation);
+
+                        cPECreateData.Oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
+                        cPECreateData.Oper2Ary.Add(panel.GetCell(i, 1).Value.ToString());
+                    }
+                    #endregion
+
+                    #region 寫出PECreateData.dat
+                    string PECreateDataJsonDat = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekTaskDir(), CurrentOldCusName, CurrentOldPartNo, CurrentOldCusRev, "MODEL", "PECreateData.dat");
+                    status = CaxFile.WriteJsonFileData(PECreateDataJsonDat, cPECreateData);
+                    if (!status)
+                    {
+                        MessageBox.Show("PECreateData.dat 輸出失敗...");
                         return;
                     }
+                    #endregion
+
                 }
+                else
+                {
 
-                //建立三階檔案路徑
-                ThridOperPartPath = Path.GetDirectoryName(AsmCompFileFullPath);
+                    #region 取得客戶名稱
 
-                cPE_OutPutDat.ListOperation.Add(cOperation);
+                    CusName = comboBoxCusName.Text;
+                    if (CusName == "")
+                    {
+                        MessageBox.Show("尚未填寫客戶！");
+                        return;
+                    }
 
-                cPE_OutPutDat.Oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
-                cPE_OutPutDat.Oper2Ary.Add(panel.GetCell(i, 1).Value.ToString());
-            }
+                    #endregion
 
-            #endregion
-            
-            #region (註解中)複製MODEL內的客戶檔案到料號資料夾內，並更名XXX_MOT.prt
-            /*
-            //判斷要複製的檔案是否存在
-            status = System.IO.File.Exists(destFileName_Model);
-            if (!status)
-            {
-                MessageBox.Show("指定的檔案不存在，請再次確認");
-                return;
-            }
+                    #region 取得料號
 
-            //建立目的地(客戶版次)檔案全路徑
-            string destFileName_CusRev = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobalTekEnvDir(), PartNo, CusRev.ToUpper(), PartNo + "_MOT.prt");
+                    PartNo = textPartNo.Text;
+                    if (PartNo == "")
+                    {
+                        MessageBox.Show("尚未填寫料號！");
+                        return;
+                    }
 
-            //開始複製
-            File.Copy(destFileName_Model, destFileName_CusRev, true);
-            */
-            #endregion
-            
-            #region 自動建立總組立檔案架構，並組立相關製程
+                    #endregion
 
-            status = CaxAsm.CreateNewAsm(AsmCompFileFullPath);
-            if (!status)
-            {
-                CaxLog.ShowListingWindow("建立一階總組立檔失敗");
-                return;
-            }
+                    #region 取得客戶版次
 
-            CaxPart.Save();
+                    CusRev = textCusRev.Text;
+                    if (CusRev == "")
+                    {
+                        MessageBox.Show("尚未填寫客戶版次！");
+                        return;
+                    }
 
+                    #endregion
 
-            string OPCompName = "";
-            NXOpen.Assemblies.Component tempComp;
-            //List<double> ListOperDouble = new List<double>();
-            //for (int i = 0; i < cPE_OutPutDat.ListOperation.Count; i++)
-            //{
-            //    ListOperDouble.Add(Convert.ToDouble(cPE_OutPutDat.ListOperation[i].Oper1));
-            //}
-            //ListOperDouble.Sort();
+                    #region 取得檔案路徑
 
-            for (int i = 0; i < cPE_OutPutDat.ListOperation.Count; i++)
-            {
-                //設定一階為WorkComp
-                CaxAsm.SetWorkComponent(null); 
+                    if (PartPath == "-1")
+                    {
+                        MessageBox.Show("尚未選擇客戶檔案！");
+                        return;
+                    }
+
+                    #endregion
+
+                    #region 定義根目錄
+
+                    //定義MODEL資料夾路徑
+                    string ModelFolderFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", CusName, PartNo, CusRev.ToUpper(), "MODEL");
+
+                    //定義總組立檔案名稱
+                    string AsmCompFileFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekEnvDir(), "Task", CusName, PartNo, CusRev.ToUpper(), PartNo + "_MOT.prt");
+
+                    //定義CAM資料夾路徑、OIS資料夾路徑、三階檔案路徑
+                    string CAMFolderPath = "", OISFolderPath = "", ThridOperPartPath = "";
+
+                    #endregion
+
+                    #region 建立MODEL資料夾
+
+                    if (!File.Exists(ModelFolderFullPath))
+                    {
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory(ModelFolderFullPath);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString());
+                            return;
+                        }
+                    }
+
+                    #endregion
+
+                    #region 複製客戶檔案到MODEL資料夾內
+
+                    //判斷客戶的檔案是否存在
+                    status = System.IO.File.Exists(PartPath);
+                    if (!status)
+                    {
+                        MessageBox.Show("指定的檔案不存在，請再次確認");
+                        return;
+                    }
+
+                    //建立MODEL資料夾內客戶檔案路徑
+                    string CustomerPartFullPath = string.Format(@"{0}\{1}", ModelFolderFullPath, PartNo + ".prt");
+
+                    //開始複製
+                    if (!System.IO.File.Exists(CustomerPartFullPath))
+                    {
+                        File.Copy(PartPath, CustomerPartFullPath, true);
+                    }
                 
-                //建立二階製程檔
-                OPCompName = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OP" + cPE_OutPutDat.ListOperation[i].Oper1 + ".prt");
-                status = CaxAsm.CreateNewEmptyComp(OPCompName, out tempComp);
-                if (!status)
-                {
-                    CaxLog.ShowListingWindow("建立二階製程檔失敗");
-                    return;
-                }
-            }
 
-            string OISCompFullPath = "", CAMCompFullPath = "";
+                    #endregion
 
-            //取得二階所有comp
-            List<NXOpen.Assemblies.Component> ChildenComp = new List<NXOpen.Assemblies.Component>();
-            CaxAsm.GetCompChilden(out ChildenComp);
+                    #region 將值儲存起來
 
-            for (int i = 0; i < ChildenComp.Count; i++)
-            {
-                CaxAsm.SetWorkComponent(ChildenComp[i]);
-                string OperStr = ChildenComp[i].Name.Split(new string[] { "OP" }, StringSplitOptions.RemoveEmptyEntries)[1];
-
-                //建立三階CAM檔
-                CAMCompFullPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OP" + OperStr + "_CAM.prt");
-                status = CaxAsm.CreateNewEmptyComp(CAMCompFullPath, out tempComp);
-                if (!status)
-                {
-                    CaxLog.ShowListingWindow("建立三階CAM檔失敗");
-                    return;
-                }
-
-                //建立三階OIS檔
-                OISCompFullPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OIS" + OperStr + ".prt");
-                status = CaxAsm.CreateNewEmptyComp(OISCompFullPath, out tempComp);
-                if (!status)
-                {
-                    CaxLog.ShowListingWindow("建立三階OIS檔失敗");
-                    return;
-                }
-            }
-
-            #endregion
-
-            #region 寫出PEdat
-
-            string PECreateDataJsonDat = string.Format(@"{0}\{1}", ModelFolderFullPath, "PECreateData.dat");
-            status = CaxFile.WriteJsonFileData(PECreateDataJsonDat, cPE_OutPutDat);
-            if (!status)
-            {
-                MessageBox.Show("PECreateData.dat 輸出失敗...");
-                return;
-            }
-
-            #endregion
-
-            #region 寫出METEDownloadDat
-
-            string METEDownloadData = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekTaskDir(), "METEDownloadData.dat");
-            METEDownloadData cMETEDownloadData = new METEDownloadData();
-
-            if (File.Exists(METEDownloadData))
-            {
-                #region METEDownloadDat檔案存在
-
-                status = CaxPublic.ReadMETEDownloadData(METEDownloadData, out cMETEDownloadData);
-                if (!status)
-                {
-                    MessageBox.Show("METEDownloadData.dat 讀取失敗...");
-                    return;
-                }
-
-                int CusCount = 0, IndexOfCusName = -1;
-                for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
-                {
-                    if (CusName != cMETEDownloadData.EntirePartAry[i].CusName)
+                    cPECreateData.CusName = CusName;
+                    cPECreateData.PartNo = PartNo;
+                    cPECreateData.CusRev = CusRev.ToUpper();
+                    //cPE_OutPutDat.PartPath = PartPath;
+                    cPECreateData.ListOperation = new List<Operation>();
+                    Operation cOperation = new Operation();
+                    cPECreateData.Oper1Ary = new List<string>();
+                    cPECreateData.Oper2Ary = new List<string>();
+                    for (int i = 0; i < panel.Rows.Count; i++)
                     {
-                        CusCount++;
+                    if (panel.Rows.Count == 0)
+                    {
+                        MessageBox.Show("尚未選擇製程序與製程別！");
+                        return;
                     }
-                    else
+
+                    if (panel.GetCell(i, 1).Value.ToString() == "")
                     {
-                        IndexOfCusName = i;
-                        break;
+                        MessageBox.Show("製程序" + panel.GetCell(i, 0).Value + "尚未選取製程別！");
+                        return;
                     }
-                }
 
-                //新的客戶且已經有METEDownloadDat.dat
-                if (CusCount == cMETEDownloadData.EntirePartAry.Count)
-                {
-                    EntirePartAry cEntirePartAry = new EntirePartAry();
-                    cEntirePartAry.CusName = CusName;
-                    cEntirePartAry.CusPart = new List<CusPart>();
+                    cOperation = new Operation();
+                    cOperation.Oper1 = panel.GetCell(i, 0).Value.ToString();
+                    cOperation.Oper2 = panel.GetCell(i, 1).Value.ToString();
 
-                    CusPart cCusPart = new CusPart();
-                    cCusPart.PartNo = PartNo;
-                    cCusPart.CusRev = new List<CusRev>();
+                    //建立CAM資料夾路徑
+                    CAMFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "CAM");
 
-                    CusRev cCusRev = new CusRev();
-                    cCusRev.RevNo = CusRev.ToUpper();
-                    cCusRev.OperAry1 = new List<string>();
-                    cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
+                    //儲存CAM資料夾路徑
+                    //cOperation.CAMFolderPath = CAMFolderPath;
 
-                    cCusPart.CusRev.Add(cCusRev);
-                    cEntirePartAry.CusPart.Add(cCusPart);
-                    cMETEDownloadData.EntirePartAry.Add(cEntirePartAry);
-                }
-                //舊的客戶新增料號
-                else
-                {
-                    //判斷料號是否已存在
-                    int PartCount = 0; int IndexOfPartNo = -1;
-                    for (int i = 0; i < cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart.Count; i++)
+                    //建立CAM資料夾
+                    if (!File.Exists(CAMFolderPath))
                     {
-                        if (PartNo != cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart[i].PartNo)
+                        try
                         {
-                            PartCount++;
+                            System.IO.Directory.CreateDirectory(CAMFolderPath);
                         }
-                        else
+                        catch (System.Exception ex)
                         {
-                            IndexOfPartNo = i;
-                            break;
+                            MessageBox.Show(ex.ToString());
+                            return;
                         }
                     }
 
-                    //舊的客戶且新的料號 PartCount == CusPart.Count 表示新的料號
-                    if (PartCount == cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart.Count)
+                    //建立OIS資料夾路徑
+                    OISFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "OIS");
+
+                    //儲存OIS資料夾路徑
+                    //cOperation.OISFolderPath = OISFolderPath;
+
+                    //建立OIS資料夾
+                    if (!File.Exists(OISFolderPath))
                     {
-                        CusPart cCusPart = new CusPart();
-                        cCusPart.PartNo = PartNo;
-                        cCusPart.CusRev = new List<CusRev>();
-
-                        CusRev cCusRev = new CusRev();
-                        cCusRev.RevNo = CusRev.ToUpper();
-                        cCusRev.OperAry1 = new List<string>();
-                        cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
-
-                        cCusPart.CusRev.Add(cCusRev);
-                        cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart.Add(cCusPart);
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory(OISFolderPath);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString());
+                            return;
+                        }
                     }
-                    //舊的客戶且舊的料號新增客戶版次
-                    else
+
+                    //建立三階檔案路徑
+                    ThridOperPartPath = Path.GetDirectoryName(AsmCompFileFullPath);
+
+                    cPECreateData.ListOperation.Add(cOperation);
+
+                    cPECreateData.Oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
+                    cPECreateData.Oper2Ary.Add(panel.GetCell(i, 1).Value.ToString());
+                    }
+
+                    #endregion
+
+                    #region (註解中)複製MODEL內的客戶檔案到料號資料夾內，並更名XXX_MOT.prt
+                    /*
+                    //判斷要複製的檔案是否存在
+                    status = System.IO.File.Exists(destFileName_Model);
+                    if (!status)
                     {
-                        CusRev cCusRev = new CusRev();
-                        cCusRev.RevNo = CusRev.ToUpper();
-                        cCusRev.OperAry1 = new List<string>();
-                        cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
-
-                        cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart[IndexOfPartNo].CusRev.Add(cCusRev);
+                        MessageBox.Show("指定的檔案不存在，請再次確認");
+                        return;
                     }
-                }
-                /*
-                int PartCount = 0; int IndexOfPartNo = -1;
-                for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
-                {
-                    if (PartNo != cMETEDownloadData.EntirePartAry[i].PartNo)
+
+                    //建立目的地(客戶版次)檔案全路徑
+                    string destFileName_CusRev = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobalTekEnvDir(), PartNo, CusRev.ToUpper(), PartNo + "_MOT.prt");
+
+                    //開始複製
+                    File.Copy(destFileName_Model, destFileName_CusRev, true);
+                    */
+                    #endregion
+
+                    #region 自動建立總組立檔案架構，並組立相關製程
+
+                    status = CaxAsm.CreateNewAsm(AsmCompFileFullPath);
+                    if (!status)
                     {
-                        PartCount++;
+                        CaxLog.ShowListingWindow("建立一階總組立檔失敗");
+                        return;
                     }
-                    else
+
+                    CaxPart.Save();
+
+
+                    string OPCompName = "";
+                    NXOpen.Assemblies.Component tempComp;
+                    //List<double> ListOperDouble = new List<double>();
+                    //for (int i = 0; i < cPE_OutPutDat.ListOperation.Count; i++)
+                    //{
+                    //    ListOperDouble.Add(Convert.ToDouble(cPE_OutPutDat.ListOperation[i].Oper1));
+                    //}
+                    //ListOperDouble.Sort();
+
+                    for (int i = 0; i < cPECreateData.ListOperation.Count; i++)
                     {
-                        IndexOfPartNo = i;
-                        break;
+                        //設定一階為WorkComp
+                        CaxAsm.SetWorkComponent(null);
+
+                        //建立二階製程檔
+                        OPCompName = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OP" + cPECreateData.ListOperation[i].Oper1 + ".prt");
+                        status = CaxAsm.CreateNewEmptyComp(OPCompName, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("建立二階製程檔失敗");
+                            return;
+                        }
                     }
+
+                    string OISCompFullPath = "", CAMCompFullPath = "";
+
+                    //取得二階所有comp
+                    List<NXOpen.Assemblies.Component> ChildenComp = new List<NXOpen.Assemblies.Component>();
+                    CaxAsm.GetCompChildren(out ChildenComp);
+
+                    for (int i = 0; i < ChildenComp.Count; i++)
+                    {
+                        CaxAsm.SetWorkComponent(ChildenComp[i]);
+                        string OperStr = ChildenComp[i].Name.Split(new string[] { "OP" }, StringSplitOptions.RemoveEmptyEntries)[1];
+
+                        #region 建立三階CAM檔
+                        //建立三階CAM檔
+                        CAMCompFullPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OP" + OperStr + "_CAM.prt");
+                        status = CaxAsm.CreateNewEmptyComp(CAMCompFullPath, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("建立三階CAM檔失敗");
+                            return;
+                        }
+                        #endregion
+                    
+
+                        #region 建立三階OIS檔
+                        //先複製drafting_template.prt到OIS檔
+                        string drafting_template_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekEnvDir(), "drafting_template.prt");
+                        OISCompFullPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OIS" + OperStr + ".prt");
+                        if (!File.Exists(drafting_template_Path))
+                        {
+                            CaxLog.ShowListingWindow("drafting_template.prt遺失，請聯繫開發工程師");
+                            return;
+                        }
+                        System.IO.File.Copy(drafting_template_Path, OISCompFullPath, true);
+
+                        //組立三階OIS檔
+                        //status = CaxAsm.CreateNewEmptyComp(OISCompFullPath, out tempComp);
+                        status = CaxAsm.AddComponentToAsmByDefault(OISCompFullPath, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("組立三階OIS檔失敗");
+                            return;
+                        }
+                        #endregion
+                    
+                    }
+
+                    #endregion
+
+                    #region 寫出PECreateData.dat
+
+                    string PECreateDataJsonDat = string.Format(@"{0}\{1}", ModelFolderFullPath, "PECreateData.dat");
+                    status = CaxFile.WriteJsonFileData(PECreateDataJsonDat, cPECreateData);
+                    if (!status)
+                    {
+                        MessageBox.Show("PECreateData.dat 輸出失敗...");
+                        return;
+                    }
+
+                    #endregion
+
+                    #region (註解中)寫出METEDownloadData.dat
+
+                    //string METEDownloadData = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekTaskDir(), "METEDownloadData.dat");
+                    //METEDownloadData cMETEDownloadData = new METEDownloadData();
+
+                    //if (File.Exists(METEDownloadData))
+                    //{
+                    //    #region METEDownloadData.dat檔案存在
+
+                    //    status = CaxPublic.ReadMETEDownloadData(METEDownloadData, out cMETEDownloadData);
+                    //    if (!status)
+                    //    {
+                    //        MessageBox.Show("METEDownloadData.dat讀取失敗...");
+                    //        return;
+                    //    }
+
+                    //    int CusCount = 0, IndexOfCusName = -1;
+                    //    for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
+                    //    {
+                    //        if (CusName != cMETEDownloadData.EntirePartAry[i].CusName)
+                    //        {
+                    //            CusCount++;
+                    //        }
+                    //        else
+                    //        {
+                    //            IndexOfCusName = i;
+                    //            break;
+                    //        }
+                    //    }
+
+                    //    //新的客戶且已經有METEDownloadDat.dat
+                    //    if (CusCount == cMETEDownloadData.EntirePartAry.Count)
+                    //    {
+                    //        EntirePartAry cEntirePartAry = new EntirePartAry();
+                    //        cEntirePartAry.CusName = CusName;
+                    //        cEntirePartAry.CusPart = new List<CusPart>();
+
+                    //        CusPart cCusPart = new CusPart();
+                    //        cCusPart.PartNo = PartNo;
+                    //        cCusPart.CusRev = new List<CusRev>();
+
+                    //        CusRev cCusRev = new CusRev();
+                    //        cCusRev.RevNo = CusRev.ToUpper();
+                    //        cCusRev.OperAry1 = new List<string>();
+                    //        cCusRev.OperAry2 = new List<string>();
+                    //        cCusRev.OperAry1 = cPECreateData.Oper1Ary;
+                    //        cCusRev.OperAry2 = cPECreateData.Oper2Ary;
+
+                    //        cCusPart.CusRev.Add(cCusRev);
+                    //        cEntirePartAry.CusPart.Add(cCusPart);
+                    //        cMETEDownloadData.EntirePartAry.Add(cEntirePartAry);
+                    //    }
+                    //    //舊的客戶新增料號
+                    //    else
+                    //    {
+                    //        //判斷料號是否已存在
+                    //        int PartCount = 0; int IndexOfPartNo = -1;
+                    //        for (int i = 0; i < cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart.Count; i++)
+                    //        {
+                    //            if (PartNo != cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart[i].PartNo)
+                    //            {
+                    //                PartCount++;
+                    //            }
+                    //            else
+                    //            {
+                    //                IndexOfPartNo = i;
+                    //                break;
+                    //            }
+                    //        }
+
+                    //        //舊的客戶且新的料號 PartCount == CusPart.Count 表示新的料號
+                    //        if (PartCount == cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart.Count)
+                    //        {
+                    //            CusPart cCusPart = new CusPart();
+                    //            cCusPart.PartNo = PartNo;
+                    //            cCusPart.CusRev = new List<CusRev>();
+
+                    //            CusRev cCusRev = new CusRev();
+                    //            cCusRev.RevNo = CusRev.ToUpper();
+                    //            cCusRev.OperAry1 = new List<string>();
+                    //            cCusRev.OperAry2 = new List<string>();
+                    //            cCusRev.OperAry1 = cPECreateData.Oper1Ary;
+                    //            cCusRev.OperAry2 = cPECreateData.Oper2Ary;
+
+                    //            cCusPart.CusRev.Add(cCusRev);
+                    //            cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart.Add(cCusPart);
+                    //        }
+                    //        //舊的客戶且舊的料號新增客戶版次
+                    //        else
+                    //        {
+                    //            CusRev cCusRev = new CusRev();
+                    //            cCusRev.RevNo = CusRev.ToUpper();
+                    //            cCusRev.OperAry1 = new List<string>();
+                    //            cCusRev.OperAry1 = cPECreateData.Oper1Ary;
+
+                    //            cMETEDownloadData.EntirePartAry[IndexOfCusName].CusPart[IndexOfPartNo].CusRev.Add(cCusRev);
+                    //        }
+                    //    }
+                    //    /*
+                    //    int PartCount = 0; int IndexOfPartNo = -1;
+                    //    for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
+                    //    {
+                    //    if (PartNo != cMETEDownloadData.EntirePartAry[i].PartNo)
+                    //    {
+                    //    PartCount++;
+                    //    }
+                    //    else
+                    //    {
+                    //    IndexOfPartNo = i;
+                    //    break;
+                    //    }
+                    //    }
+
+                    //    //新的料號且已經有METEDownloadDat.dat
+                    //    if (PartCount == cMETEDownloadData.EntirePartAry.Count)
+                    //    {
+                    //    EntirePartAry cEntirePartAry = new EntirePartAry();
+                    //    cEntirePartAry.CusRev = new List<CusRev>();
+
+                    //    CusRev cCusRev = new CusRev();
+                    //    cCusRev.OperAry1 = new List<string>();
+                    //    cCusRev.RevNo = CusRev.ToUpper();
+                    //    cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
+
+                    //    cEntirePartAry.CusName = CusName;
+                    //    cEntirePartAry.PartNo = PartNo;
+                    //    cEntirePartAry.CusRev.Add(cCusRev);
+
+                    //    cMETEDownloadData.EntirePartAry.Add(cEntirePartAry);
+                    //    }
+                    //    //舊的料號新增客戶版次
+                    //    else
+                    //    {
+                    //    CusRev cCusRev = new CusRev();
+                    //    cCusRev.OperAry1 = new List<string>();
+                    //    cCusRev.RevNo = CusRev.ToUpper();
+                    //    cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
+
+                    //    cMETEDownloadData.EntirePartAry[IndexOfPartNo].CusRev.Add(cCusRev);
+                    //    }
+                    //    */
+                    //    #endregion
+                    //}
+                    //else
+                    //{
+                    //    #region METEDownloadData.dat檔案不存在
+
+                    //    cMETEDownloadData.EntirePartAry = new List<EntirePartAry>();
+                    //    EntirePartAry cEntirePartAry = new EntirePartAry();
+                    //    cEntirePartAry.CusName = CusName;
+                    //    cEntirePartAry.CusPart = new List<CusPart>();
+
+                    //    CusPart cCusPart = new CusPart();
+                    //    cCusPart.PartNo = PartNo;
+                    //    cCusPart.CusRev = new List<CusRev>();
+
+                    //    CusRev cCusRev = new CusRev();
+                    //    cCusRev.RevNo = CusRev.ToUpper();
+                    //    cCusRev.OperAry1 = new List<string>();
+                    //    cCusRev.OperAry2 = new List<string>();
+                    //    cCusRev.OperAry1 = cPECreateData.Oper1Ary;
+                    //    cCusRev.OperAry2 = cPECreateData.Oper2Ary;
+
+                    //    cCusPart.CusRev.Add(cCusRev);
+                    //    cEntirePartAry.CusPart.Add(cCusPart);
+                    //    cMETEDownloadData.EntirePartAry.Add(cEntirePartAry);
+
+                    //    #endregion
+                    //}
+
+                    //status = CaxFile.WriteJsonFileData(METEDownloadData, cMETEDownloadData);
+                    //if (!status)
+                    //{
+                    //    MessageBox.Show("METEDownloadData.dat輸出失敗...");
+                    //    return;
+                    //}
+
+                    #endregion
+
                 }
 
-                //新的料號且已經有METEDownloadDat.dat
-                if (PartCount == cMETEDownloadData.EntirePartAry.Count)
-                {
-                    EntirePartAry cEntirePartAry = new EntirePartAry();
-                    cEntirePartAry.CusRev = new List<CusRev>();
-
-                    CusRev cCusRev = new CusRev();
-                    cCusRev.OperAry1 = new List<string>();
-                    cCusRev.RevNo = CusRev.ToUpper();
-                    cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
-
-                    cEntirePartAry.CusName = CusName;
-                    cEntirePartAry.PartNo = PartNo;
-                    cEntirePartAry.CusRev.Add(cCusRev);
-
-                    cMETEDownloadData.EntirePartAry.Add(cEntirePartAry);
-                }
-                //舊的料號新增客戶版次
-                else
-                {
-                    CusRev cCusRev = new CusRev();
-                    cCusRev.OperAry1 = new List<string>();
-                    cCusRev.RevNo = CusRev.ToUpper();
-                    cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
-
-                    cMETEDownloadData.EntirePartAry[IndexOfPartNo].CusRev.Add(cCusRev);
-                }
-                */
-                #endregion
+                CaxAsm.SetWorkComponent(null);
+                CaxPart.Save();
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             }
-            else
+            catch (System.Exception ex)
             {
-                #region METEDownloadDat檔案不存在
-
-                cMETEDownloadData.EntirePartAry = new List<EntirePartAry>();
-                EntirePartAry cEntirePartAry = new EntirePartAry();
-                cEntirePartAry.CusName = CusName;
-                cEntirePartAry.CusPart = new List<CusPart>();
-
-                CusPart cCusPart = new CusPart();
-                cCusPart.PartNo = PartNo;
-                cCusPart.CusRev = new List<CusRev>();
-
-                CusRev cCusRev = new CusRev();
-                cCusRev.RevNo = CusRev.ToUpper();
-                cCusRev.OperAry1 = new List<string>();
-                cCusRev.OperAry1 = cPE_OutPutDat.Oper1Ary;
-
-                cCusPart.CusRev.Add(cCusRev);
-                cEntirePartAry.CusPart.Add(cCusPart);
-                cMETEDownloadData.EntirePartAry.Add(cEntirePartAry);
-
-                #endregion
+                CaxLog.ShowListingWindow(ex.ToString());
             }
 
-            status = CaxFile.WriteJsonFileData(METEDownloadData, cMETEDownloadData);
-            if (!status)
+        }
+
+        private void UserDefine_Click(object sender, EventArgs e)
+        {
+            //判斷使用者選取的製程序是否已經存在於OperSuperGridControl
+            if (!(panel.Rows.Count == 0))
             {
-                MessageBox.Show("METEDownloadDat.dat 輸出失敗...");
+                for (int i = 0; i < panel.Rows.Count; i++)
+                {
+                    if (panel.GridPanel.GetCell(i, 0).Value.ToString() == UserDefineProcess.Text)
+                    {
+                        MessageBox.Show("已有重複的製程序");
+                        //清除使用者選取的製程序
+                        UserDefineProcess.Text = "";
+                        return;
+                    }
+                }
+            }
+
+            //將製程序填入OperSuperGridControl
+            GridRow row = new GridRow();
+            row = new GridRow(UserDefineProcess.Text, "", "刪除");
+            panel.Rows.Add(row);
+            ListAddOper.Add(UserDefineProcess.Text);
+            UserDefineProcess.Text = "";
+            
+        }
+
+        private void PEGenerateDlg_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (this.DialogResult != DialogResult.OK)
+            {
+                CaxPart.CloseAllParts();
+            }
+        }
+
+        private void comboBoxOldCusName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //清空superGrid資料
+            panel.Rows.Clear();
+            //取得當前選取的客戶
+            CurrentOldCusName = comboBoxOldCusName.Text;
+            //打開&清空下拉選單-料號
+            comboBoxOldPartNo.Enabled = true;
+            comboBoxOldPartNo.Items.Clear();
+            comboBoxOldPartNo.Text = "";
+            //關閉&清空下拉選單-客戶版次
+            comboBoxOldCusRev.Enabled = false;
+            comboBoxOldCusRev.Items.Clear();
+            comboBoxOldCusRev.Text = "";
+
+            string S_Task_CusName_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekTaskDir(), CurrentOldCusName);
+            string[] S_Task_PartNo = Directory.GetDirectories(S_Task_CusName_Path);
+            foreach (string item in S_Task_PartNo)
+            {
+                comboBoxOldPartNo.Items.Add(Path.GetFileNameWithoutExtension(item));//走訪每個元素只取得目錄名稱(不含路徑)並加入dirlist集合中
+            }
+
+            /*
+            //比對選擇的客戶取得對應的料號並塞入料號下拉選單中
+            for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
+            {
+                if (CurrentOldCusName == cMETEDownloadData.EntirePartAry[i].CusName)
+                {
+                    IndexofCusName = i;
+                    for (int j = 0; j < cMETEDownloadData.EntirePartAry[i].CusPart.Count; j++)
+                    {
+                        comboBoxOldPartNo.Items.Add(cMETEDownloadData.EntirePartAry[i].CusPart[j].PartNo);
+                    }
+                }
+            }
+            */
+        }
+
+        private void comboBoxOldPartNo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //清空superGrid資料
+            panel.Rows.Clear();
+            //取得當前選取的料號
+            CurrentOldPartNo = comboBoxOldPartNo.Text;
+            //打開&清空下拉選單-客戶版次
+            comboBoxOldCusRev.Enabled = true;
+            comboBoxOldCusRev.Items.Clear();
+            comboBoxOldCusRev.Text = "";
+
+            string S_Task_PartNo_Path = string.Format(@"{0}\{1}\{2}", CaxEnv.GetGlobaltekTaskDir(), CurrentOldCusName, CurrentOldPartNo);
+            string[] S_Task_CusRev = Directory.GetDirectories(S_Task_PartNo_Path);
+            foreach (string item in S_Task_CusRev)
+            {
+                comboBoxOldCusRev.Items.Add(Path.GetFileNameWithoutExtension(item));//走訪每個元素只取得目錄名稱(不含路徑)並加入dirlist集合中
+            }
+
+            /*
+            //比對選擇的客戶與料號取得對應的客戶版次並塞入客戶版次下拉選單中
+            for (int i = 0; i < cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart.Count; i++)
+            {
+                if (CurrentOldPartNo == cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[i].PartNo)
+                {
+                    IndexofPartNo = i;
+                    for (int j = 0; j < cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[i].CusRev.Count; j++)
+                    {
+                        comboBoxOldCusRev.Items.Add(cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[i].CusRev[j].RevNo);
+                    }
+                }
+            }
+            */
+        }
+
+        private void comboBoxOldCusRev_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //清空superGrid資料
+            panel.Rows.Clear();
+            //取得當前選取的客戶版次
+            CurrentOldCusRev = comboBoxOldCusRev.Text;
+
+            //取得PECreateData.dat
+            string PECreateData_Path = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", CaxEnv.GetGlobaltekTaskDir(), CurrentOldCusName, CurrentOldPartNo, CurrentOldCusRev, "MODEL", "PECreateData.dat");
+            if (!File.Exists(PECreateData_Path))
+            {
+                CaxLog.ShowListingWindow("此料號沒有舊資料檔案，請檢查PECreateData.dat");
                 return;
             }
+            CaxPE.ReadPECreateData(PECreateData_Path, out cPECreateData);
 
-            #endregion
-            
-            CaxAsm.SetWorkComponent(null);
-            this.Close();
-            
-            CaxPart.Save();
+            //將舊資料填入SuperGridControl
+            GridRow row = new GridRow();
+            for (int i = 0; i < cPECreateData.Oper1Ary.Count;i++ )
+            {
+                row = new GridRow(cPECreateData.Oper1Ary[i], cPECreateData.Oper2Ary[i], "刪除");
+                panel.Rows.Add(row);
+            }
 
+            /*
+            //比對選擇的客戶版次取得對應的Oper並塞入SuperGridControl
+            List<string> ListOper1 = new List<string>();
+            List<string> ListOper2 = new List<string>();
+            for (int i = 0; i < cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[IndexofPartNo].CusRev.Count; i++)
+            {
+                if (CurrentOldCusRev == cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[IndexofPartNo].CusRev[i].RevNo)
+                {
+                    ListOper1 = cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[IndexofPartNo].CusRev[i].OperAry1;
+                    ListOper2 = cMETEDownloadData.EntirePartAry[IndexofCusName].CusPart[IndexofPartNo].CusRev[i].OperAry2;
+                }
+            }
+
+            GridRow row = new GridRow();
+            for (int i = 0; i < ListOper1.Count;i++ )
+            {
+                row = new GridRow(ListOper1[i], ListOper2[i], "刪除");
+                panel.Rows.Add(row);
+            }
+            */
+            Is_OldPart = true;
         }
     }
      
@@ -802,7 +1195,8 @@ namespace PEGenerateFile
             
             OperDeleteBtn cOperDelectBtn = (OperDeleteBtn)sender;
             int index = cOperDelectBtn.EditorCell.RowIndex;
-
+            string SelOper = panel.GetCell(index, 0).Value.ToString();
+            PEGenerateDlg.ListAddOper.Remove(SelOper);
             panel.Rows.RemoveAt(index);
         }
     }

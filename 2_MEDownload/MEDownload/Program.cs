@@ -49,12 +49,12 @@ public class Program
 
             #region 判斷METEDownloadDat.dat是否存在
 
-            status = CaxCheckDat.CheckMETEDownloadData();
-            if (!status)
-            {
-                MessageBox.Show("METEDownloadData.dat不存在");
-                return retValue;
-            }
+            //status = CaxCheckDat.CheckMETEDownloadData();
+            //if (!status)
+            //{
+            //    MessageBox.Show("METEDownloadData.dat不存在");
+            //    return retValue;
+            //}
 
             #endregion
 

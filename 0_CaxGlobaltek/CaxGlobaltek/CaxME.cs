@@ -24,6 +24,12 @@ namespace CaxGlobaltek
             public static string IPQC_Freq = "IPQC_Freq";
             public static string SelfCheck_Gauge = "SelfCheck_Gauge";
             public static string SelfCheck_Freq = "SelfCheck_Freq";
+            public static string IQC_Gauge = "IQC_Gauge";
+            public static string IQC_Freq = "IQC_Freq";
+            public static string FAI_Gauge = "FAI_Gauge";
+            public static string FAI_Freq = "FAI_Freq";
+            public static string FQC_Gauge = "FQC_Gauge";
+            public static string FQC_Freq = "FQC_Freq";
             public static string BallonNum = "BallonNum";
             public static string BallonLocation = "BallonLocation";
         }
