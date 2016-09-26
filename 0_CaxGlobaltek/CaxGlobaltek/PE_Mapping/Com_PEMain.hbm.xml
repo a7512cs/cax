@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Licensee: 
+License Type: Evaluation
+-->
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   auto-import="false"
+                   assembly="CaxGlobaltek"
+                   namespace="CaxGlobaltek">
+	<class name="Com_PEMain" table="Com_PEMain" lazy="false">
+		<id name="peSrNo" column="peSrNo" type="Int32" unsaved-value="0">
+			<generator class="identity">
+			</generator>
+		</id>
+		<property name="partName" column="partName" type="String" length="255" not-null="true">
+			<meta attribute="field-description">
+				&#26009;&#34399;
+			</meta>
+		</property>
+		<property name="customerVer" column="customerVer" type="String" length="255" not-null="true">
+			<meta attribute="field-description">
+				&#23458;&#25142;&#29256;&#27425;
+			</meta>
+		</property>
+		<property name="createDate" column="createDate" type="String" length="255" not-null="true"/>
+		<many-to-one name="sysCustomer" column="customerSrNo" class="Sys_Customer" not-null="true" lazy="proxy">
+		</many-to-one>
+    <list name="comPartOperation" lazy="true" cascade="save-update" inverse="true">
+			<key column="peSrNo"/>
+      <index column="comPartOperationIdx" />
+			<one-to-many class="Com_PartOperation"/>
+		</list>
+	</class>
+</hibernate-mapping>

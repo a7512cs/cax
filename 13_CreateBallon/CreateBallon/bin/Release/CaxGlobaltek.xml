@@ -139,6 +139,15 @@
             <returns></returns>
         </member>
         <!-- 忽略成員 "M:CaxGlobaltek.CaxPublic.GetAllPath(System.String,System.String,CaxGlobaltek.METE_Download_Upload_Path@)" 中格式錯誤的 XML 註解 -->
+        <member name="M:CaxGlobaltek.CaxPublic.ReadJsonData``1(System.String,``0@)">
+            <summary>
+            適用於所有Json檔案的讀取
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="JsonDatLoadPath"></param>
+            <param name="JsonRead"></param>
+            <returns></returns>
+        </member>
         <member name="M:CaxGlobaltek.CaxOper.AskOperNameFromTag(NXOpen.Tag)">
             <summary>
             取得Operatrion程式名

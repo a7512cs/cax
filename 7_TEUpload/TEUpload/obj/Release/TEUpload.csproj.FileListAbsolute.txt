@@ -36,3 +36,9 @@ D:\GlobalCode\7_TEUpload\TEUpload\obj\Release\TEUpload.TEUploadDlg.resources
 D:\GlobalCode\7_TEUpload\TEUpload\obj\Release\TEUpload.csproj.GenerateResource.Cache
 D:\GlobalCode\7_TEUpload\TEUpload\obj\Release\TEUpload.dll
 D:\GlobalCode\7_TEUpload\TEUpload\obj\Release\TEUpload.pdb
+D:\GlobalCode\7_TEUpload\TEUpload\bin\Release\NHibernate.dll
+D:\GlobalCode\7_TEUpload\TEUpload\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\7_TEUpload\TEUpload\bin\Release\NHibernate.pdb
+D:\GlobalCode\7_TEUpload\TEUpload\bin\Release\NHibernate.xml
+D:\GlobalCode\7_TEUpload\TEUpload\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\7_TEUpload\TEUpload\bin\Release\Iesi.Collections.xml

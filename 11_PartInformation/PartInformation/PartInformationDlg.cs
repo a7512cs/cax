@@ -1344,9 +1344,11 @@ namespace PartInformation
                 workPart.SetAttribute(kvp.Key, kvp.Value);
             }
 
-            this.Hide();
-            UI.GetUI().NXMessageBox.Show("IPQC", NXMessageBox.DialogType.Information, "更新完成");
-            this.Show();
+            MessageBox.Show("更新完成");
+            this.Close();
+            //this.Hide();
+            //UI.GetUI().NXMessageBox.Show("PartInformation", NXMessageBox.DialogType.Information, "更新完成");
+            //this.Show();
 
         }
 

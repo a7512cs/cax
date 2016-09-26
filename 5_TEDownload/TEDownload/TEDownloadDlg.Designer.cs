@@ -118,6 +118,7 @@
             // 
             this.comboBoxCusName.DisplayMember = "Text";
             this.comboBoxCusName.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxCusName.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxCusName.FormattingEnabled = true;
             this.comboBoxCusName.ItemHeight = 16;
             this.comboBoxCusName.Location = new System.Drawing.Point(81, 38);
@@ -131,6 +132,7 @@
             // 
             this.PartNocomboBox.DisplayMember = "Text";
             this.PartNocomboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.PartNocomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PartNocomboBox.FormattingEnabled = true;
             this.PartNocomboBox.ItemHeight = 16;
             this.PartNocomboBox.Location = new System.Drawing.Point(81, 67);
@@ -144,6 +146,7 @@
             // 
             this.CusRevcomboBox.DisplayMember = "Text";
             this.CusRevcomboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.CusRevcomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CusRevcomboBox.FormattingEnabled = true;
             this.CusRevcomboBox.ItemHeight = 16;
             this.CusRevcomboBox.Location = new System.Drawing.Point(117, 96);
@@ -157,6 +160,7 @@
             // 
             this.Oper1comboBox.DisplayMember = "Text";
             this.Oper1comboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.Oper1comboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.Oper1comboBox.FormattingEnabled = true;
             this.Oper1comboBox.ItemHeight = 16;
             this.Oper1comboBox.Location = new System.Drawing.Point(99, 124);

@@ -179,7 +179,13 @@ namespace MainProgram
             }
 
             //當選擇海德漢控制器時，修改檔頭檔尾
-            NewGroupName = "O" + Regex.Replace(CurrentNCGroup, "[^0-9]", "") + "0";
+            string[] splitCurrentNCGroup = CurrentNCGroup.Split('_');
+            string outputName = Regex.Replace(splitCurrentNCGroup[0], "[^0-9]", "");
+            NewGroupName = "O" + outputName + "0";
+            if (splitCurrentNCGroup.Length == 2)
+            {
+                NewGroupName = NewGroupName + "_" + splitCurrentNCGroup[1];
+            }
 
 
 
@@ -1068,7 +1074,14 @@ namespace MainProgram
             if (Is_Local != "")
             {
                 CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
-                NCFolderPath = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Local_Folder_CAM, "NC");
+                if (!cMETE_Download_Upload_Path.Local_Folder_CAM.Contains("Oper1"))
+                {
+                    NCFolderPath = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Local_Folder_CAM, "NC");
+                }
+                else
+                {
+                    NCFolderPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), "NC");
+                }
             }
             else
             {
@@ -1113,9 +1126,10 @@ namespace MainProgram
             }
             file.Close();
 
-            this.Hide();
-            UI.GetUI().NXMessageBox.Show("恭喜", NXMessageBox.DialogType.Information, "主程式編輯完成！");
-            this.Show();
+            MessageBox.Show("主程式編輯完成！");
+//             this.Hide();
+//             UI.GetUI().NXMessageBox.Show("恭喜", NXMessageBox.DialogType.Information, "主程式編輯完成！");
+//             this.Show();
         }
 
         private void UserDefineTxt_SelectedIndexChanged(object sender, EventArgs e)

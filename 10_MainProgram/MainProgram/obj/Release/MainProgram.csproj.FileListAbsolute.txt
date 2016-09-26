@@ -26,3 +26,9 @@ D:\GlobalCode\10_MainProgram\MainProgram\obj\Release\MainProgram.Properties.Reso
 D:\GlobalCode\10_MainProgram\MainProgram\obj\Release\MainProgram.csproj.GenerateResource.Cache
 D:\GlobalCode\10_MainProgram\MainProgram\obj\Release\MainProgram.dll
 D:\GlobalCode\10_MainProgram\MainProgram\obj\Release\MainProgram.pdb
+D:\GlobalCode\10_MainProgram\MainProgram\bin\Release\NHibernate.dll
+D:\GlobalCode\10_MainProgram\MainProgram\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\10_MainProgram\MainProgram\bin\Release\NHibernate.pdb
+D:\GlobalCode\10_MainProgram\MainProgram\bin\Release\NHibernate.xml
+D:\GlobalCode\10_MainProgram\MainProgram\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\10_MainProgram\MainProgram\bin\Release\Iesi.Collections.xml

@@ -72,7 +72,14 @@ namespace PostProcessor
             if (Is_Local != "")
             {
                 CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
-                NCFolderPath = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Local_Folder_CAM, "NC");
+                if (!cMETE_Download_Upload_Path.Local_Folder_CAM.Contains("Oper1"))
+                {
+                    NCFolderPath = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Local_Folder_CAM, "NC");
+                }
+                else 
+                {
+                    NCFolderPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), "NC");
+                }
             }
             else
             {
@@ -336,8 +343,9 @@ namespace PostProcessor
                     }
                 }
             }
-
-            CaxLog.ShowListingWindow("後處理輸出完成！");
+            
+            MessageBox.Show("後處理輸出完成！");
+            //CaxLog.ShowListingWindow("後處理輸出完成！");
 
             /*
             if (CurrentSelPostName == "")

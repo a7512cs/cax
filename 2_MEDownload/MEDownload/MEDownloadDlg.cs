@@ -20,7 +20,7 @@ namespace MEDownload
         public static METEDownloadData cMETEDownloadData = new METEDownloadData();
         public static METE_Download_Upload_Path cMETE_Download_Upload_Path = new METE_Download_Upload_Path();
         public static string CurrentCusName = "", CurrentPartNo = "", CurrentCusRev = "", CurrentOper1 = "";
-        public static string Server_MODEL = "", Server_MEDownloadPart = "";
+        public static string Server_Folder_MODEL = "", Server_MEDownloadPart = "";
         public static string Local_Folder_MODEL = "", Local_Folder_CAM = "", Local_Folder_OIS = "";
         public static Dictionary<string, string> DicSeleOper1 = new Dictionary<string, string>();
         public static List<string> ListSeleOper1 = new List<string>();
@@ -203,7 +203,7 @@ namespace MEDownload
             //建立Server路徑資料
             string Server_IP = cMETE_Download_Upload_Path.Server_IP;
             string Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr;
-            Server_MODEL = cMETE_Download_Upload_Path.Server_MODEL;
+            Server_Folder_MODEL = cMETE_Download_Upload_Path.Server_Folder_MODEL;
             Server_MEDownloadPart = cMETE_Download_Upload_Path.Server_MEDownloadPart;
             Server_IPQC = cMETE_Download_Upload_Path.Server_IPQC;
             Server_SelfCheck = cMETE_Download_Upload_Path.Server_SelfCheck;
@@ -215,8 +215,7 @@ namespace MEDownload
             Server_ShareStr = Server_ShareStr.Replace("[CusName]", CurrentCusName);
             Server_ShareStr = Server_ShareStr.Replace("[PartNo]", CurrentPartNo);
             Server_ShareStr = Server_ShareStr.Replace("[CusRev]", CurrentCusRev);
-            Server_MODEL = Server_MODEL.Replace("[Server_ShareStr]", Server_ShareStr);
-            Server_MODEL = Server_MODEL.Replace("[PartNo]", CurrentPartNo);
+            Server_Folder_MODEL = Server_Folder_MODEL.Replace("[Server_ShareStr]", Server_ShareStr);
             Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Server_ShareStr]", Server_ShareStr);
             Server_MEDownloadPart = Server_MEDownloadPart.Replace("[PartNo]", CurrentPartNo);
             Server_IPQC = Server_IPQC.Replace("[Server_IP]", Server_IP);
@@ -261,12 +260,13 @@ namespace MEDownload
             #endregion
 
             #region 判斷客戶檔案是否存在
-            if (!File.Exists(Server_MODEL))
+            Server_Folder_MODEL = string.Format(@"{0}\{1}", Server_Folder_MODEL, CurrentPartNo + ".prt");
+            if (!File.Exists(Server_Folder_MODEL))
             {
                 listView.Items.Add("客戶檔案不存在，無法下載");
                 return;
             }
-            listView.Items.Add("客戶檔案：" + Path.GetFileName(Server_MODEL));
+            listView.Items.Add("客戶檔案：" + Path.GetFileName(Server_Folder_MODEL));
             #endregion
 
             //暫存一個Server_MEDownloadPart，目的要讓程式每次都能有[Oper1]可取代
@@ -455,9 +455,9 @@ namespace MEDownload
             #endregion
 
             #region 複製Server客戶檔案到Local_Folder_MODEL資料夾內
-            
+
             //判斷客戶檔案是否存在
-            status = System.IO.File.Exists(Server_MODEL);
+            status = System.IO.File.Exists(Server_Folder_MODEL);
             if (!status)
             {
                 CaxLog.ShowListingWindow("指定的檔案不存在，請再次確認");
@@ -465,21 +465,20 @@ namespace MEDownload
             }
 
             //建立Local_Folder_MODEL資料夾內客戶檔案路徑
-            string Local_CusPartFullPath = string.Format(@"{0}\{1}", Local_Folder_MODEL, Path.GetFileName(Server_MODEL));
+            string Local_CusPartFullPath = string.Format(@"{0}\{1}", Local_Folder_MODEL, Path.GetFileName(Server_Folder_MODEL));
 
             //判斷是否存在，不存在則開始複製
             if (!File.Exists(Local_CusPartFullPath))
             {
                 try
                 {
-                    File.Copy(Server_MODEL, Local_CusPartFullPath, true);
+                    File.Copy(Server_Folder_MODEL, Local_CusPartFullPath, true);
                 }
                 catch (System.Exception ex)
                 {
                     CaxLog.ShowListingWindow("客戶檔案複製失敗");
                     this.Close();
                 }
-                
             }
             
             #endregion

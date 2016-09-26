@@ -24,3 +24,9 @@ D:\GlobalCode\4_MEUpload\MEUpload\obj\Release\MEUpload.MEUploadDlg.resources
 D:\GlobalCode\4_MEUpload\MEUpload\obj\Release\MEUpload.csproj.GenerateResource.Cache
 D:\GlobalCode\4_MEUpload\MEUpload\obj\Release\MEUpload.dll
 D:\GlobalCode\4_MEUpload\MEUpload\obj\Release\MEUpload.pdb
+D:\GlobalCode\4_MEUpload\MEUpload\bin\Release\NHibernate.dll
+D:\GlobalCode\4_MEUpload\MEUpload\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\4_MEUpload\MEUpload\bin\Release\NHibernate.pdb
+D:\GlobalCode\4_MEUpload\MEUpload\bin\Release\NHibernate.xml
+D:\GlobalCode\4_MEUpload\MEUpload\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\4_MEUpload\MEUpload\bin\Release\Iesi.Collections.xml

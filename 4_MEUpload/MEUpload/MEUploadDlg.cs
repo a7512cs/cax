@@ -43,6 +43,8 @@ namespace MEUpload
             public string ExcelIQCServerDir { get; set; }
             public string ExcelFAILocalDir { get; set; }
             public string ExcelFAIServerDir { get; set; }
+            public string ExcelFQCLocalDir { get; set; }
+            public string ExcelFQCServerDir { get; set; }
         }
 
         public struct PartInfo 
@@ -72,7 +74,7 @@ namespace MEUpload
 
             CaxPublic.GetAllPath("ME", displayPart.FullPath, ref cMETE_Download_Upload_Path);
 
-            /*
+            
             //拆零件路徑字串取得客戶名稱、料號、版本
             string PartFullPath = displayPart.FullPath;
             string[] SplitPath = PartFullPath.Split('\\');
@@ -80,7 +82,8 @@ namespace MEUpload
             PartInfo.PartNo = SplitPath[4];
             PartInfo.CusRev = SplitPath[5];
             PartInfo.OpNum = Path.GetFileNameWithoutExtension(displayPart.FullPath).Split(new string[] { "OIS" }, StringSplitOptions.RemoveEmptyEntries)[1];
-
+            
+            /*
             #region 取代Server路徑字串
             cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
             cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[CusName]", PartInfo.CusName);
@@ -144,6 +147,7 @@ namespace MEUpload
             List<string> List_ExcelSelfCheck = new List<string>();
             List<string> List_ExcelIQC = new List<string>();
             List<string> List_ExcelFAI = new List<string>();
+            List<string> List_ExcelFQC = new List<string>();
             foreach (string i in FolderFile)
             {
                 if (i.Contains("IPQC"))
@@ -162,12 +166,17 @@ namespace MEUpload
                 {
                     List_ExcelFAI.Add(i);
                 }
+                if (i.Contains("FQC"))
+                {
+                    List_ExcelFQC.Add(i);
+                }
             }
 
             long ExcelIPQCFileTime = new long();
             long ExcelSelfCheckFileTime = new long();
             long ExcelIQCFileTime = new long();
             long ExcelFAIFileTime = new long();
+            long ExcelFQCFileTime = new long();
 
             #region 處理IPQC
             foreach (string i in List_ExcelIPQC)
@@ -246,6 +255,26 @@ namespace MEUpload
             if (List_ExcelFAI.Count != 0)
             {
                 listView1.Items.Add(Path.GetFileName(sExcelDirData.ExcelFAILocalDir));
+            }
+            #endregion
+
+            #region 處理FQC
+            foreach (string i in List_ExcelFQC)
+            {
+                System.IO.FileInfo ExcelInfo = new System.IO.FileInfo(i);
+                if (ExcelInfo.LastAccessTime.ToFileTime() > ExcelFQCFileTime)
+                {
+                    ExcelFQCFileTime = ExcelInfo.LastAccessTime.ToFileTime();
+                    sExcelDirData.ExcelFQCLocalDir = i;
+                    string Server_Folder_OIS = "";
+                    Server_Folder_OIS = tempLocal_Folder_OIS.Replace("[Local_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
+                    Server_Folder_OIS = Server_Folder_OIS.Replace("[Oper1]", PartInfo.OpNum);
+                    sExcelDirData.ExcelFQCServerDir = string.Format(@"{0}\{1}", Server_Folder_OIS, ExcelInfo.Name);
+                }
+            }
+            if (List_ExcelFQC.Count != 0)
+            {
+                listView1.Items.Add(Path.GetFileName(sExcelDirData.ExcelFQCLocalDir));
             }
             #endregion
             #endregion
@@ -330,6 +359,19 @@ namespace MEUpload
                 catch (System.Exception ex)
                 {
                     CaxLog.ShowListingWindow("FAI.xls上傳失敗");
+                    this.Close();
+                }
+            }
+
+            if (File.Exists(sExcelDirData.ExcelFQCLocalDir))
+            {
+                try
+                {
+                    File.Copy(sExcelDirData.ExcelFQCLocalDir, sExcelDirData.ExcelFQCServerDir, true);
+                }
+                catch (System.Exception ex)
+                {
+                    CaxLog.ShowListingWindow("FQC.xls上傳失敗");
                     this.Close();
                 }
             }

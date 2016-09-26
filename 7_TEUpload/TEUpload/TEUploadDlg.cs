@@ -74,7 +74,7 @@ namespace TEUpload
             CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
 
 
-            /*
+            
             //拆零件路徑字串取得客戶名稱、料號、版本
             string PartFullPath = displayPart.FullPath;
             string[] SplitPath = PartFullPath.Split('\\');
@@ -82,7 +82,7 @@ namespace TEUpload
             PartInfo.PartNo = SplitPath[4];
             PartInfo.CusRev = SplitPath[5];
             PartInfo.OpNum = Regex.Replace(Path.GetFileNameWithoutExtension(displayPart.FullPath).Split('_')[1], "[^0-9]", "");
-
+            /*
             #region 取代Server路徑字串
             cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[Server_IP]", cMETE_Download_Upload_Path.Server_IP);
             cMETE_Download_Upload_Path.Server_ShareStr = cMETE_Download_Upload_Path.Server_ShareStr.Replace("[CusName]", PartInfo.CusName);

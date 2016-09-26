@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Licensee: 
+License Type: Evaluation
+-->
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   auto-import="false"
+                   assembly="CaxGlobaltek"
+                   namespace="CaxGlobaltek">
+	<class name="Com_TEMain" table="Com_TEMain" lazy="false">
+		<id name="teSrNo" column="teSrNo" type="Int32" unsaved-value="0">
+			<generator class="identity">
+			</generator>
+		</id>
+		<property name="createDate" column="createDate" type="String" length="255" not-null="true"/>
+		<many-to-one name="comPartOperation" column="partOperationSrNo" class="Com_PartOperation" not-null="true" lazy="proxy">
+		</many-to-one>
+		<list name="comShopDoc" lazy="true" cascade="save-update" inverse="true">
+			<key column="teSrNo"/>
+      <index column="comShopDocIdx"/>
+			<one-to-many class="Com_ShopDoc"/>
+		</list>
+	</class>
+</hibernate-mapping>

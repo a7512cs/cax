@@ -50,3 +50,9 @@ D:\GlobalCode\9_PostProcessor\PostProcessor\obj\Release\PostProcessor.PostProces
 D:\GlobalCode\9_PostProcessor\PostProcessor\obj\Release\PostProcessor.csproj.GenerateResource.Cache
 D:\GlobalCode\9_PostProcessor\PostProcessor\obj\Release\PostProcessor.dll
 D:\GlobalCode\9_PostProcessor\PostProcessor\obj\Release\PostProcessor.pdb
+D:\GlobalCode\9_PostProcessor\PostProcessor\bin\Release\NHibernate.dll
+D:\GlobalCode\9_PostProcessor\PostProcessor\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\9_PostProcessor\PostProcessor\bin\Release\NHibernate.pdb
+D:\GlobalCode\9_PostProcessor\PostProcessor\bin\Release\NHibernate.xml
+D:\GlobalCode\9_PostProcessor\PostProcessor\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\9_PostProcessor\PostProcessor\bin\Release\Iesi.Collections.xml

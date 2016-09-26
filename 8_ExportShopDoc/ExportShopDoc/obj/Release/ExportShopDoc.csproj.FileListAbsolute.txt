@@ -51,3 +51,9 @@ D:\3_GlobalTek.Code\8_ExportShopDoc\ExportShopDoc\obj\Release\ExportShopDoc.Expo
 D:\3_GlobalTek.Code\8_ExportShopDoc\ExportShopDoc\obj\Release\ExportShopDoc.csproj.GenerateResource.Cache
 D:\3_GlobalTek.Code\8_ExportShopDoc\ExportShopDoc\obj\Release\ExportShopDoc.dll
 D:\3_GlobalTek.Code\8_ExportShopDoc\ExportShopDoc\obj\Release\ExportShopDoc.pdb
+D:\GlobalCode\8_ExportShopDoc\ExportShopDoc\bin\Release\NHibernate.dll
+D:\GlobalCode\8_ExportShopDoc\ExportShopDoc\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\8_ExportShopDoc\ExportShopDoc\bin\Release\NHibernate.pdb
+D:\GlobalCode\8_ExportShopDoc\ExportShopDoc\bin\Release\NHibernate.xml
+D:\GlobalCode\8_ExportShopDoc\ExportShopDoc\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\8_ExportShopDoc\ExportShopDoc\bin\Release\Iesi.Collections.xml

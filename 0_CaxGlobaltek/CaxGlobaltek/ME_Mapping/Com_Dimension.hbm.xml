@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Licensee: 
+License Type: Evaluation
+-->
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+                   auto-import="false"
+                   assembly="CaxGlobaltek"
+                   namespace="CaxGlobaltek">
+	<class name="Com_Dimension" table="Com_Dimension" lazy="false">
+		<id name="dimensionSrNo" column="dimensionSrNo" type="Int32" unsaved-value="0">
+			<generator class="identity">
+			</generator>
+		</id>
+		<property name="characteristic" column="characteristic" type="String" length="255" not-null="false"/>
+		<property name="zoneShape" column="zoneShape" type="String" length="255" not-null="false"/>
+		<property name="toleranceValue" column="toleranceValue" type="String" length="255" not-null="false"/>
+		<property name="materialModifer" column="materialModifer" type="String" length="255" not-null="false"/>
+		<property name="primaryDatum" column="primaryDatum" type="String" length="255" not-null="false"/>
+		<property name="primaryMaterialModifer" column="primaryMaterialModifer" type="String" length="255" not-null="false"/>
+		<property name="secondDatum" column="secondDatum" type="String" length="255" not-null="false"/>
+		<property name="secondMaterialModifer" column="secondMaterialModifer" type="String" length="255" not-null="false"/>
+		<property name="tertiaryDatum" column="tertiaryDatum" type="String" length="255" not-null="false"/>
+		<property name="tertiaryMaterialModifer" column="tertiaryMaterialModifer" type="String" length="255" not-null="false"/>
+		<property name="maxTolerance" column="maxTolerance" type="String" length="255" not-null="false"/>
+		<property name="minTolerance" column="minTolerance" type="String" length="255" not-null="false"/>
+		<property name="beforeText" column="beforeText" type="String" length="255" not-null="false"/>
+		<property name="mainText" column="mainText" type="String" length="255" not-null="false"/>
+		<property name="toleranceSymbol" column="toleranceSymbol" type="String" length="255" not-null="false"/>
+		<property name="upTolerance" column="upTolerance" type="String" length="255" not-null="false"/>
+		<property name="lowTolerance" column="lowTolerance" type="String" length="255" not-null="false"/>
+		<many-to-one name="comMEMain" column="meSrNo" class="Com_MEMain" not-null="true" lazy="proxy">
+		</many-to-one>
+	</class>
+</hibernate-mapping>

@@ -39,3 +39,9 @@ D:\GlobalCode\1_PEGenerateFile_New\PEGenerateFile\obj\Release\PEGenerateFile.Pro
 D:\GlobalCode\1_PEGenerateFile_New\PEGenerateFile\obj\Release\PEGenerateFile.csproj.GenerateResource.Cache
 D:\GlobalCode\1_PEGenerateFile_New\PEGenerateFile\obj\Release\PEGenerateFile.dll
 D:\GlobalCode\1_PEGenerateFile_New\PEGenerateFile\obj\Release\PEGenerateFile.pdb
+D:\GlobalCode\1_PEGenerateFile\PEGenerateFile\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\1_PEGenerateFile\PEGenerateFile\bin\Release\NHibernate.dll
+D:\GlobalCode\1_PEGenerateFile\PEGenerateFile\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\1_PEGenerateFile\PEGenerateFile\bin\Release\Iesi.Collections.xml
+D:\GlobalCode\1_PEGenerateFile\PEGenerateFile\bin\Release\NHibernate.pdb
+D:\GlobalCode\1_PEGenerateFile\PEGenerateFile\bin\Release\NHibernate.xml

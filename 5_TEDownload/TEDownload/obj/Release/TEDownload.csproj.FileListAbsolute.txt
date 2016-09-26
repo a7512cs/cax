@@ -50,3 +50,9 @@ D:\GlobalCode\5_TEDownload_New\TEDownload\obj\Release\TEDownload.TEDownloadDlg.r
 D:\GlobalCode\5_TEDownload_New\TEDownload\obj\Release\TEDownload.csproj.GenerateResource.Cache
 D:\GlobalCode\5_TEDownload_New\TEDownload\obj\Release\TEDownload.dll
 D:\GlobalCode\5_TEDownload_New\TEDownload\obj\Release\TEDownload.pdb
+D:\GlobalCode\5_TEDownload\TEDownload\bin\Release\NHibernate.dll
+D:\GlobalCode\5_TEDownload\TEDownload\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\5_TEDownload\TEDownload\bin\Release\NHibernate.pdb
+D:\GlobalCode\5_TEDownload\TEDownload\bin\Release\NHibernate.xml
+D:\GlobalCode\5_TEDownload\TEDownload\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\5_TEDownload\TEDownload\bin\Release\Iesi.Collections.xml

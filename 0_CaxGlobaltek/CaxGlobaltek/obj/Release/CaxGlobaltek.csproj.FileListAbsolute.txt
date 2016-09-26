@@ -35,3 +35,10 @@ D:\3_GlobalTek.Code\0_CaxGlobaltek\CaxGlobaltek\obj\Release\CaxGlobaltek.csprojR
 D:\3_GlobalTek.Code\0_CaxGlobaltek\CaxGlobaltek\obj\Release\CaxGlobaltek.dll
 D:\3_GlobalTek.Code\0_CaxGlobaltek\CaxGlobaltek\obj\Release\CaxGlobaltek.pdb
 D:\3_GlobalTek.Code\0_CaxGlobaltek\CaxGlobaltek\bin\Release\CaxGlobaltek.XML
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NHibernate.dll
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\Iesi.Collections.xml
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NHibernate.pdb
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NHibernate.xml
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\hibernate.cfg.xml

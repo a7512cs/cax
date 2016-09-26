@@ -49,3 +49,9 @@ D:\GlobalCode\2_MEDownload_New\MEDownload\obj\Release\MEDownload.MEDownloadDlg.r
 D:\GlobalCode\2_MEDownload_New\MEDownload\obj\Release\MEDownload.csproj.GenerateResource.Cache
 D:\GlobalCode\2_MEDownload_New\MEDownload\obj\Release\MEDownload.dll
 D:\GlobalCode\2_MEDownload_New\MEDownload\obj\Release\MEDownload.pdb
+D:\GlobalCode\2_MEDownload\MEDownload\bin\Release\NHibernate.dll
+D:\GlobalCode\2_MEDownload\MEDownload\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\2_MEDownload\MEDownload\bin\Release\NHibernate.pdb
+D:\GlobalCode\2_MEDownload\MEDownload\bin\Release\NHibernate.xml
+D:\GlobalCode\2_MEDownload\MEDownload\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\2_MEDownload\MEDownload\bin\Release\Iesi.Collections.xml

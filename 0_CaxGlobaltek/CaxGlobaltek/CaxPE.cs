@@ -3,9 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Iesi.Collections.Generic;
 
 namespace CaxGlobaltek
 {
+    public class PECreateData
+    {
+        public virtual string partName { get; set; }
+        public virtual string cusName { get; set; }
+        public virtual string cusRev { get; set; }
+        public virtual List<Operation> listOperation { get; set; }
+        public virtual List<string> oper1Ary { get; set; }
+        public virtual List<string> oper2Ary { get; set; }
+        //public string PartPath { get; set; }
+    }
+
     #region OperationArray JSON 結構
 
     public class OperationArray
@@ -16,8 +28,6 @@ namespace CaxGlobaltek
 
     #endregion
 
-    #region CreateDat JSON 結構
-
     public class Operation
     {
         public string Oper1 { get; set; }
@@ -27,18 +37,9 @@ namespace CaxGlobaltek
         //public string ThridOperPartPath { get; set; }
     }
 
-    public class PECreateData
-    {
-        public string CusName { get; set; }
-        public string PartNo { get; set; }
-        public string CusRev { get; set; }
-        //public string PartPath { get; set; }
-        public List<Operation> ListOperation { get; set; }
-        public List<string> Oper1Ary { get; set; }
-        public List<string> Oper2Ary { get; set; }
-    }
+    
 
-    #endregion
+
 
     #region 客戶名稱 JSON 結構
 

@@ -39,3 +39,9 @@ D:\GlobalCode\11_PartInformation\PartInformation\obj\Release\PartInformation.Pro
 D:\GlobalCode\11_PartInformation\PartInformation\obj\Release\PartInformation.csproj.GenerateResource.Cache
 D:\GlobalCode\11_PartInformation\PartInformation\obj\Release\PartInformation.dll
 D:\GlobalCode\11_PartInformation\PartInformation\obj\Release\PartInformation.pdb
+D:\GlobalCode\11_PartInformation\PartInformation\bin\Release\NHibernate.dll
+D:\GlobalCode\11_PartInformation\PartInformation\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\11_PartInformation\PartInformation\bin\Release\NHibernate.pdb
+D:\GlobalCode\11_PartInformation\PartInformation\bin\Release\NHibernate.xml
+D:\GlobalCode\11_PartInformation\PartInformation\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\11_PartInformation\PartInformation\bin\Release\Iesi.Collections.xml

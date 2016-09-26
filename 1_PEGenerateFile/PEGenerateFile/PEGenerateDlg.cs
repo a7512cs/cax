@@ -12,7 +12,8 @@ using CaxGlobaltek;
 using NXOpen;
 using NXOpen.UF;
 using NXOpen.Utilities;
-
+using NHibernate;
+using NHibernate.Criterion;
 
 
 namespace PEGenerateFile
@@ -22,23 +23,20 @@ namespace PEGenerateFile
         private static UFSession theUfSession = UFSession.GetUFSession();
         private static Session theSession = Session.GetSession();
 
-        public bool status;
-        public static string Oper1String = "";
-        public static string Oper2String = "";
+        public bool status,Is_OldPart = false;
+        public static string Oper1String = "",Oper2String = "",CusName = "",PartNo = "",CusRev = "",PartPath = "-1",CurrentOldCusName = "",CurrentOldPartNo = "",CurrentOldCusRev = "";
         public static OperationArray cOperationArray = new OperationArray();
-        public static string[] Oper2StringAry = new string[]{};
+        //public static string[] Oper2StringAry = new string[]{};
         public static GridPanel panel = new GridPanel();
-        public static string CusName = "";
-        public static string PartNo = "";
-        public static string CusRev = "";
-        public static string PartPath = "-1";
         public static Dictionary<string, PECreateData> DicDataSave = new Dictionary<string, PECreateData>();
         public static METEDownloadData cMETEDownloadData = new METEDownloadData();
-        public static string CurrentOldCusName = "", CurrentOldPartNo = "", CurrentOldCusRev = "";
         public static int IndexofCusName = -1, IndexofPartNo = -1, IndexofCusRev = -1;
-        public static bool Is_OldPart = false;
         public static List<string> ListAddOper = new List<string>();
         public static PECreateData cPECreateData = new PECreateData();
+        public static Com_PEMain cCom_PEMain = new Com_PEMain();
+        public static IList<Sys_Operation2> operation2Name = new List<Sys_Operation2>();
+        public static Com_PartOperation cCom_PartOperation = new Com_PartOperation();
+
 
         public PEGenerateDlg()
         {
@@ -61,49 +59,64 @@ namespace PEGenerateFile
             comboBoxOldCusRev.Enabled = false;
             #endregion
 
-
-            /*
-            #region 舊客戶資料填入
-            //取得METEDownloadData資料
-            CaxGetDatData.GetMETEDownloadData(out cMETEDownloadData);
-            //存入下拉選單-客戶
-            for (int i = 0; i < cMETEDownloadData.EntirePartAry.Count; i++)
+            using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
             {
-                comboBoxOldCusName.Items.Add(cMETEDownloadData.EntirePartAry[i].CusName);
+                //IList<Sys_Customer> customerName = new List<Sys_Customer>();
+                //customerName = session.QueryOver<Sys_Customer>().List();
+                //comboBoxCusName.Items.AddRange(((List<string>)customerName).ToArray());
+
+                //IList<string> customerName = session.QueryOver<Sys_Customer>().Select(x => x.customerName).List<string>();
+                //comboBoxCusName.Items.AddRange(((List<string>)customerName).ToArray());
+
+                IList<Sys_Customer> customerName = session.QueryOver<Sys_Customer>().List<Sys_Customer>();
+                comboBoxCusName.DisplayMember = "customerName";
+                comboBoxCusName.ValueMember = "customerSrNo";
+                foreach (Sys_Customer i in customerName)
+                {
+                    comboBoxCusName.Items.Add(i);
+                    //comboBoxCusName.Items.Add(new { customerName = i.customerName, customerSrNo = i.customerSrNo.ToString() });
+                }
+                //comboBoxCusName.DataSource = new BindingSource(customerName, null);
+
+                //可由CAX查到流水號
+                //var aa = session.QueryOver<Sys_Customer>().Where(x => x.customerName == "CAX").Select(x => x.customerSrNo).SingleOrDefault<Int32>();
+                //CaxLog.ShowListingWindow(aa.ToString());
+
+                //方法一
+                operation2Name = session.QueryOver<Sys_Operation2>().List<Sys_Operation2>();
+                //方法二
+                //IList<string> operation2 = session.QueryOver<Sys_Operation2>().Select(x => x.operation2Name).List<string>();
+                //Oper2StringAry = ((List<string>)operation2).ToArray();
+                
+
+                session.Close();
             }
-            comboBoxOldPartNo.Enabled = false;
-            comboBoxOldCusRev.Enabled = false;
-
-            #endregion
-            */
-
+            
+            
             //取得CustomerName配置檔
-            string CustomerName_dat = "CustomerName.dat";
-            string CustomerNameDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), CustomerName_dat);
-
-            //讀取OperationArray配置檔內容，並存入結構中
-            CusName cCusName = new CusName();
-            CaxPE.ReadCustomerNameData(CustomerNameDatPath, out cCusName);
+            //string CustomerName_dat = "CustomerName.dat";
+            //string CustomerNameDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), CustomerName_dat);
+            //CusName cCusName = new CusName();
+            //CaxPE.ReadCustomerNameData(CustomerNameDatPath, out cCusName);
 
             //將客戶名稱填入下拉選單-客戶
-            comboBoxCusName.Items.AddRange(cCusName.CustomerName.ToArray());
+            //comboBoxCusName.Items.AddRange(cCusName.CustomerName.ToArray());
 
             //取得OperationArray配置檔
-            string OperationArray_dat = "OperationArray.dat";
-            string OperationArrayDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), OperationArray_dat);
-
-            //讀取OperationArray配置檔內容，並存入結構中
-            CaxPE.ReadOperationArrayData(OperationArrayDatPath, out cOperationArray);
+            //string OperationArray_dat = "OperationArray.dat";
+            //string OperationArrayDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), OperationArray_dat);
+            //CaxPE.ReadOperationArrayData(OperationArrayDatPath, out cOperationArray);
 
             //將Operation2Array塞入陣列Oper2StringAry中
-            Oper2StringAry = cOperationArray.Operation2Array.ToArray();
+            //Oper2StringAry = cOperationArray.Operation2Array.ToArray();
             
             //建立GridPanel
             panel = OperSuperGridControl.PrimaryGrid;
             
             //設定製程別的基礎型態與數據
             panel.Columns["Oper2Ary"].EditorType = typeof(PEComboBox);
-            panel.Columns["Oper2Ary"].EditorParams = new object[] { Oper2StringAry };
+            //panel.Columns["Oper2Ary"].EditorParams = new object[] { Oper2StringAry };
+            panel.Columns["Oper2Ary"].EditorParams = new object[] { operation2Name };
 
             //設定刪除的基礎型態
             panel.Columns["Delete"].EditorType = typeof(OperDeleteBtn);
@@ -133,7 +146,7 @@ namespace PEGenerateFile
                 MessageBox.Show("檢查製程序失敗");
                 return;
             }
-
+            
             //判斷使用者選取的製程序是否已經存在於OperSuperGridControl
             //CaxLog.ShowListingWindow(panel.Rows.Count.ToString());
             if (!(panel.Rows.Count == 0))
@@ -152,7 +165,7 @@ namespace PEGenerateFile
                     }
                 }
             }
-
+            
             //將製程序填入OperSuperGridControl
             GridRow row = new GridRow();
             foreach (var i in ListSelectOper)
@@ -470,13 +483,13 @@ namespace PEGenerateFile
                     #endregion
 
                     #region 將值儲存起來
-                    cPECreateData.CusName = comboBoxOldCusName.Text;
-                    cPECreateData.PartNo = comboBoxOldPartNo.Text;
-                    cPECreateData.CusRev = comboBoxOldCusRev.Text.ToUpper();
-                    cPECreateData.ListOperation = new List<Operation>();
+                    cPECreateData.cusName = comboBoxOldCusName.Text;
+                    cPECreateData.partName = comboBoxOldPartNo.Text;
+                    cPECreateData.cusRev = comboBoxOldCusRev.Text.ToUpper();
+                    cPECreateData.listOperation = new List<Operation>();
                     Operation cOperation = new Operation();
-                    cPECreateData.Oper1Ary = new List<string>();
-                    cPECreateData.Oper2Ary = new List<string>();
+                    cPECreateData.oper1Ary = new List<string>();
+                    cPECreateData.oper2Ary = new List<string>();
                     for (int i = 0; i < panel.Rows.Count; i++)
                     {
                         if (panel.Rows.Count == 0)
@@ -495,10 +508,10 @@ namespace PEGenerateFile
                         cOperation.Oper1 = panel.GetCell(i, 0).Value.ToString();
                         cOperation.Oper2 = panel.GetCell(i, 1).Value.ToString();
 
-                        cPECreateData.ListOperation.Add(cOperation);
+                        cPECreateData.listOperation.Add(cOperation);
 
-                        cPECreateData.Oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
-                        cPECreateData.Oper2Ary.Add(panel.GetCell(i, 1).Value.ToString());
+                        cPECreateData.oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
+                        cPECreateData.oper2Ary.Add(panel.GetCell(i, 1).Value.ToString());
                     }
                     #endregion
 
@@ -511,6 +524,8 @@ namespace PEGenerateFile
                         return;
                     }
                     #endregion
+
+                    //寫Update Datebase
 
                 }
                 else
@@ -613,14 +628,14 @@ namespace PEGenerateFile
 
                     #region 將值儲存起來
 
-                    cPECreateData.CusName = CusName;
-                    cPECreateData.PartNo = PartNo;
-                    cPECreateData.CusRev = CusRev.ToUpper();
+                    cPECreateData.cusName = CusName;
+                    cPECreateData.partName = PartNo;
+                    cPECreateData.cusRev = CusRev.ToUpper();
                     //cPE_OutPutDat.PartPath = PartPath;
-                    cPECreateData.ListOperation = new List<Operation>();
+                    cPECreateData.listOperation = new List<Operation>();
                     Operation cOperation = new Operation();
-                    cPECreateData.Oper1Ary = new List<string>();
-                    cPECreateData.Oper2Ary = new List<string>();
+                    cPECreateData.oper1Ary = new List<string>();
+                    cPECreateData.oper2Ary = new List<string>();
                     for (int i = 0; i < panel.Rows.Count; i++)
                     {
                     if (panel.Rows.Count == 0)
@@ -682,10 +697,10 @@ namespace PEGenerateFile
                     //建立三階檔案路徑
                     ThridOperPartPath = Path.GetDirectoryName(AsmCompFileFullPath);
 
-                    cPECreateData.ListOperation.Add(cOperation);
+                    cPECreateData.listOperation.Add(cOperation);
 
-                    cPECreateData.Oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
-                    cPECreateData.Oper2Ary.Add(panel.GetCell(i, 1).Value.ToString());
+                    cPECreateData.oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
+                    cPECreateData.oper2Ary.Add(panel.GetCell(i, 1).Value.ToString()); 
                     }
 
                     #endregion
@@ -729,13 +744,13 @@ namespace PEGenerateFile
                     //}
                     //ListOperDouble.Sort();
 
-                    for (int i = 0; i < cPECreateData.ListOperation.Count; i++)
+                    for (int i = 0; i < cPECreateData.listOperation.Count; i++)
                     {
                         //設定一階為WorkComp
                         CaxAsm.SetWorkComponent(null);
 
                         //建立二階製程檔
-                        OPCompName = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OP" + cPECreateData.ListOperation[i].Oper1 + ".prt");
+                        OPCompName = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OP" + cPECreateData.listOperation[i].Oper1 + ".prt");
                         status = CaxAsm.CreateNewEmptyComp(OPCompName, out tempComp);
                         if (!status)
                         {
@@ -983,7 +998,71 @@ namespace PEGenerateFile
 
                     #endregion
 
+                    //寫Save Datebase
+                    using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
+                    {
+                        
+
+                        #region 插入Com_PEMain
+                        cCom_PEMain.partName = cPECreateData.partName;
+                        cCom_PEMain.customerVer = cPECreateData.cusRev;
+                        cCom_PEMain.createDate = DateTime.Now.ToString();
+                        
+
+                        IList<Com_PartOperation> listComPartOperation = new List<Com_PartOperation>();
+                        foreach (Operation i in cPECreateData.listOperation)
+                        {
+                            cCom_PartOperation = new Com_PartOperation();
+                            cCom_PartOperation.operation1 = i.Oper1;
+                            cCom_PartOperation.sysOperation2 = session.QueryOver<Sys_Operation2>()
+                                                                .Where(x => x.operation2Name == i.Oper2).SingleOrDefault();
+                            cCom_PartOperation.comPEMain = cCom_PEMain;
+                            listComPartOperation.Add(cCom_PartOperation);
+                        }
+                        cCom_PEMain.comPartOperation = listComPartOperation;
+
+                        using (ITransaction trans = session.BeginTransaction())
+                        {
+                            //session.Save(cCom_PartOperation);
+                            session.Save(cCom_PEMain);
+
+                            trans.Commit();
+                        }
+                        #endregion
+
+
+                        /*
+                        #region 插入Com_PartOperation
+                        foreach (Operation i in cPECreateData.listOperation)
+                        {
+                            cCom_PartOperation = new Com_PartOperation();
+                            cCom_PartOperation.operation1 = i.Oper1;
+                            cCom_PartOperation.sysOperation2 = session.QueryOver<Sys_Operation2>()
+                                                                .Where(x => x.operation2Name == i.Oper2).SingleOrDefault();
+                            cCom_PartOperation.comPEMain = session.QueryOver<Com_PEMain>()
+                                                            .Where(x => x.partName == PartNo).SingleOrDefault();
+                            using (ITransaction trans = session.BeginTransaction())
+                            {
+                                session.Save(cCom_PartOperation);
+                                trans.Commit();
+                            }
+                        }
+                        #endregion
+                        */
+
+                        session.Close();
+                        
+
+
+
+                    }
+
                 }
+
+                
+                
+                
+                //Console.Read();//暫停畫面用
 
                 CaxAsm.SetWorkComponent(null);
                 CaxPart.Save();
@@ -1121,9 +1200,9 @@ namespace PEGenerateFile
 
             //將舊資料填入SuperGridControl
             GridRow row = new GridRow();
-            for (int i = 0; i < cPECreateData.Oper1Ary.Count;i++ )
+            for (int i = 0; i < cPECreateData.oper1Ary.Count;i++ )
             {
-                row = new GridRow(cPECreateData.Oper1Ary[i], cPECreateData.Oper2Ary[i], "刪除");
+                row = new GridRow(cPECreateData.oper1Ary[i], cPECreateData.oper2Ary[i], "刪除");
                 panel.Rows.Add(row);
             }
 
@@ -1149,6 +1228,11 @@ namespace PEGenerateFile
             */
             Is_OldPart = true;
         }
+
+        private void comboBoxCusName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            cCom_PEMain.sysCustomer = ((Sys_Customer)comboBoxCusName.SelectedItem);
+        }
     }
      
     public class PEComboBox : GridComboBoxExEditControl
@@ -1156,20 +1240,26 @@ namespace PEGenerateFile
         public PEComboBox(IEnumerable Oper2StringAry)
         {
             DataSource = Oper2StringAry;
+
+            DisplayMember = "operation2Name";
+            //ValueMember = "operation2SrNo";
+            
             DropDownStyle = ComboBoxStyle.DropDownList;
             //this.MouseWheel += new MouseEventHandler(Oper2Changed);
-            //this.DropDownClosed += new EventHandler(Oper2Changed);
+            this.DropDownClosed += new EventHandler(Oper2Changed);
         }
 
         public void Oper2Changed(object sender, EventArgs e)
         {
-            
-//             PEComboBox aa = (PEComboBox)sender;
-//             
-//             int index = aa.EditorCell.RowIndex;
-//             string b = aa.EditorCell.GridRow.Cells["Oper2Ary"].Value.ToString();
-// 
-//             MessageBox.Show(index.ToString());
+            //Sys_Operation2 a = new Sys_Operation2();
+            //a = (Sys_Operation2)SelectedItem;
+            //CaxLog.ShowListingWindow(a.operation2SrNo.ToString());
+            //CaxLog.ShowListingWindow(a.operation2Name.ToString());
+
+            //CaxLog.ShowListingWindow("1");
+            //PEComboBox aa = (PEComboBox)sender;
+            //int index = aa.EditorCell.RowIndex;
+            //MessageBox.Show(index.ToString());
             //string a = (string)sender.ToString();
             //MessageBox.Show(a);
         }

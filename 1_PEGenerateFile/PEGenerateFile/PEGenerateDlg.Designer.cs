@@ -522,6 +522,7 @@
             this.comboBoxCusName.Size = new System.Drawing.Size(198, 22);
             this.comboBoxCusName.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.comboBoxCusName.TabIndex = 8;
+            this.comboBoxCusName.SelectedIndexChanged += new System.EventHandler(this.comboBoxCusName_SelectedIndexChanged);
             // 
             // labelX4
             // 

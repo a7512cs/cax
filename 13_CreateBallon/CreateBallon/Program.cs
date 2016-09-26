@@ -599,6 +599,20 @@ public class Program
                             CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
                             #endregion
                         }
+                        else if (DimeType == "NXOpen.Annotations.CylindricalDimension")
+                        {
+                            #region CylindricalDimension取Location
+                            NXOpen.Annotations.CylindricalDimension temp = (NXOpen.Annotations.CylindricalDimension)singleObj;
+                            CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
+                            #endregion
+                        }
+                        else if (DimeType == "NXOpen.Annotations.ChamferDimension")
+                        {
+                            #region ChamferDimension取Location
+                            NXOpen.Annotations.ChamferDimension temp = (NXOpen.Annotations.ChamferDimension)singleObj;
+                            CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
+                            #endregion
+                        }
 
                         #region 計算泡泡座標
                         DimenData sDimenData = new DimenData();

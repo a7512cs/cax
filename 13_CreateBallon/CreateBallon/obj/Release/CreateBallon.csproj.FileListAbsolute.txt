@@ -37,3 +37,9 @@ D:\GlobalCode\13_CreateBallon\CreateBallon\obj\Release\CreateBallon.CreateBallon
 D:\GlobalCode\13_CreateBallon\CreateBallon\obj\Release\CreateBallon.csproj.GenerateResource.Cache
 D:\GlobalCode\13_CreateBallon\CreateBallon\obj\Release\CreateBallon.dll
 D:\GlobalCode\13_CreateBallon\CreateBallon\obj\Release\CreateBallon.pdb
+D:\GlobalCode\13_CreateBallon\CreateBallon\bin\Release\NHibernate.dll
+D:\GlobalCode\13_CreateBallon\CreateBallon\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\13_CreateBallon\CreateBallon\bin\Release\NHibernate.pdb
+D:\GlobalCode\13_CreateBallon\CreateBallon\bin\Release\NHibernate.xml
+D:\GlobalCode\13_CreateBallon\CreateBallon\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\13_CreateBallon\CreateBallon\bin\Release\Iesi.Collections.xml
