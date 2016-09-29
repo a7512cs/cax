@@ -35,7 +35,6 @@
             this.labelX2 = new DevComponents.DotNetBar.LabelX();
             this.textCusRev = new DevComponents.DotNetBar.Controls.TextBoxX();
             this.labelX3 = new DevComponents.DotNetBar.LabelX();
-            this.SelectPartFileBtn = new DevComponents.DotNetBar.ButtonX();
             this.groupPanel1 = new DevComponents.DotNetBar.Controls.GroupPanel();
             this.check380 = new System.Windows.Forms.CheckBox();
             this.check370 = new System.Windows.Forms.CheckBox();
@@ -48,7 +47,6 @@
             this.check300 = new System.Windows.Forms.CheckBox();
             this.check999 = new System.Windows.Forms.CheckBox();
             this.check290 = new System.Windows.Forms.CheckBox();
-            this.OperCreateBtn = new DevComponents.DotNetBar.ButtonX();
             this.check280 = new System.Windows.Forms.CheckBox();
             this.check270 = new System.Windows.Forms.CheckBox();
             this.check260 = new System.Windows.Forms.CheckBox();
@@ -67,16 +65,17 @@
             this.labelX7 = new DevComponents.DotNetBar.LabelX();
             this.comboBoxOldCusName = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.labelX5 = new DevComponents.DotNetBar.LabelX();
-            this.OldPartOK = new DevComponents.DotNetBar.ButtonX();
             this.comboBoxOldPartNo = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.labelX6 = new DevComponents.DotNetBar.LabelX();
-            this.OK = new DevComponents.DotNetBar.ButtonX();
             this.OperSuperGridControl = new DevComponents.DotNetBar.SuperGrid.SuperGridControl();
             this.gridColumn1 = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.groupPanel4 = new DevComponents.DotNetBar.Controls.GroupPanel();
-            this.UserDefine = new DevComponents.DotNetBar.ButtonX();
             this.UserDefineProcess = new DevComponents.DotNetBar.Controls.TextBoxX();
+            this.UserDefine = new DevComponents.DotNetBar.ButtonX();
+            this.OK = new DevComponents.DotNetBar.ButtonX();
+            this.SelectPartFileBtn = new DevComponents.DotNetBar.ButtonX();
+            this.OperCreateBtn = new DevComponents.DotNetBar.ButtonX();
             this.Oper2Ary = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             this.Delete = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             this.groupPanel1.SuspendLayout();
@@ -157,18 +156,6 @@
             this.labelX3.Size = new System.Drawing.Size(87, 23);
             this.labelX3.TabIndex = 4;
             this.labelX3.Text = "客戶檔案：";
-            // 
-            // SelectPartFileBtn
-            // 
-            this.SelectPartFileBtn.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.SelectPartFileBtn.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.SelectPartFileBtn.Location = new System.Drawing.Point(75, 66);
-            this.SelectPartFileBtn.Name = "SelectPartFileBtn";
-            this.SelectPartFileBtn.Size = new System.Drawing.Size(172, 23);
-            this.SelectPartFileBtn.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.SelectPartFileBtn.TabIndex = 6;
-            this.SelectPartFileBtn.Text = "瀏覽";
-            this.SelectPartFileBtn.Click += new System.EventHandler(this.SelectPartFileBtn_Click);
             // 
             // groupPanel1
             // 
@@ -350,18 +337,6 @@
             this.check290.TabIndex = 9;
             this.check290.Text = "290";
             this.check290.UseVisualStyleBackColor = false;
-            // 
-            // OperCreateBtn
-            // 
-            this.OperCreateBtn.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.OperCreateBtn.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.OperCreateBtn.Location = new System.Drawing.Point(15, 324);
-            this.OperCreateBtn.Name = "OperCreateBtn";
-            this.OperCreateBtn.Size = new System.Drawing.Size(106, 23);
-            this.OperCreateBtn.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.OperCreateBtn.TabIndex = 4;
-            this.OperCreateBtn.Text = "加入";
-            this.OperCreateBtn.Click += new System.EventHandler(this.OperCreateBtn_Click);
             // 
             // check280
             // 
@@ -556,7 +531,6 @@
             this.groupPanel3.Controls.Add(this.labelX7);
             this.groupPanel3.Controls.Add(this.comboBoxOldCusName);
             this.groupPanel3.Controls.Add(this.labelX5);
-            this.groupPanel3.Controls.Add(this.OldPartOK);
             this.groupPanel3.Controls.Add(this.comboBoxOldPartNo);
             this.groupPanel3.Controls.Add(this.labelX6);
             this.groupPanel3.DisabledBackColor = System.Drawing.Color.Empty;
@@ -648,17 +622,6 @@
             this.labelX5.TabIndex = 3;
             this.labelX5.Text = "客戶：";
             // 
-            // OldPartOK
-            // 
-            this.OldPartOK.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.OldPartOK.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.OldPartOK.Location = new System.Drawing.Point(33, 102);
-            this.OldPartOK.Name = "OldPartOK";
-            this.OldPartOK.Size = new System.Drawing.Size(75, 23);
-            this.OldPartOK.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.OldPartOK.TabIndex = 2;
-            this.OldPartOK.Text = "確定";
-            // 
             // comboBoxOldPartNo
             // 
             this.comboBoxOldPartNo.DisplayMember = "Text";
@@ -687,18 +650,6 @@
             this.labelX6.TabIndex = 0;
             this.labelX6.Text = "料號：";
             // 
-            // OK
-            // 
-            this.OK.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.OK.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.OK.Location = new System.Drawing.Point(166, 528);
-            this.OK.Name = "OK";
-            this.OK.Size = new System.Drawing.Size(266, 28);
-            this.OK.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.OK.TabIndex = 12;
-            this.OK.Text = "建立";
-            this.OK.Click += new System.EventHandler(this.OK_Click);
-            // 
             // OperSuperGridControl
             // 
             this.OperSuperGridControl.FilterExprColors.SysFunction = System.Drawing.Color.DarkRed;
@@ -707,6 +658,7 @@
             // 
             // 
             // 
+            this.OperSuperGridControl.PrimaryGrid.ColumnDragBehavior = DevComponents.DotNetBar.SuperGrid.ColumnDragBehavior.None;
             this.OperSuperGridControl.PrimaryGrid.Columns.Add(this.gridColumn1);
             this.OperSuperGridControl.PrimaryGrid.Columns.Add(this.Oper2Ary);
             this.OperSuperGridControl.PrimaryGrid.Columns.Add(this.Delete);
@@ -768,18 +720,6 @@
             this.groupPanel4.TabIndex = 14;
             this.groupPanel4.Text = "自定義製程";
             // 
-            // UserDefine
-            // 
-            this.UserDefine.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.UserDefine.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.UserDefine.Location = new System.Drawing.Point(150, 5);
-            this.UserDefine.Name = "UserDefine";
-            this.UserDefine.Size = new System.Drawing.Size(75, 23);
-            this.UserDefine.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.UserDefine.TabIndex = 1;
-            this.UserDefine.Text = "新增";
-            this.UserDefine.Click += new System.EventHandler(this.UserDefine_Click);
-            // 
             // UserDefineProcess
             // 
             // 
@@ -792,6 +732,60 @@
             this.UserDefineProcess.PreventEnterBeep = true;
             this.UserDefineProcess.Size = new System.Drawing.Size(100, 22);
             this.UserDefineProcess.TabIndex = 0;
+            // 
+            // UserDefine
+            // 
+            this.UserDefine.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.UserDefine.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.UserDefine.Image = global::PEGenerateFile.Properties.Resources.add_16px;
+            this.UserDefine.Location = new System.Drawing.Point(150, 5);
+            this.UserDefine.Name = "UserDefine";
+            this.UserDefine.Size = new System.Drawing.Size(54, 23);
+            this.UserDefine.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.UserDefine.TabIndex = 1;
+            this.UserDefine.Text = "新增";
+            this.UserDefine.Click += new System.EventHandler(this.UserDefine_Click);
+            // 
+            // OK
+            // 
+            this.OK.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.OK.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.OK.Image = global::PEGenerateFile.Properties.Resources.create_24px;
+            this.OK.Location = new System.Drawing.Point(166, 528);
+            this.OK.Name = "OK";
+            this.OK.Size = new System.Drawing.Size(266, 28);
+            this.OK.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.OK.TabIndex = 12;
+            this.OK.Text = "建立";
+            this.OK.Click += new System.EventHandler(this.OK_Click);
+            // 
+            // SelectPartFileBtn
+            // 
+            this.SelectPartFileBtn.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.SelectPartFileBtn.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.SelectPartFileBtn.Image = global::PEGenerateFile.Properties.Resources.folder_16px;
+            this.SelectPartFileBtn.Location = new System.Drawing.Point(75, 66);
+            this.SelectPartFileBtn.Name = "SelectPartFileBtn";
+            this.SelectPartFileBtn.Size = new System.Drawing.Size(63, 23);
+            this.SelectPartFileBtn.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.SelectPartFileBtn.TabIndex = 6;
+            this.SelectPartFileBtn.Text = "瀏覽";
+            this.SelectPartFileBtn.Click += new System.EventHandler(this.SelectPartFileBtn_Click);
+            // 
+            // OperCreateBtn
+            // 
+            this.OperCreateBtn.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.OperCreateBtn.BackColor = System.Drawing.Color.White;
+            this.OperCreateBtn.BackgroundImage = global::PEGenerateFile.Properties.Resources.add_16px;
+            this.OperCreateBtn.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
+            this.OperCreateBtn.Image = global::PEGenerateFile.Properties.Resources.add_16px;
+            this.OperCreateBtn.Location = new System.Drawing.Point(35, 324);
+            this.OperCreateBtn.Name = "OperCreateBtn";
+            this.OperCreateBtn.Size = new System.Drawing.Size(67, 23);
+            this.OperCreateBtn.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
+            this.OperCreateBtn.TabIndex = 4;
+            this.OperCreateBtn.Text = "加入";
+            this.OperCreateBtn.Click += new System.EventHandler(this.OperCreateBtn_Click);
             // 
             // Oper2Ary
             // 
@@ -852,7 +846,6 @@
         private DevComponents.DotNetBar.ButtonX OperCreateBtn;
         private DevComponents.DotNetBar.Controls.GroupPanel groupPanel2;
         private DevComponents.DotNetBar.Controls.GroupPanel groupPanel3;
-        private DevComponents.DotNetBar.ButtonX OldPartOK;
         private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxOldPartNo;
         private DevComponents.DotNetBar.LabelX labelX6;
         private DevComponents.DotNetBar.ButtonX OK;

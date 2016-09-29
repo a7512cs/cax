@@ -127,6 +127,7 @@
             // 
             // 
             // 
+            this.superGridProg.PrimaryGrid.ColumnDragBehavior = DevComponents.DotNetBar.SuperGrid.ColumnDragBehavior.None;
             this.superGridProg.PrimaryGrid.Columns.Add(this.gridColumn1);
             this.superGridProg.PrimaryGrid.Columns.Add(this.gridColumn2);
             this.superGridProg.PrimaryGrid.Columns.Add(this.gridColumn8);

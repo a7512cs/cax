@@ -52,22 +52,22 @@ public class Program
             //取得CustomerName配置檔
             //string CustomerName_dat = "CustomerName.dat";
             //string CustomerNameDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), CustomerName_dat);
-            status = CaxCheckDat.CheckCustomerName();
-            if (!status)
-            {
-                MessageBox.Show("取得CustomerNameDatPath失敗");
-                return retValue;
-            }
+            //status = CaxCheckDat.CheckCustomerName();
+            //if (!status)
+            //{
+            //    MessageBox.Show("取得CustomerNameDatPath失敗");
+            //    return retValue;
+            //}
             
             //取得OperationArray配置檔
             //string OperationArray_dat = "OperationArray.dat";
             //string OperationArrayDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), OperationArray_dat);
-            status = CaxCheckDat.CheckOperationArray();
-            if (!status)
-            {
-                MessageBox.Show("取得OperationArrayDatPath失敗");
-                return retValue;
-            }
+            //status = CaxCheckDat.CheckOperationArray();
+            //if (!status)
+            //{
+            //    MessageBox.Show("取得OperationArrayDatPath失敗");
+            //    return retValue;
+            //}
 
             Application.EnableVisualStyles();
             PEGenerateDlg cPEGenerateDlg = new PEGenerateDlg();

@@ -25,10 +25,9 @@ License Type: Evaluation
 		<property name="createDate" column="createDate" type="String" length="255" not-null="true"/>
 		<many-to-one name="sysCustomer" column="customerSrNo" class="Sys_Customer" not-null="true" lazy="proxy">
 		</many-to-one>
-    <list name="comPartOperation" lazy="true" cascade="save-update" inverse="true">
+    <bag name="comPartOperation" lazy="true" cascade="save-update" inverse="true">
 			<key column="peSrNo"/>
-      <index column="comPartOperationIdx" />
 			<one-to-many class="Com_PartOperation"/>
-		</list>
+		</bag>
 	</class>
 </hibernate-mapping>

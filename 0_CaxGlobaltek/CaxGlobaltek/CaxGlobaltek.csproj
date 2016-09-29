@@ -83,14 +83,19 @@
   <ItemGroup>
     <Content Include="hibernate.cfg.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <EmbeddedResource Include="TE_Mapping\Com_ShopDoc.hbm.xml" />
     <EmbeddedResource Include="TE_Mapping\Com_TEMain.hbm.xml" />
     <EmbeddedResource Include="ME_Mapping\Com_Dimension.hbm.xml" />
     <EmbeddedResource Include="ME_Mapping\Com_MEMain.hbm.xml" />
-    <EmbeddedResource Include="PE_Mapping\Com_PartOperation.hbm.xml" />
+    <EmbeddedResource Include="PE_Mapping\Com_PartOperation.hbm.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="PE_Mapping\Sys_Operation2.hbm.xml" />
-    <EmbeddedResource Include="PE_Mapping\Com_PEMain.hbm.xml" />
+    <EmbeddedResource Include="PE_Mapping\Com_PEMain.hbm.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="PE_Mapping\Sys_Customer.hbm.xml" />
   </ItemGroup>
   <ItemGroup />

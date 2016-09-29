@@ -42,3 +42,4 @@ D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\Iesi.Collections.xml
 D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NHibernate.pdb
 D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\NHibernate.xml
 D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\hibernate.cfg.xml
+D:\GlobalCode\0_CaxGlobaltek\CaxGlobaltek\bin\Release\CaxGlobaltek.XML
