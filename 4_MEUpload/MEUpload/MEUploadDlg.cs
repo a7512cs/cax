@@ -10,6 +10,9 @@ using NXOpen;
 using NXOpen.UF;
 using CaxGlobaltek;
 using System.IO;
+using NHibernate;
+using MEUpload.DatabaseClass;
+using NXOpen.Utilities;
 
 namespace MEUpload
 {
@@ -283,6 +286,7 @@ namespace MEUpload
 
         private void OK_Click(object sender, EventArgs e)
         {
+            #region Part上傳
             //Part上傳
             List<string> ListPartName = new List<string>();
             string[] PartText;
@@ -307,9 +311,11 @@ namespace MEUpload
                 ListPartName.Add(kvp.Key + ".prt"); 
             }
             PartText = ListPartName.ToArray();
-            System.IO.File.WriteAllLines(string.Format(@"{0}\{1}", Server_OP_Folder, "PartNameText_OIS.txt"), PartText);
+            System.IO.File.WriteAllLines(string.Format(@"{0}\{1}\{2}", cMETE_Download_Upload_Path.Server_ShareStr, "OP" + PartInfo.OpNum, "PartNameText_OIS.txt"), PartText);
+            //System.IO.File.WriteAllLines(string.Format(@"{0}\{1}", Server_OP_Folder, "PartNameText_OIS.txt"), PartText);
+            #endregion
 
-
+            #region Excel上傳
             //Excel上傳
             if (File.Exists(sExcelDirData.ExcelIPQCLocalDir))
             {
@@ -375,6 +381,243 @@ namespace MEUpload
                     this.Close();
                 }
             }
+            #endregion
+
+            #region 資料上傳至Database
+            //取得excelType是哪一種報表
+            string excelType = "";
+            try
+            {
+                excelType = workPart.GetStringAttribute("EXCELTYPE");
+            }
+            catch (System.Exception ex)
+            {
+                excelType = "";
+            }
+
+            if (excelType != "")
+            {
+                #region 取得PartInformation資訊(draftingVer、draftingDate、createDate)
+                string draftingVer = "", draftingDate = "", createDate = "";
+                try
+                {
+                    draftingVer = workPart.GetStringAttribute("REVSTARTPOS");
+                }
+                catch (System.Exception ex)
+                {
+                    draftingVer = "";
+                }
+                try
+                {
+                    draftingDate = workPart.GetStringAttribute("REVDATESTARTPOS");
+                }
+                catch (System.Exception ex)
+                {
+                    draftingDate = "";
+                }
+                createDate = DateTime.Now.ToString();
+                #endregion
+
+                bool dataOK = true;
+                #region 資訊遺漏提醒事項
+                if (draftingVer == "" || draftingDate == "")
+                {
+                    dataOK = false;
+                    MessageBox.Show("量測資訊不足，僅上傳實體檔案到伺服器");
+                }
+                #endregion
+
+                if (dataOK)
+                {
+                    #region 取得所有量測尺寸資料
+                    int SheetCount = 0;
+                    NXOpen.Tag[] SheetTagAry = null;
+                    theUfSession.Draw.AskDrawings(out SheetCount, out SheetTagAry);
+
+                    Database.listDimensionData = new List<DimensionData>();
+                    for (int i = 0; i < SheetCount; i++)
+                    {
+                        //打開Sheet並記錄所有OBJ
+                        NXOpen.Drawings.DrawingSheet CurrentSheet = (NXOpen.Drawings.DrawingSheet)NXObjectManager.Get(SheetTagAry[i]);
+                        CurrentSheet.Open();
+                        DisplayableObject[] SheetObj = CurrentSheet.View.AskVisibleObjects();
+
+                        foreach (DisplayableObject singleObj in SheetObj)
+                        {
+                            DimensionData cDimensionData = new DimensionData();
+                            bool status = Database.GetDimensionData(excelType, singleObj, out cDimensionData);
+                            if (!status)
+                            {
+                                continue;
+                            }
+                            cDimensionData.draftingVer = draftingVer;
+                            cDimensionData.draftingDate = draftingDate;
+                            Database.listDimensionData.Add(cDimensionData);
+                        }
+                    }
+                    #endregion
+
+                    using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
+                    {
+                        Com_PEMain comPEMain = new Com_PEMain();
+                        #region 由料號查peSrNo  PartInfo.PartNo
+                        try
+                        {
+                            comPEMain = session.QueryOver<Com_PEMain>().Where(x => x.partName == PartInfo.PartNo).SingleOrDefault<Com_PEMain>();
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                            return;
+                        }
+                        #endregion
+
+                        Com_PartOperation comPartOperation = new Com_PartOperation();
+                        #region 由peSrNo查partOperationSrNo
+                        try
+                        {
+                            comPartOperation = session.QueryOver<Com_PartOperation>()
+                                                                 .Where(x => x.comPEMain.peSrNo == comPEMain.peSrNo)
+                                                                 .Where(x => x.operation1 == PartInfo.OpNum)
+                                                                 .SingleOrDefault<Com_PartOperation>();
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                            return;
+                        }
+                        #endregion
+
+                        Sys_MEExcel sysMEExcel = new Sys_MEExcel();
+                        #region 由excelType查meExcelSrNo
+                        try
+                        {
+                            sysMEExcel = session.QueryOver<Sys_MEExcel>().Where(x => x.excelType == excelType).SingleOrDefault<Sys_MEExcel>();
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                            return;
+                        }
+                        #endregion
+
+
+                        try
+                        {
+
+                            Com_MEMain cCom_MEMain = new Com_MEMain();
+                            cCom_MEMain.comPartOperation = comPartOperation;
+                            cCom_MEMain.sysMEExcel = sysMEExcel;
+                            cCom_MEMain.createDate = createDate;
+
+                            IList<Com_Dimension> listCom_Dimension = new List<Com_Dimension>();
+                            foreach (DimensionData i in Database.listDimensionData)
+                            {
+                                Com_Dimension cCom_Dimension = new Com_Dimension();
+                                cCom_Dimension.comMEMain = cCom_MEMain;
+                                cCom_Dimension.draftingVer = i.draftingVer;
+                                cCom_Dimension.draftingDate = i.draftingDate;
+                                cCom_Dimension.ballon = i.ballonNum;
+                                cCom_Dimension.location = i.location;
+                                cCom_Dimension.instrument = i.instrument;
+                                cCom_Dimension.frequency = i.frequency;
+                                if (i.type == "NXOpen.Annotations.DraftingFcf")
+                                {
+                                    #region DraftingFcf
+
+                                    if (i.characteristic != "")
+                                    {
+                                        cCom_Dimension.characteristic = Database.GetCharacteristicSymbol(i.characteristic);
+                                    }
+                                    if (i.zoneShape != "")
+                                    {
+                                        cCom_Dimension.zoneShape = Database.GetZoneShapeSymbol(i.zoneShape);
+                                    }
+                                    if (i.toleranceValue != "")
+                                    {
+                                        cCom_Dimension.toleranceValue = i.toleranceValue;
+                                    }
+                                    if (i.materialModifier != "")
+                                    {
+                                        cCom_Dimension.materialModifer = Database.GetMaterialModifier(i.materialModifier);
+                                    }
+                                    if (i.primaryDatum != "")
+                                    {
+                                        cCom_Dimension.primaryDatum = i.primaryDatum;
+                                    }
+                                    if (i.primaryMaterialModifier != "")
+                                    {
+                                        cCom_Dimension.primaryMaterialModifier = Database.GetMaterialModifier(i.primaryMaterialModifier);
+                                    }
+                                    if (i.secondaryDatum != "")
+                                    {
+                                        cCom_Dimension.secondaryDatum = i.secondaryDatum;
+                                    }
+                                    if (i.secondaryMaterialModifier != "")
+                                    {
+                                        cCom_Dimension.secondaryMaterialModifier = Database.GetMaterialModifier(i.secondaryMaterialModifier);
+                                    }
+                                    if (i.tertiaryDatum != "")
+                                    {
+                                        cCom_Dimension.tertiaryDatum = i.tertiaryDatum;
+                                    }
+                                    if (i.tertiaryMaterialModifier != "")
+                                    {
+                                        cCom_Dimension.tertiaryMaterialModifier = Database.GetMaterialModifier(i.tertiaryMaterialModifier);
+                                    }
+                                    #endregion
+                                }
+                                else if (i.type == "NXOpen.Annotations.Label")
+                                {
+                                    #region Label
+                                    if (i.mainText != "")
+                                    {
+                                        cCom_Dimension.mainText = i.mainText;
+                                    }
+                                    #endregion
+                                }
+                                else
+                                {
+                                    #region Dimension
+
+                                    if (i.beforeText != null)
+                                    {
+                                        cCom_Dimension.beforeText = Database.GetGDTWord(i.beforeText);
+                                    }
+                                    if (i.mainText != "")
+                                    {
+                                        cCom_Dimension.mainText = Database.GetGDTWord(i.mainText);
+                                    }
+                                    if (i.upperTol != "")
+                                    {
+                                        Database.GetTolerance(i, ref cCom_Dimension);
+                                    }
+                                    #endregion
+                                }
+                                listCom_Dimension.Add(cCom_Dimension);
+                            }
+
+                            cCom_MEMain.comDimension = listCom_Dimension;
+
+                            using (ITransaction trans = session.BeginTransaction())
+                            {
+                                session.Save(cCom_MEMain);
+                                trans.Commit();
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show("上傳資料庫時發生錯誤，僅上傳實體檔案");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("尚未指定量測尺寸，故量測資料無法入資料庫");
+            }
+
+            #endregion
 
             MessageBox.Show("上傳完成！");
             this.Close();

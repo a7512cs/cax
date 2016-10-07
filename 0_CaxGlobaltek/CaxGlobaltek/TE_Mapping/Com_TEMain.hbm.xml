@@ -12,6 +12,8 @@ License Type: Evaluation
 			<generator class="identity">
 			</generator>
 		</id>
+    <property name="ncGroupName" column="ncGroupName" type="String" length="255" not-null="true"/>
+    <property name="totalCuttingTime" column="totalCuttingTime" type="String" length="255" not-null="true"/>
 		<property name="createDate" column="createDate" type="String" length="255" not-null="true"/>
 		<many-to-one name="comPartOperation" column="partOperationSrNo" class="Com_PartOperation" not-null="true" lazy="proxy">
 		</many-to-one>

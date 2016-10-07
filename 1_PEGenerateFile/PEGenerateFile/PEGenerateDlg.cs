@@ -39,7 +39,6 @@ namespace PEGenerateFile
         public static IList<Sys_Operation2> listSys_Operation2 = new List<Sys_Operation2>();
         public static Com_PartOperation cCom_PartOperation = new Com_PartOperation();
 
-
         public PEGenerateDlg()
         {
             InitializeComponent();

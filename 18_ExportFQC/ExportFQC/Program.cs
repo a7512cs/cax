@@ -311,7 +311,7 @@ public class Program
                         }
                         if (temp.ToleranceType.ToString() == "BilateralTwoLines")
                         {
-                            cTextData.TolType = "BilateralOneLine";
+                            cTextData.TolType = "BilateralTwoLines";
                             cTextData.UpperTol = temp.UpperMetricToleranceValue.ToString();
                             cTextData.LowerTol = temp.LowerMetricToleranceValue.ToString();
                         }
@@ -506,7 +506,7 @@ public class Program
                         }
                         if (temp.ToleranceType.ToString() == "BilateralTwoLines")
                         {
-                            cTextData.TolType = "BilateralOneLine";
+                            cTextData.TolType = "BilateralTwoLines";
                             cTextData.UpperTol = temp.UpperMetricToleranceValue.ToString();
                             cTextData.LowerTol = temp.LowerMetricToleranceValue.ToString();
                         }
@@ -560,7 +560,7 @@ public class Program
                         }
                         if (temp.ToleranceType.ToString() == "BilateralTwoLines")
                         {
-                            cTextData.TolType = "BilateralOneLine";
+                            cTextData.TolType = "BilateralTwoLines";
                             cTextData.UpperTol = temp.UpperMetricToleranceValue.ToString();
                             cTextData.LowerTol = temp.LowerMetricToleranceValue.ToString();
                         }

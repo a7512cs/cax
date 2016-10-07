@@ -41,3 +41,9 @@ D:\3_GlobalTek.Code\14_ExportIPQC\ExportIPQC\bin\Release\Newtonsoft.Json.xml
 D:\3_GlobalTek.Code\14_ExportIPQC\ExportIPQC\obj\Release\ExportIPQC.csprojResolveAssemblyReference.cache
 D:\3_GlobalTek.Code\14_ExportIPQC\ExportIPQC\obj\Release\ExportIPQC.dll
 D:\3_GlobalTek.Code\14_ExportIPQC\ExportIPQC\obj\Release\ExportIPQC.pdb
+D:\GlobalCode\14_ExportIPQC\ExportIPQC\bin\Release\NHibernate.dll
+D:\GlobalCode\14_ExportIPQC\ExportIPQC\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\14_ExportIPQC\ExportIPQC\bin\Release\NHibernate.pdb
+D:\GlobalCode\14_ExportIPQC\ExportIPQC\bin\Release\NHibernate.xml
+D:\GlobalCode\14_ExportIPQC\ExportIPQC\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\14_ExportIPQC\ExportIPQC\bin\Release\Iesi.Collections.xml

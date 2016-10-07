@@ -9,13 +9,8 @@ namespace CaxGlobaltek
     {
         public virtual Int32 meSrNo { get; set; }
         public virtual Com_PartOperation comPartOperation { get; set; }
+        public virtual Sys_MEExcel sysMEExcel { get; set; }
         public virtual IList<Com_Dimension> comDimension { get; set; }
-        public virtual string draftingVer { get; set; }
-        public virtual string draftingdate { get; set; }
-        public virtual string ballon { get; set; }
-        public virtual string location { get; set; }
-        public virtual string instrument { get; set; }
-        public virtual string frequency { get; set; }
         public virtual string createDate { get; set; }
     }
 
@@ -28,11 +23,11 @@ namespace CaxGlobaltek
         public virtual string toleranceValue { get; set; }
         public virtual string materialModifer { get; set; }
         public virtual string primaryDatum { get; set; }
-        public virtual string primaryMaterialModifer { get; set; }
-        public virtual string secondDatum { get; set; }
-        public virtual string secondMaterialModifer { get; set; }
+        public virtual string primaryMaterialModifier { get; set; }
+        public virtual string secondaryDatum { get; set; }
+        public virtual string secondaryMaterialModifier { get; set; }
         public virtual string tertiaryDatum { get; set; }
-        public virtual string tertiaryMaterialModifer { get; set; }
+        public virtual string tertiaryMaterialModifier { get; set; }
         public virtual string maxTolerance { get; set; }
         public virtual string minTolerance { get; set; }
         public virtual string beforeText { get; set; }
@@ -40,5 +35,18 @@ namespace CaxGlobaltek
         public virtual string toleranceSymbol { get; set; }
         public virtual string upTolerance { get; set; }
         public virtual string lowTolerance { get; set; }
+        public virtual string draftingVer { get; set; }
+        public virtual string draftingDate { get; set; }
+        public virtual string ballon { get; set; }
+        public virtual string location { get; set; }
+        public virtual string instrument { get; set; }
+        public virtual string frequency { get; set; }
+    }
+
+    public class Sys_MEExcel
+    {
+        public virtual Int32 meExcelSrNo { get; set; }
+        public virtual string excelType { get; set; }
+        public virtual IList<Com_MEMain> comMEMain { get; set; }
     }
 }

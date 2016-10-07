@@ -40,3 +40,9 @@ F:\4_CodeBackup\17_ExportFAI\ExportFAI\bin\Release\Newtonsoft.Json.xml
 F:\4_CodeBackup\17_ExportFAI\ExportFAI\obj\Release\ExportFAI.csprojResolveAssemblyReference.cache
 F:\4_CodeBackup\17_ExportFAI\ExportFAI\obj\Release\ExportFAI.dll
 F:\4_CodeBackup\17_ExportFAI\ExportFAI\obj\Release\ExportFAI.pdb
+D:\GlobalCode\17_ExportFAI\ExportFAI\bin\Release\NHibernate.dll
+D:\GlobalCode\17_ExportFAI\ExportFAI\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\17_ExportFAI\ExportFAI\bin\Release\NHibernate.pdb
+D:\GlobalCode\17_ExportFAI\ExportFAI\bin\Release\NHibernate.xml
+D:\GlobalCode\17_ExportFAI\ExportFAI\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\17_ExportFAI\ExportFAI\bin\Release\Iesi.Collections.xml

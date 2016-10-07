@@ -31,3 +31,9 @@ D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\Newtonsoft.Json.xml
 D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\obj\Release\ExportSelfCheck.csprojResolveAssemblyReference.cache
 D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\obj\Release\ExportSelfCheck.dll
 D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\obj\Release\ExportSelfCheck.pdb
+D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\NHibernate.dll
+D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\NHibernate.pdb
+D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\NHibernate.xml
+D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\15_ExportSelfCheck\ExportSelfCheck\bin\Release\Iesi.Collections.xml

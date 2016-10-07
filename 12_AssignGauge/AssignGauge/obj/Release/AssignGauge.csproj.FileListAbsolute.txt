@@ -37,3 +37,9 @@ D:\GlobalCode\12_AssignGauge\AssignGauge\obj\Release\AssignGauge.AssignGaugeDlg.
 D:\GlobalCode\12_AssignGauge\AssignGauge\obj\Release\AssignGauge.csproj.GenerateResource.Cache
 D:\GlobalCode\12_AssignGauge\AssignGauge\obj\Release\AssignGauge.dll
 D:\GlobalCode\12_AssignGauge\AssignGauge\obj\Release\AssignGauge.pdb
+D:\GlobalCode\12_AssignGauge\AssignGauge\bin\Release\NHibernate.dll
+D:\GlobalCode\12_AssignGauge\AssignGauge\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\12_AssignGauge\AssignGauge\bin\Release\NHibernate.pdb
+D:\GlobalCode\12_AssignGauge\AssignGauge\bin\Release\NHibernate.xml
+D:\GlobalCode\12_AssignGauge\AssignGauge\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\12_AssignGauge\AssignGauge\bin\Release\Iesi.Collections.xml

@@ -12,15 +12,12 @@ License Type: Evaluation
 			<generator class="identity">
 			</generator>
 		</id>
-		<property name="draftingVer" column="draftingVer" type="String" length="255" not-null="true"/>
-		<property name="draftingdate" column="draftingdate" type="String" length="255" not-null="true"/>
-		<property name="ballon" column="ballon" type="String" length="255" not-null="true"/>
-		<property name="location" column="location" type="String" length="255" not-null="true"/>
-		<property name="instrument" column="instrument" type="String" length="255" not-null="true"/>
-		<property name="frequency" column="frequency" type="String" length="255" not-null="true"/>
+		
 		<property name="createDate" column="createDate" type="String" length="255" not-null="true"/>
 		<many-to-one name="comPartOperation" column="partOperationSrNo" class="Com_PartOperation" not-null="true" lazy="proxy">
 		</many-to-one>
+    <many-to-one name="sysMEExcel" column="meExcelSrNo" class="Sys_MEExcel" not-null="true" lazy="proxy">
+    </many-to-one>
 		<list name="comDimension" lazy="true" cascade="save-update" inverse="true">
 			<key column="meSrNo"/>
       <index column="comDimensionIdx"/>

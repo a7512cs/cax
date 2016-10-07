@@ -324,6 +324,108 @@ namespace AssignGauge
                     kvp.Key.SetAttribute(CaxME.DimenAttr.BallonLocation, SheetNum + "-" + RegionY + RegionX);
                     */
                 }
+                //對零件塞上excelType屬性，說明此次尺寸是出哪一張excel(此屬性是給MEUpload時插入資料庫所使用)
+                string excelType = "";
+                if (FAIcheckBox.Checked == true)
+                {
+                    try
+                    {
+                        excelType = workPart.GetStringAttribute("ExcelType");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        excelType = "";
+                    }
+                    if (excelType != "" && !excelType.Contains("FAI"))
+                    {
+                        excelType = excelType + "," + "FAI";
+                        workPart.SetAttribute("ExcelType", excelType);
+                    }
+                    if (excelType == "")
+                    {
+                        workPart.SetAttribute("ExcelType", "FAI");
+                    }
+                }
+                if (IQCcheckBox.Checked == true)
+                {
+                    try
+                    {
+                        excelType = workPart.GetStringAttribute("ExcelType");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        excelType = "";
+                    }
+                    if (excelType != "" && !excelType.Contains("IQC"))
+                    {
+                        excelType = excelType + "," + "IQC";
+                        workPart.SetAttribute("ExcelType", excelType);
+                    }
+                    if (excelType == "")
+                    {
+                        workPart.SetAttribute("ExcelType", "IQC");
+                    }
+                }
+                if (IPQCcheckBox.Checked == true)
+                {
+                    try
+                    {
+                        excelType = workPart.GetStringAttribute("ExcelType");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        excelType = "";
+                    }
+                    if (excelType != "" && !excelType.Contains("IPQC"))
+                    {
+                        excelType = excelType + "," + "IPQC";
+                        workPart.SetAttribute("ExcelType", excelType);
+                    }
+                    if (excelType == "")
+                    {
+                        workPart.SetAttribute("ExcelType", "IPQC");
+                    }
+                }
+                if (FQCcheckBox.Checked == true)
+                {
+                    try
+                    {
+                        excelType = workPart.GetStringAttribute("ExcelType");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        excelType = "";
+                    }
+                    if (excelType != "" && !excelType.Contains("FQC"))
+                    {
+                        excelType = excelType + "," + "FQC";
+                        workPart.SetAttribute("ExcelType", excelType);
+                    }
+                    if (excelType == "")
+                    {
+                        workPart.SetAttribute("ExcelType", "FQC");
+                    }
+                }
+                if (SelfCheckGauge.Text != "")
+                {
+                    try
+                    {
+                        excelType = workPart.GetStringAttribute("ExcelType");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        excelType = "";
+                    }
+                    if (excelType != "" && !excelType.Contains("SelfCheck"))
+                    {
+                        excelType = excelType + "," + "SelfCheck";
+                        workPart.SetAttribute("ExcelType", excelType);
+                    }
+                    if (excelType == "")
+                    {
+                        workPart.SetAttribute("ExcelType", "SelfCheck");
+                    }
+                }
             }
 
             #endregion

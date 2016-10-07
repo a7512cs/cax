@@ -10,6 +10,8 @@ namespace CaxGlobaltek
         public virtual Int32 teSrNo { get; set; }
         public virtual Com_PartOperation comPartOperation { get; set; }
         public virtual IList<Com_ShopDoc> comShopDoc { get; set; }
+        public virtual string ncGroupName { get; set; }
+        public virtual string totalCuttingTime { get; set; }
         public virtual string createDate { get; set; }
     }
 
@@ -24,6 +26,8 @@ namespace CaxGlobaltek
         public virtual string feed { get; set; }
         public virtual string speed { get; set; }
         public virtual string machiningtime { get; set; }
-        public virtual string cycletime { get; set; }
+        public virtual string imagePath { get; set; }
+        public virtual string partStock { get; set; }
+        public virtual string fixtureImgPath { get; set; }
     }
 }

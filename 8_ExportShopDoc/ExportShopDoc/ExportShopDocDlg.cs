@@ -19,6 +19,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.IO;
+using NHibernate;
 
 namespace ExportShopDoc
 {
@@ -90,6 +91,8 @@ namespace ExportShopDoc
             public int PartStockColumn { get; set; }
             public int TotalCuttingTimeRow { get; set; }
             public int TotalCuttingTimeColumn { get; set; }
+            public int PartNoRow { get; set; }
+            public int PartNoColumn { get; set; }
         }
 
         public struct OperImgPosiSize
@@ -106,6 +109,14 @@ namespace ExportShopDoc
             public float FixPosiTop { get; set; }
             public float FixImgWidth { get; set; }
             public float FixImgHeight { get; set; }
+        }
+
+        public struct PartInfo
+        {
+            public static string CusName { get; set; }
+            public static string PartNo { get; set; }
+            public static string CusRev { get; set; }
+            public static string OpNum { get; set; }
         }
 
         public ExportShopDocDlg()
@@ -216,14 +227,21 @@ namespace ExportShopDoc
                 ShopDocPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(displayPart.FullPath), "MODEL", "ShopDoc.xls");
             }
 
-            //取得料號
-            PartNo = Path.GetFileNameWithoutExtension(displayPart.FullPath);
-            //建立圖片資料夾
-            PhotoFolderPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), "OperationPhoto");
-            if (!Directory.Exists(PhotoFolderPath))
+            //拆零件路徑字串取得客戶名稱、料號、版本
+            try
             {
-                System.IO.Directory.CreateDirectory(PhotoFolderPath);
+                string[] SplitPath = displayPart.FullPath.Split('\\');
+                PartInfo.CusName = SplitPath[3];
+                PartInfo.PartNo = SplitPath[4];
+                PartInfo.CusRev = SplitPath[5];
+                PartInfo.OpNum = Regex.Replace(Path.GetFileNameWithoutExtension(displayPart.FullPath).Split('_')[1], "[^0-9]", "");
             }
+            catch (System.Exception ex)
+            {
+                PartNo = Path.GetFileNameWithoutExtension(displayPart.FullPath);
+            }
+            
+            
             //取得所有GroupAry，用來判斷Group的Type決定是NC、Tool、Geometry
             NCGroupAry = displayPart.CAMSetup.CAMGroupCollection.ToArray();
             //取得所有OperationAry
@@ -302,7 +320,7 @@ namespace ExportShopDoc
             #endregion
 
             #region 取得相關資訊，填入DIC
-            string ncGroupName = "";
+            //string ncGroupName = "";
             DicNCData = new Dictionary<string, OperData>();
             foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
             {
@@ -320,7 +338,7 @@ namespace ExportShopDoc
                         return;
                     }
                     
-                    ncGroupName = ncGroup.Name;
+                    //ncGroupName = ncGroup.Name;
 
                     //取得此NCGroup下的所有Oper
                     CAMObject[] OperGroup = ncGroup.GetMembers();
@@ -390,7 +408,7 @@ namespace ExportShopDoc
 
             #endregion
 
-            #region 設定輸出路徑
+            #region (註解中)設定輸出路徑
 
             //暫時使用的路徑
             //string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
@@ -434,7 +452,7 @@ namespace ExportShopDoc
 
             #endregion
 
-
+            
 
         }
 
@@ -447,10 +465,20 @@ namespace ExportShopDoc
 
         private void comboBoxNCgroup_SelectedIndexChanged(object sender, EventArgs e)
         {
+
             //清空superGrid資料
             panel.Rows.Clear();
             //取得comboBox資料
             CurrentNCGroup = comboBoxNCgroup.Text;
+
+            #region 建立Folder資料夾
+            PhotoFolderPath = string.Format(@"{0}\{1}_Image", Path.GetDirectoryName(displayPart.FullPath), CurrentNCGroup);
+            if (!Directory.Exists(PhotoFolderPath))
+            {
+                System.IO.Directory.CreateDirectory(PhotoFolderPath);
+            }
+            #endregion
+
             //變更路徑
             string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
             OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath),
@@ -900,28 +928,29 @@ namespace ExportShopDoc
 
             #endregion
 
-            Excel.ApplicationClass x = new Excel.ApplicationClass();
+            Excel.ApplicationClass excelApp = new Excel.ApplicationClass();
             Excel.Workbook book = null;
             Excel.Worksheet sheet = null;
             Excel.Range oRng = null;
 
+            #region 開始插入excel
             try
             {
-                x.Visible = false;
+                excelApp.Visible = false;
                 if (Is_Local != "")
                 {
                     if (File.Exists(ShopDocPath))
                     {
-                        book = x.Workbooks.Open(ShopDocPath);
+                        book = excelApp.Workbooks.Open(ShopDocPath);
                     }
                     else
                     {
-                        book = x.Workbooks.Open(@"D:\ShopDoc.xls");
+                        book = excelApp.Workbooks.Open(@"D:\ShopDoc.xls");
                     }
                 }
                 else
                 {
-                    book = x.Workbooks.Open(@"D:\ShopDoc.xls");
+                    book = excelApp.Workbooks.Open(@"D:\ShopDoc.xls");
                 }
 
                 sheet = (Excel.Worksheet)book.Sheets[1];
@@ -943,7 +972,7 @@ namespace ExportShopDoc
                     }
                     for (int i = 1; i < needSheetNo; i++)
                     {
-                        sheet.Copy(System.Type.Missing, x.Workbooks[1].Worksheets[1]);
+                        sheet.Copy(System.Type.Missing, excelApp.Workbooks[1].Worksheets[1]);
                     }
                     break;
                 }
@@ -951,21 +980,36 @@ namespace ExportShopDoc
                 for (int i = 0; i < book.Worksheets.Count; i++)
                 {
                     sheet = (Excel.Worksheet)book.Sheets[i + 1];
+                    oRng = (Excel.Range)sheet.Cells[4, 1];
+                    oRng.Value = oRng.Value.ToString().Replace("1/1", (i + 1).ToString() + "/" + (book.Worksheets.Count).ToString());
+                    //Sheet的名稱不得超過31個，否則會錯
+                    if (PartNo.Length >= 28)
+                    {
+                        sheet.Name = string.Format("({0})", (i + 1).ToString());
+                    }
+                    else
+                    { 
+                        sheet.Name = string.Format("{0}({1})", PartNo, (i + 1).ToString());
+                    }
+                    
+
+
+                    /*
                     if (i == 0 && book.Worksheets.Count > 1)
                     {
-                        //Sheet的名稱不得超過31個，否則會錯
-                        //sheet.Name = PartNo;
                         sheet.Name = "(1)";
                         oRng = (Excel.Range)sheet.Cells[4, 1];
                         oRng.Value = oRng.Value.ToString().Replace("1/1", "1/" + (book.Worksheets.Count).ToString());
                     }
                     else
                     {
+
                         sheet.Name = "(" + (i + 1) + ")";
                         oRng = (Excel.Range)sheet.Cells[4, 1];
                         string temp = (i + 1).ToString();
                         oRng.Value = oRng.Value.ToString().Replace("1/1", temp + "/" + (book.Worksheets.Count).ToString());
                     }
+                    */
                 }
 
                 #region 註解中，計算欄位寬高
@@ -1005,27 +1049,19 @@ namespace ExportShopDoc
                     }
                     try
                     {
-                        string[] splitOperName = kvp.Value.OperName.Split(',');
-                        string[] splitToolName = kvp.Value.ToolName.Split(',');
-                        string[] splitHolderDescription = kvp.Value.HolderDescription.Split(',');
-                        string[] splitOperCuttingLength = kvp.Value.CuttingLength.Split(',');
-                        string[] splitOperToolFeed = kvp.Value.ToolFeed.Split(',');
-                        string[] splitOperCuttingTime = kvp.Value.CuttingTime.Split(',');
-                        string[] splitOperToolNumber = kvp.Value.ToolNumber.Split(',');
-                        string[] splitOperToolSpeed = kvp.Value.ToolSpeed.Split(',');
-                        string[] splitOperPartStock = kvp.Value.PartStock.Split(',');
-                        string[] splitOperPartFloorStock = kvp.Value.PartFloorStock.Split(',');
+                        Database.SplitData sSplitData = new Database.SplitData();
+                        Database.GetSplitData(kvp.Value, out sSplitData);
                         string CuttingTimeStr = "";
                         string TotalCuttingTimeStr = "";
                         double ToTalCuttingTime = 0;
 
                         //取得所有加工時間
-                        foreach (string i in splitOperCuttingTime)
+                        foreach (string i in sSplitData.OperCuttingTime)
                         {
                             ToTalCuttingTime = ToTalCuttingTime + Convert.ToDouble(i);
                         }
                         //CaxLog.ShowListingWindow(book.Worksheets.Count.ToString());
-                        for (int j = 0; j < splitOperName.Length; j++)
+                        for (int j = 0; j < sSplitData.OperName.Length; j++)
                         {
                             RowColumn sRowColumn;
                             GetExcelRowColumn(j, out sRowColumn);
@@ -1042,18 +1078,22 @@ namespace ExportShopDoc
 
 
                             oRng = (Excel.Range)sheet.Cells;
-                            oRng[sRowColumn.OperImgToolRow, sRowColumn.OperImgToolColumn] = splitOperToolNumber[j] + "_" + splitOperName[j];
-                            oRng[sRowColumn.ToolNumberRow, sRowColumn.ToolNumberColumn] = splitOperToolNumber[j];
-                            oRng[sRowColumn.ToolNameRow, sRowColumn.ToolNameColumn] = splitToolName[j];
-                            oRng[sRowColumn.OperNameRow, sRowColumn.OperNameColumn] = splitOperName[j];
-                            oRng[sRowColumn.HolderRow, sRowColumn.HolderColumn] = splitHolderDescription[j];
-                            oRng[sRowColumn.ToolFeedRow, sRowColumn.ToolFeedColumn] = "F：" + splitOperToolFeed[j];
-                            oRng[sRowColumn.ToolSpeedRow, sRowColumn.ToolSpeedColumn] = "S：" + splitOperToolSpeed[j];
-                            oRng[sRowColumn.PartStockRow, sRowColumn.PartStockColumn] = splitOperPartStock[j] + "/" + splitOperPartFloorStock[j];
+                            oRng[sRowColumn.OperImgToolRow, sRowColumn.OperImgToolColumn] = sSplitData.OperToolNo[j] + "_" + sSplitData.OperName[j];
+                            oRng[sRowColumn.ToolNumberRow, sRowColumn.ToolNumberColumn] = sSplitData.OperToolNo[j];
+                            oRng[sRowColumn.ToolNameRow, sRowColumn.ToolNameColumn] = sSplitData.OperToolID[j];
+                            oRng[sRowColumn.OperNameRow, sRowColumn.OperNameColumn] = sSplitData.OperName[j];
+                            oRng[sRowColumn.HolderRow, sRowColumn.HolderColumn] = sSplitData.OperHolderID[j];
+                            oRng[sRowColumn.ToolFeedRow, sRowColumn.ToolFeedColumn] = "F：" + sSplitData.OperToolFeed[j];
+                            oRng[sRowColumn.ToolSpeedRow, sRowColumn.ToolSpeedColumn] = "S：" + sSplitData.OperToolSpeed[j];
+                            oRng[sRowColumn.PartStockRow, sRowColumn.PartStockColumn] = sSplitData.OperPartStock[j] + "/" + sSplitData.OperPartFloorStock[j];
 
-                            CuttingTimeStr = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(splitOperCuttingTime[j]) / 60)), (Convert.ToDouble(splitOperCuttingTime[j]) % 60));
+                            CuttingTimeStr = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(sSplitData.OperCuttingTime[j]) / 60)), (Convert.ToDouble(sSplitData.OperCuttingTime[j]) % 60));
                             oRng[sRowColumn.CuttingTimeRow, sRowColumn.CuttingTimeColumn] = CuttingTimeStr;
 
+                            //料號
+                            oRng[sRowColumn.PartNoRow, sRowColumn.PartNoColumn] = PartNo;
+
+                            //循環時間
                             TotalCuttingTimeStr = string.Format("{0}m {1}s", Math.Truncate((ToTalCuttingTime / 60)), (ToTalCuttingTime % 60));
                             oRng[sRowColumn.TotalCuttingTimeRow, sRowColumn.TotalCuttingTimeColumn] = TotalCuttingTimeStr;
 
@@ -1061,7 +1101,7 @@ namespace ExportShopDoc
                             GetOperImgPosiAndSize(j, sheet, oRng, out sImgPosiSize);
 
                             //OperImg暫時使用版本
-                            string OperImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, splitOperName[j] + ".jpg");
+                            string OperImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, sSplitData.OperName[j] + ".jpg");
 
                             //發布使用版本
                             //string OperImagePath = string.Format(@"{0}\{1}", Local_Folder_CAM, splitOperName[j] + ".jpg");
@@ -1095,7 +1135,7 @@ namespace ExportShopDoc
                         book.SaveAs(OutputPath.Text, Excel.XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing, 
                             Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                         book.Close(Type.Missing, Type.Missing, Type.Missing);
-                        x.Quit();
+                        excelApp.Quit();
                         this.Close();
                     }
                 }
@@ -1103,7 +1143,7 @@ namespace ExportShopDoc
                 book.SaveAs(OutputPath.Text, Excel.XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing, Type.Missing, 
                     Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                 book.Close(Type.Missing, Type.Missing, Type.Missing);
-                x.Quit();
+                excelApp.Quit();
 
                 CaxPart.Save();
                 
@@ -1119,11 +1159,106 @@ namespace ExportShopDoc
                 book.SaveAs(OutputPath.Text, Excel.XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing, 
                     Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                 book.Close(Type.Missing, Type.Missing, Type.Missing);
-                x.Quit();
+                excelApp.Quit();
                 this.Close();
             }
-            
-            
+            #endregion
+
+            #region 上傳數據至Database
+            using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
+            {
+                Com_PEMain comPEMain = new Com_PEMain();
+                #region 由料號查peSrNo
+                try
+                {
+                    comPEMain = session.QueryOver<Com_PEMain>().Where(x => x.partName == PartInfo.PartNo).SingleOrDefault<Com_PEMain>();
+                }
+                catch (System.Exception ex)
+                {
+                    MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                    return;
+                }
+                #endregion
+
+                Com_PartOperation comPartOperation = new Com_PartOperation();
+                #region 由peSrNo查partOperationSrNo
+                try
+                {
+                    comPartOperation = session.QueryOver<Com_PartOperation>()
+                                                         .Where(x => x.comPEMain.peSrNo == comPEMain.peSrNo)
+                                                         .Where(x => x.operation1 == PartInfo.OpNum)
+                                                         .SingleOrDefault<Com_PartOperation>();
+                }
+                catch (System.Exception ex)
+                {
+                    MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                    return;
+                }
+                #endregion
+
+                try
+                {
+                    Com_TEMain cCom_TEMain = new Com_TEMain();
+                    cCom_TEMain.comPartOperation = comPartOperation;
+                    cCom_TEMain.createDate = DateTime.Now.ToString();
+
+                    OperData sOperData = new OperData();
+                    foreach (KeyValuePair<string, OperData> kvp in DicNCData)
+                    {
+                        if (CurrentNCGroup != kvp.Key)
+                        {
+                            continue;
+                        }
+                        cCom_TEMain.ncGroupName = CurrentNCGroup;
+                        sOperData = kvp.Value;
+                    }
+                    
+                    Database.SplitData sSplitData = new Database.SplitData();
+                    Database.GetSplitData(sOperData, out sSplitData);
+
+                    //取得所有加工時間
+                    double ToTalCuttingTime = 0;
+                    foreach (string i in sSplitData.OperCuttingTime)
+                    {
+                        ToTalCuttingTime = ToTalCuttingTime + Convert.ToDouble(i);
+                    }
+                    //循環時間
+                    cCom_TEMain.totalCuttingTime = string.Format("{0}m {1}s", Math.Truncate((ToTalCuttingTime / 60)), (ToTalCuttingTime % 60));
+
+                    Database.comShopDoc = new List<Com_ShopDoc>();
+
+                    for (int i = 0; i < sSplitData.OperName.Length;i++ )
+                    {
+                        Com_ShopDoc cCom_ShopDoc = new Com_ShopDoc();
+                        cCom_ShopDoc.comTEMain = cCom_TEMain;
+                        cCom_ShopDoc.operationName = sSplitData.OperName[i];
+                        cCom_ShopDoc.toolID = sSplitData.OperToolID[i];
+                        cCom_ShopDoc.toolNo = sSplitData.OperToolNo[i];
+                        cCom_ShopDoc.holderID = sSplitData.OperHolderID[i];
+                        cCom_ShopDoc.machiningtime = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(sSplitData.OperCuttingTime[i]) / 60))
+                                                                                            , (Convert.ToDouble(sSplitData.OperCuttingTime[i]) % 60));
+                        cCom_ShopDoc.feed = sSplitData.OperToolFeed[i];
+                        cCom_ShopDoc.speed = sSplitData.OperToolSpeed[i];
+                        cCom_ShopDoc.partStock = sSplitData.OperPartStock[i] + "/" + sSplitData.OperPartFloorStock[i];
+                        Database.comShopDoc.Add(cCom_ShopDoc);
+                    }
+
+                    cCom_TEMain.comShopDoc = Database.comShopDoc;
+
+                    using (ITransaction trans = session.BeginTransaction())
+                    {
+                        session.Save(cCom_TEMain);
+                        trans.Commit();
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                	
+                }
+
+
+            }
+            #endregion
         }
 
         private void CloseDlg_Click(object sender, EventArgs e)
@@ -1139,8 +1274,11 @@ namespace ExportShopDoc
         private void GetExcelRowColumn(int i,out RowColumn sRowColumn)
         {
             sRowColumn = new RowColumn();
+            sRowColumn.PartNoRow = 52;
+            sRowColumn.PartNoColumn = 11;
             sRowColumn.TotalCuttingTimeRow = 51;
             sRowColumn.TotalCuttingTimeColumn = 2;
+
 
             int currentNo = (i % 8);
 
@@ -1470,6 +1608,9 @@ namespace ExportShopDoc
                 SetView cSetView = (SetView)sender;
                 CurrentRowIndex = cSetView.EditorCell.RowIndex;
                 CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+
+                
+
                 //SelectedElementCollection a = panel.GetSelectedElements();
                 //ListSelOper = new List<string>();
                 //foreach (GridRow item in a)

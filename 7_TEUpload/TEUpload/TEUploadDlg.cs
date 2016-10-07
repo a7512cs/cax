@@ -71,8 +71,12 @@ namespace TEUpload
             //將Local_Folder_OIS先暫存起來，然後改變成Server路徑
             tempLocal_Folder_CAM = cMETE_Download_Upload_Path.Local_Folder_CAM;
 
-            CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
-
+            bool status = CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
+            if (!status)
+            {
+                MessageBox.Show("路徑取代錯誤，無法上傳，請聯繫開發工程師");
+                this.Close();
+            }
 
             
             //拆零件路徑字串取得客戶名稱、料號、版本
@@ -136,22 +140,14 @@ namespace TEUpload
                 listView1.Items.Add(Path.GetFileName(((Part)i.Prototype).FullPath));
                 //sPartDirData.PartServer2Dir = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Server_ShareStr, "OP" + PartInfo.OIS);
             }
-            //foreach (NXOpen.Assemblies.Component i in ListChildrenComp)
-            //{
-            //    sPartDirData = new PartDirData();
-            //    sPartDirData.PartLocalDir = ((Part)i.Prototype).FullPath;
-            //    sPartDirData.PartServer1Dir = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Server_ShareStr, Path.GetFileName(((Part)i.Prototype).FullPath));
-            //    //sPartDirData.PartServer2Dir = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Server_ShareStr, "OP" + PartInfo.OIS);
-            //    DicPartDirData.Add(i.Name, sPartDirData);
-            //    listView1.Items.Add(Path.GetFileName(((Part)i.Prototype).FullPath));
-            //}
             #endregion
 
-            #region 處理Excel的路徑
-            string[] FolderFile = System.IO.Directory.GetFileSystemEntries(cMETE_Download_Upload_Path.Local_Folder_CAM, "*.xls");
             string Server_Folder_CAM = "";
             Server_Folder_CAM = tempLocal_Folder_CAM.Replace("[Local_ShareStr]", cMETE_Download_Upload_Path.Server_ShareStr);
             Server_Folder_CAM = Server_Folder_CAM.Replace("[Oper1]", PartInfo.OpNum);
+
+            #region 處理Excel的路徑
+            string[] FolderFile = System.IO.Directory.GetFileSystemEntries(cMETE_Download_Upload_Path.Local_Folder_CAM, "*.xls");
             long FileTime = new long();
             for (int i = 0; i < FolderFile.Length; i++)
             {
@@ -182,6 +178,7 @@ namespace TEUpload
 
         private void OK_Click(object sender, EventArgs e)
         {
+            #region Part上傳
             //Part上傳
             List<string> ListPartName = new List<string>();
             string[] PartText;
@@ -206,9 +203,10 @@ namespace TEUpload
                 ListPartName.Add(kvp.Key + ".prt");
             }
             PartText = ListPartName.ToArray();
-            System.IO.File.WriteAllLines(string.Format(@"{0}\{1}", Server_OP_Folder, "PartNameText_CAM.txt"), PartText);
+            System.IO.File.WriteAllLines(string.Format(@"{0}\{1}\{2}", cMETE_Download_Upload_Path.Server_ShareStr, "OP" + PartInfo.OpNum, "PartNameText_CAM.txt"), PartText);
+            #endregion
 
-
+            #region Excel上傳
             //Excel上傳
             if (File.Exists(sExcelDirData.ExcelShopDocLocalDir))
             {
@@ -222,14 +220,16 @@ namespace TEUpload
                     this.Close();
                 }
             }
+            #endregion
 
+            #region NC上傳
             //NC上傳
             //判斷NC是否存在
             if (Directory.Exists(sNCProgramDirData.NCProgramLocalDir))
             {
                 try
                 {
-                    CaxPublic.DirectoryCopy(sNCProgramDirData.NCProgramLocalDir, sNCProgramDirData.NCProgramServerDir,true);
+                    CaxPublic.DirectoryCopy(sNCProgramDirData.NCProgramLocalDir, sNCProgramDirData.NCProgramServerDir, true);
                 }
                 catch (System.Exception ex)
                 {
@@ -237,7 +237,10 @@ namespace TEUpload
                     this.Close();
                 }
             }
+            #endregion
 
+            #region 上傳至資料庫
+            #endregion
 
             MessageBox.Show("上傳完成！");
             this.Close();
