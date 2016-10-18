@@ -25,6 +25,7 @@ namespace ExportShopDoc
 {
     public partial class ExportShopDocDlg : DevComponents.DotNetBar.Office2007Form
     {
+        public static ISession session = MyHibernateHelper.SessionFactory.OpenSession();
         public static Session theSession = Session.GetSession();
         public static UI theUI;
         public static UFSession theUfSession = UFSession.GetUFSession();
@@ -225,7 +226,14 @@ namespace ExportShopDoc
             {
                 //取得本機ShopDoc.xls路徑
                 ShopDocPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(displayPart.FullPath), "MODEL", "ShopDoc.xls");
+
+                //取得METEDownload_Upload.dat
+                CaxGetDatData.GetMETEDownload_Upload(out cMETE_Download_Upload_Path);
+                CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
             }
+
+            
+
 
             //拆零件路徑字串取得客戶名稱、料號、版本
             try
@@ -238,10 +246,19 @@ namespace ExportShopDoc
             }
             catch (System.Exception ex)
             {
+                
+            }
+
+            if (PartInfo.PartNo == "")
+            {
                 PartNo = Path.GetFileNameWithoutExtension(displayPart.FullPath);
             }
-            
-            
+            else
+            {
+                PartNo = PartInfo.PartNo;
+            }
+
+
             //取得所有GroupAry，用來判斷Group的Type決定是NC、Tool、Geometry
             NCGroupAry = displayPart.CAMSetup.CAMGroupCollection.ToArray();
             //取得所有OperationAry
@@ -472,7 +489,14 @@ namespace ExportShopDoc
             CurrentNCGroup = comboBoxNCgroup.Text;
 
             #region 建立Folder資料夾
-            PhotoFolderPath = string.Format(@"{0}\{1}_Image", Path.GetDirectoryName(displayPart.FullPath), CurrentNCGroup);
+            if (Is_Local != "")
+            {
+                PhotoFolderPath = string.Format(@"{0}\{1}_Image", cMETE_Download_Upload_Path.Local_Folder_CAM, CurrentNCGroup);
+            }
+            else
+            {
+                PhotoFolderPath = string.Format(@"{0}\{1}_Image", Path.GetDirectoryName(displayPart.FullPath), CurrentNCGroup);
+            }
             if (!Directory.Exists(PhotoFolderPath))
             {
                 System.IO.Directory.CreateDirectory(PhotoFolderPath);
@@ -481,8 +505,8 @@ namespace ExportShopDoc
 
             //變更路徑
             string[] FolderFile = System.IO.Directory.GetFileSystemEntries(Path.GetDirectoryName(displayPart.FullPath), "*.xls");
-            OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath),
-                                                        Path.GetFileNameWithoutExtension(displayPart.FullPath) + "_" + CurrentNCGroup + "_" + (FolderFile.Length + 1) + ".xls");
+            OutputPath.Text = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath)
+                                                      , Path.GetFileNameWithoutExtension(displayPart.FullPath) + "_" + CurrentNCGroup + "_" + (FolderFile.Length + 1) + ".xls");
 
             //拆群組名稱字串取得製程序(EX：OP210=>210)
             string[] splitCurrentNCGroup = CurrentNCGroup.Split('_');
@@ -1147,11 +1171,7 @@ namespace ExportShopDoc
 
                 CaxPart.Save();
                 
-                //this.Hide();
-                MessageBox.Show("刀具路徑與清單輸出完成！");
-                //UI.GetUI().NXMessageBox.Show("恭喜", NXMessageBox.DialogType.Information, "刀具路徑與清單輸出完成！");
-                //this.Show();
-                this.Close();
+                
             }
             catch (System.Exception ex)
             {
@@ -1164,8 +1184,10 @@ namespace ExportShopDoc
             }
             #endregion
 
+            MessageBox.Show("刀具路徑與清單輸出完成！");
+
             #region 上傳數據至Database
-            using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
+            if (Is_Local != "")
             {
                 Com_PEMain comPEMain = new Com_PEMain();
                 #region 由料號查peSrNo
@@ -1175,13 +1197,13 @@ namespace ExportShopDoc
                 }
                 catch (System.Exception ex)
                 {
-                    MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                    MessageBox.Show("資料庫中沒有此料號的紀錄，無法上傳量測尺寸");
                     return;
                 }
                 #endregion
 
                 Com_PartOperation comPartOperation = new Com_PartOperation();
-                #region 由peSrNo查partOperationSrNo
+                #region 由peSrNo和OpNum查partOperationSrNo
                 try
                 {
                     comPartOperation = session.QueryOver<Com_PartOperation>()
@@ -1191,7 +1213,7 @@ namespace ExportShopDoc
                 }
                 catch (System.Exception ex)
                 {
-                    MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                    MessageBox.Show("資料庫中沒有此料號的紀錄，無法上傳量測尺寸");
                     return;
                 }
                 #endregion
@@ -1200,6 +1222,8 @@ namespace ExportShopDoc
                 {
                     Com_TEMain cCom_TEMain = new Com_TEMain();
                     cCom_TEMain.comPartOperation = comPartOperation;
+                    cCom_TEMain.fixtureImgPath = string.Format(@"{0}\{1}_Image\{2}", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, FixtureNameStr);
+                    cCom_TEMain.sysTEExcel = session.QueryOver<Sys_TEExcel>().Where(x => x.teExcelType == "ShopDoc").SingleOrDefault<Sys_TEExcel>();
                     cCom_TEMain.createDate = DateTime.Now.ToString();
 
                     OperData sOperData = new OperData();
@@ -1235,6 +1259,7 @@ namespace ExportShopDoc
                         cCom_ShopDoc.toolID = sSplitData.OperToolID[i];
                         cCom_ShopDoc.toolNo = sSplitData.OperToolNo[i];
                         cCom_ShopDoc.holderID = sSplitData.OperHolderID[i];
+                        cCom_ShopDoc.opImagePath = string.Format(@"{0}\{1}_Image\{2}.jpg", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, sSplitData.OperName[i]);
                         cCom_ShopDoc.machiningtime = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(sSplitData.OperCuttingTime[i]) / 60))
                                                                                             , (Convert.ToDouble(sSplitData.OperCuttingTime[i]) % 60));
                         cCom_ShopDoc.feed = sSplitData.OperToolFeed[i];
@@ -1253,12 +1278,13 @@ namespace ExportShopDoc
                 }
                 catch (System.Exception ex)
                 {
-                	
+                    CaxLog.ShowListingWindow(ex.ToString());
                 }
-
-
             }
             #endregion
+
+            
+            this.Close();
         }
 
         private void CloseDlg_Click(object sender, EventArgs e)
@@ -1924,9 +1950,26 @@ namespace ExportShopDoc
 
         private void SelFixtuePath_Click(object sender, EventArgs e)
         {
+            //判斷OP圖片資料夾是否已建立
+            if (!Directory.Exists(PhotoFolderPath))
+            {
+                MessageBox.Show("請先選擇程式群組名稱");
+                return;
+            }
+
             string FixtureFilter = "jpg Files (*.jpg)|*.jpg|eps Files (*.eps)|*.eps|gif Files (*.gif)|*.gif|bmp Files (*.bmp)|*.bmp|png Files (*.png)|*.png|All Files (*.*)|*.*";
-            CaxPublic.OpenFileDialog(out FixtureNameStr, out FixturePathStr, "" ,FixtureFilter);
+            status = CaxPublic.OpenFileDialog(out FixtureNameStr, out FixturePathStr, "" ,FixtureFilter);
+            if (!status)
+            {
+                MessageBox.Show("治具圖片選擇失敗，系統將持續進行，請手動將治具圖片貼至Excel內");
+                return;
+            }
+
             FixturePath.Text = FixturePathStr;
+            
+            //將治具圖片放到Op圖片資料夾
+            string destFileName = string.Format(@"{0}\{1}", PhotoFolderPath, FixtureNameStr);
+            File.Copy(FixturePath.Text, destFileName, true);
         }
 
 

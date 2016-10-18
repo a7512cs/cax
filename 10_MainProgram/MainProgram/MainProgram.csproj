@@ -122,6 +122,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ReadMe.txt" />
+    <None Include="Resources\down_arrow_48px.png" />
+    <None Include="Resources\up_arrow_48px.png" />
+    <None Include="Resources\left_arrow_48px.png" />
+    <None Include="Resources\right_arrow_48px.png" />
     <None Include="Resources\圖片1.png" />
   </ItemGroup>
   <ItemGroup>

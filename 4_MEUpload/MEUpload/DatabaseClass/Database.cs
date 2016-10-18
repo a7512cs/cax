@@ -919,23 +919,119 @@ namespace MEUpload.DatabaseClass
             {
                 if (cDimensionData.upperTol != "" & cDimensionData.tolType == "BilateralOneLine")
                 {
+                    cCom_Dimension.toleranceType = cDimensionData.tolType;
                     cCom_Dimension.upTolerance = cDimensionData.upperTol;
                     cCom_Dimension.lowTolerance = cDimensionData.lowerTol;
                 }
                 else if (cDimensionData.upperTol != "" & cDimensionData.tolType == "BilateralTwoLines")
                 {
+                    cCom_Dimension.toleranceType = cDimensionData.tolType;
                     cCom_Dimension.upTolerance = cDimensionData.upperTol;
                     cCom_Dimension.lowTolerance = cDimensionData.lowerTol;
                 }
                 else if (cDimensionData.upperTol != "" & cDimensionData.tolType == "UnilateralAbove")
                 {
+                    cCom_Dimension.toleranceType = cDimensionData.tolType;
                     cCom_Dimension.upTolerance = cDimensionData.upperTol;
                     cCom_Dimension.lowTolerance = "0";
                 }
                 else if (cDimensionData.upperTol != "" & cDimensionData.tolType == "UnilateralBelow")
                 {
+                    cCom_Dimension.toleranceType = cDimensionData.tolType;
                     cCom_Dimension.upTolerance = "0";
                     cCom_Dimension.lowTolerance = cDimensionData.lowerTol;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool MappingData(DimensionData input, ref Com_Dimension cCom_Dimension)
+        {
+            try
+            {
+                cCom_Dimension.draftingVer = input.draftingVer;
+                cCom_Dimension.draftingDate = input.draftingDate;
+                cCom_Dimension.ballon = input.ballonNum;
+                cCom_Dimension.location = input.location;
+                cCom_Dimension.instrument = input.instrument;
+                cCom_Dimension.frequency = input.frequency;
+                if (input.type == "NXOpen.Annotations.DraftingFcf")
+                {
+                    cCom_Dimension.dimensionType = input.type;
+                    #region DraftingFcf
+                    if (input.characteristic != "")
+                    {
+                        cCom_Dimension.characteristic = GetCharacteristicSymbol(input.characteristic);
+                    }
+                    if (input.zoneShape != "")
+                    {
+                        cCom_Dimension.zoneShape = GetZoneShapeSymbol(input.zoneShape);
+                    }
+                    if (input.toleranceValue != "")
+                    {
+                        cCom_Dimension.toleranceValue = input.toleranceValue;
+                    }
+                    if (input.materialModifier != "")
+                    {
+                        cCom_Dimension.materialModifer = GetMaterialModifier(input.materialModifier);
+                    }
+                    if (input.primaryDatum != "")
+                    {
+                        cCom_Dimension.primaryDatum = input.primaryDatum;
+                    }
+                    if (input.primaryMaterialModifier != "")
+                    {
+                        cCom_Dimension.primaryMaterialModifier = GetMaterialModifier(input.primaryMaterialModifier);
+                    }
+                    if (input.secondaryDatum != "")
+                    {
+                        cCom_Dimension.secondaryDatum = input.secondaryDatum;
+                    }
+                    if (input.secondaryMaterialModifier != "")
+                    {
+                        cCom_Dimension.secondaryMaterialModifier = GetMaterialModifier(input.secondaryMaterialModifier);
+                    }
+                    if (input.tertiaryDatum != "")
+                    {
+                        cCom_Dimension.tertiaryDatum = input.tertiaryDatum;
+                    }
+                    if (input.tertiaryMaterialModifier != "")
+                    {
+                        cCom_Dimension.tertiaryMaterialModifier = GetMaterialModifier(input.tertiaryMaterialModifier);
+                    }
+                    #endregion
+                }
+                else if (input.type == "NXOpen.Annotations.Label")
+                {
+                    cCom_Dimension.dimensionType = input.type;
+                    #region Label
+                    if (input.mainText != "")
+                    {
+                        cCom_Dimension.mainText = input.mainText;
+                    }
+                    #endregion
+                }
+                else
+                {
+                    cCom_Dimension.dimensionType = input.type;
+                    #region Dimension
+                    if (input.beforeText != null)
+                    {
+                        cCom_Dimension.beforeText = GetGDTWord(input.beforeText);
+                    }
+                    if (input.mainText != "")
+                    {
+                        cCom_Dimension.mainText = GetGDTWord(input.mainText);
+                    }
+                    if (input.upperTol != "")
+                    {
+                        Database.GetTolerance(input, ref cCom_Dimension);
+                    }
+                    #endregion
                 }
             }
             catch (System.Exception ex)

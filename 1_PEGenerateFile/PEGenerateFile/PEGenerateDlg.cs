@@ -1309,6 +1309,7 @@ namespace PEGenerateFile
         private void comboBoxCusName_SelectedIndexChanged(object sender, EventArgs e)
         {
             cCom_PEMain.sysCustomer = ((Sys_Customer)comboBoxCusName.SelectedItem);
+            //CaxLog.ShowListingWindow(((Sys_Customer)comboBoxCusName.SelectedItem).customerSrNo.ToString());
         }
     }
      

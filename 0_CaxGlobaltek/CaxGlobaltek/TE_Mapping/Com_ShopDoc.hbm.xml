@@ -19,9 +19,9 @@ License Type: Evaluation
 		<property name="feed" column="feed" type="String" length="255" not-null="false"/>
 		<property name="speed" column="speed" type="String" length="255" not-null="false"/>
 		<property name="machiningtime" column="machiningtime" type="String" length="255" not-null="false"/>
-    <property name="imagePath" column="imagePath" type="String" length="255" not-null="false"/>
+    <property name="opImagePath" column="opImagePath" type="String" length="255" not-null="false"/>
     <property name="partStock" column="partStock" type="String" length="255" not-null="false"/>
-    <property name="fixtureImgPath" column="fixtureImgPath" type="String" length="255" not-null="false"/>
+    
 		<many-to-one name="comTEMain" column="teSrNo" class="Com_TEMain" not-null="true" lazy="proxy">
 		</many-to-one>
 	</class>

@@ -12,7 +12,7 @@ License Type: Evaluation
 			<generator class="identity">
 			</generator>
 		</id>
-		<property name="excelType" column="excelType" type="String" length="255" not-null="true">
+		<property name="meExcelType" column="meExcelType" type="String" length="255" not-null="true">
 			<meta attribute="field-description">
 				Excel&#31278;&#39006;
 			</meta>

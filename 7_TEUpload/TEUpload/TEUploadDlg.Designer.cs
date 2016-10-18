@@ -35,7 +35,7 @@
             this.labelX3 = new DevComponents.DotNetBar.LabelX();
             this.OISLabel = new DevComponents.DotNetBar.LabelX();
             this.labelX5 = new DevComponents.DotNetBar.LabelX();
-            this.listView1 = new System.Windows.Forms.ListView();
+            listView1 = new System.Windows.Forms.ListView();
             this.OK = new DevComponents.DotNetBar.ButtonX();
             this.SuspendLayout();
             // 
@@ -103,7 +103,7 @@
             // 
             this.labelX5.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.labelX5.Font = new System.Drawing.Font("新細明體", 13F);
-            this.labelX5.Location = new System.Drawing.Point(125, 97);
+            this.labelX5.Location = new System.Drawing.Point(152, 97);
             this.labelX5.Name = "labelX5";
             this.labelX5.Size = new System.Drawing.Size(141, 23);
             this.labelX5.TabIndex = 4;
@@ -111,18 +111,18 @@
             // 
             // listView1
             // 
-            this.listView1.Location = new System.Drawing.Point(12, 126);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(305, 227);
-            this.listView1.TabIndex = 5;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.List;
+            listView1.Location = new System.Drawing.Point(12, 126);
+            listView1.Name = "listView1";
+            listView1.Size = new System.Drawing.Size(352, 227);
+            listView1.TabIndex = 5;
+            listView1.UseCompatibleStateImageBehavior = false;
+            listView1.View = System.Windows.Forms.View.List;
             // 
             // OK
             // 
             this.OK.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.OK.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.OK.Location = new System.Drawing.Point(125, 359);
+            this.OK.Location = new System.Drawing.Point(152, 359);
             this.OK.Name = "OK";
             this.OK.Size = new System.Drawing.Size(75, 23);
             this.OK.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
@@ -134,9 +134,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(329, 394);
+            this.ClientSize = new System.Drawing.Size(376, 394);
             this.Controls.Add(this.OK);
-            this.Controls.Add(this.listView1);
+            this.Controls.Add(listView1);
             this.Controls.Add(this.labelX5);
             this.Controls.Add(this.OISLabel);
             this.Controls.Add(this.labelX3);
@@ -158,7 +158,7 @@
         private DevComponents.DotNetBar.LabelX labelX3;
         private DevComponents.DotNetBar.LabelX OISLabel;
         private DevComponents.DotNetBar.LabelX labelX5;
-        private System.Windows.Forms.ListView listView1;
         private DevComponents.DotNetBar.ButtonX OK;
+        public static System.Windows.Forms.ListView listView1;
     }
 }

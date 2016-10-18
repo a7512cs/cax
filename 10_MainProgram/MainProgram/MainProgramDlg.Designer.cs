@@ -37,6 +37,10 @@
             this.chb_Heidenhain = new System.Windows.Forms.CheckBox();
             this.chb_Simens = new System.Windows.Forms.CheckBox();
             this.NCGroup = new System.Windows.Forms.GroupBox();
+            this.up_arrow = new System.Windows.Forms.PictureBox();
+            this.down_arrow = new System.Windows.Forms.PictureBox();
+            this.left_arrow = new System.Windows.Forms.PictureBox();
+            this.right_arrow = new System.Windows.Forms.PictureBox();
             this.DeleteSel = new DevComponents.DotNetBar.ButtonX();
             this.listView5 = new System.Windows.Forms.ListView();
             this.OperName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -45,14 +49,10 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listView3 = new System.Windows.Forms.ListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.DownButton = new DevComponents.DotNetBar.ButtonX();
-            this.UpButton = new DevComponents.DotNetBar.ButtonX();
             this.CopyItem = new DevComponents.DotNetBar.ButtonX();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.RemoveButton = new DevComponents.DotNetBar.ButtonX();
             this.comboBoxNCgroup = new DevComponents.DotNetBar.Controls.ComboBoxEx();
-            this.AddButton = new DevComponents.DotNetBar.ButtonX();
             this.labelX2 = new DevComponents.DotNetBar.LabelX();
             this.AddCondition = new System.Windows.Forms.GroupBox();
             this.ClearTextBox = new DevComponents.DotNetBar.ButtonX();
@@ -63,6 +63,10 @@
             this.CloseDlg = new DevComponents.DotNetBar.ButtonX();
             this.ControlerGroup.SuspendLayout();
             this.NCGroup.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.up_arrow)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.down_arrow)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.left_arrow)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.right_arrow)).BeginInit();
             this.AddCondition.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -142,17 +146,17 @@
             // 
             // NCGroup
             // 
+            this.NCGroup.Controls.Add(this.up_arrow);
+            this.NCGroup.Controls.Add(this.down_arrow);
+            this.NCGroup.Controls.Add(this.left_arrow);
+            this.NCGroup.Controls.Add(this.right_arrow);
             this.NCGroup.Controls.Add(this.DeleteSel);
             this.NCGroup.Controls.Add(this.listView5);
             this.NCGroup.Controls.Add(this.listView4);
             this.NCGroup.Controls.Add(this.listView3);
-            this.NCGroup.Controls.Add(this.DownButton);
-            this.NCGroup.Controls.Add(this.UpButton);
             this.NCGroup.Controls.Add(this.CopyItem);
             this.NCGroup.Controls.Add(this.listView1);
-            this.NCGroup.Controls.Add(this.RemoveButton);
             this.NCGroup.Controls.Add(this.comboBoxNCgroup);
-            this.NCGroup.Controls.Add(this.AddButton);
             this.NCGroup.Controls.Add(this.labelX2);
             this.NCGroup.Location = new System.Drawing.Point(12, 120);
             this.NCGroup.Name = "NCGroup";
@@ -160,6 +164,50 @@
             this.NCGroup.TabIndex = 2;
             this.NCGroup.TabStop = false;
             this.NCGroup.Text = "程式";
+            // 
+            // up_arrow
+            // 
+            this.up_arrow.Image = global::MainProgram.Properties.Resources.up_arrow_48px;
+            this.up_arrow.Location = new System.Drawing.Point(432, 151);
+            this.up_arrow.Name = "up_arrow";
+            this.up_arrow.Size = new System.Drawing.Size(39, 31);
+            this.up_arrow.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.up_arrow.TabIndex = 21;
+            this.up_arrow.TabStop = false;
+            this.up_arrow.Click += new System.EventHandler(this.up_arrow_Click);
+            // 
+            // down_arrow
+            // 
+            this.down_arrow.Image = global::MainProgram.Properties.Resources.down_arrow_48px;
+            this.down_arrow.Location = new System.Drawing.Point(432, 188);
+            this.down_arrow.Name = "down_arrow";
+            this.down_arrow.Size = new System.Drawing.Size(39, 31);
+            this.down_arrow.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.down_arrow.TabIndex = 20;
+            this.down_arrow.TabStop = false;
+            this.down_arrow.Click += new System.EventHandler(this.down_arrow_Click);
+            // 
+            // left_arrow
+            // 
+            this.left_arrow.Image = global::MainProgram.Properties.Resources.left_arrow_48px;
+            this.left_arrow.Location = new System.Drawing.Point(196, 188);
+            this.left_arrow.Name = "left_arrow";
+            this.left_arrow.Size = new System.Drawing.Size(39, 31);
+            this.left_arrow.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.left_arrow.TabIndex = 19;
+            this.left_arrow.TabStop = false;
+            this.left_arrow.Click += new System.EventHandler(this.left_arrow_Click);
+            // 
+            // right_arrow
+            // 
+            this.right_arrow.Image = global::MainProgram.Properties.Resources.right_arrow_48px;
+            this.right_arrow.Location = new System.Drawing.Point(196, 151);
+            this.right_arrow.Name = "right_arrow";
+            this.right_arrow.Size = new System.Drawing.Size(39, 31);
+            this.right_arrow.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.right_arrow.TabIndex = 18;
+            this.right_arrow.TabStop = false;
+            this.right_arrow.Click += new System.EventHandler(this.right_arrow_Click);
             // 
             // DeleteSel
             // 
@@ -234,28 +282,6 @@
             // 
             this.columnHeader3.Width = 180;
             // 
-            // DownButton
-            // 
-            this.DownButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.DownButton.ColorTable = DevComponents.DotNetBar.eButtonColor.MagentaWithBackground;
-            this.DownButton.Location = new System.Drawing.Point(431, 191);
-            this.DownButton.Name = "DownButton";
-            this.DownButton.Size = new System.Drawing.Size(39, 23);
-            this.DownButton.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.DownButton.TabIndex = 8;
-            this.DownButton.Click += new System.EventHandler(this.DownButton_Click);
-            // 
-            // UpButton
-            // 
-            this.UpButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.UpButton.ColorTable = DevComponents.DotNetBar.eButtonColor.MagentaWithBackground;
-            this.UpButton.Location = new System.Drawing.Point(431, 150);
-            this.UpButton.Name = "UpButton";
-            this.UpButton.Size = new System.Drawing.Size(39, 23);
-            this.UpButton.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.UpButton.TabIndex = 7;
-            this.UpButton.Click += new System.EventHandler(this.UpButton_Click);
-            // 
             // CopyItem
             // 
             this.CopyItem.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
@@ -293,17 +319,6 @@
             // 
             this.columnHeader2.Width = 200;
             // 
-            // RemoveButton
-            // 
-            this.RemoveButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.RemoveButton.ColorTable = DevComponents.DotNetBar.eButtonColor.MagentaWithBackground;
-            this.RemoveButton.Location = new System.Drawing.Point(196, 191);
-            this.RemoveButton.Name = "RemoveButton";
-            this.RemoveButton.Size = new System.Drawing.Size(39, 23);
-            this.RemoveButton.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.RemoveButton.TabIndex = 5;
-            this.RemoveButton.Click += new System.EventHandler(this.RemoveButton_Click);
-            // 
             // comboBoxNCgroup
             // 
             this.comboBoxNCgroup.DisplayMember = "Text";
@@ -316,19 +331,6 @@
             this.comboBoxNCgroup.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.comboBoxNCgroup.TabIndex = 0;
             this.comboBoxNCgroup.SelectedIndexChanged += new System.EventHandler(this.comboBoxNCgroup_SelectedIndexChanged);
-            // 
-            // AddButton
-            // 
-            this.AddButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.AddButton.BackColor = System.Drawing.Color.White;
-            this.AddButton.ColorTable = DevComponents.DotNetBar.eButtonColor.MagentaWithBackground;
-            this.AddButton.Font = new System.Drawing.Font("新細明體", 9F);
-            this.AddButton.Location = new System.Drawing.Point(196, 150);
-            this.AddButton.Name = "AddButton";
-            this.AddButton.Size = new System.Drawing.Size(39, 23);
-            this.AddButton.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
-            this.AddButton.TabIndex = 3;
-            this.AddButton.Click += new System.EventHandler(this.AddButton_Click);
             // 
             // labelX2
             // 
@@ -443,6 +445,10 @@
             this.ControlerGroup.ResumeLayout(false);
             this.ControlerGroup.PerformLayout();
             this.NCGroup.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.up_arrow)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.down_arrow)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.left_arrow)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.right_arrow)).EndInit();
             this.AddCondition.ResumeLayout(false);
             this.AddCondition.PerformLayout();
             this.ResumeLayout(false);
@@ -460,13 +466,9 @@
         private System.Windows.Forms.CheckBox chb_Simens;
         private System.Windows.Forms.GroupBox NCGroup;
         private System.Windows.Forms.ListView listView1;
-        private DevComponents.DotNetBar.ButtonX RemoveButton;
         private DevComponents.DotNetBar.Controls.ComboBoxEx comboBoxNCgroup;
-        private DevComponents.DotNetBar.ButtonX AddButton;
         private DevComponents.DotNetBar.LabelX labelX2;
         private System.Windows.Forms.GroupBox AddCondition;
-        private DevComponents.DotNetBar.ButtonX DownButton;
-        private DevComponents.DotNetBar.ButtonX UpButton;
         private DevComponents.DotNetBar.ButtonX CopyItem;
         private DevComponents.DotNetBar.Controls.ComboBoxEx UserDefineTxt;
         private DevComponents.DotNetBar.ButtonX UserAddCondition;
@@ -483,5 +485,9 @@
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private DevComponents.DotNetBar.ButtonX DeleteSel;
         private DevComponents.DotNetBar.ButtonX ClearTextBox;
+        private System.Windows.Forms.PictureBox up_arrow;
+        private System.Windows.Forms.PictureBox down_arrow;
+        private System.Windows.Forms.PictureBox left_arrow;
+        private System.Windows.Forms.PictureBox right_arrow;
     }
 }

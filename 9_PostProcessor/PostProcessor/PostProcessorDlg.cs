@@ -66,30 +66,7 @@ namespace PostProcessor
             //取得所有operationAry
             OperationAry = displayPart.CAMSetup.CAMOperationCollection.ToArray();
 
-            #region 建立NC資料夾
-            string Is_Local = "";
-            Is_Local = Environment.GetEnvironmentVariable("UGII_ENV_FILE");
-            if (Is_Local != "")
-            {
-                CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
-                if (!cMETE_Download_Upload_Path.Local_Folder_CAM.Contains("Oper1"))
-                {
-                    NCFolderPath = string.Format(@"{0}\{1}", cMETE_Download_Upload_Path.Local_Folder_CAM, "NC");
-                }
-                else 
-                {
-                    NCFolderPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), "NC");
-                }
-            }
-            else
-            {
-                NCFolderPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(displayPart.FullPath), "NC");
-            }
-            if (!Directory.Exists(NCFolderPath))
-            {
-                System.IO.Directory.CreateDirectory(NCFolderPath);
-            }
-            #endregion
+            
 
 
             #region 取得相關資訊，填入Dic
@@ -164,10 +141,40 @@ namespace PostProcessor
 
         private void comboBoxNCgroup_SelectedIndexChanged(object sender, EventArgs e)
         {
+            
+
             //清空superGrid資料
             OperPanel.Rows.Clear();
             //取得comboBox資料
             CurrentNCGroup = comboBoxNCgroup.Text;
+
+            #region 建立NC資料夾
+            string Is_Local = "";
+            Is_Local = Environment.GetEnvironmentVariable("UGII_ENV_FILE");
+            if (Is_Local != null)
+            {
+                CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
+                if (!cMETE_Download_Upload_Path.Local_Folder_CAM.Contains("Oper1"))
+                {
+                    NCFolderPath = string.Format(@"{0}\{1}_{2}", cMETE_Download_Upload_Path.Local_Folder_CAM, "NC", CurrentNCGroup);
+                }
+                else
+                {
+                    NCFolderPath = string.Format(@"{0}\{1}_{2}", Path.GetDirectoryName(displayPart.FullPath), "NC", CurrentNCGroup);
+                }
+            }
+            else
+            {
+                NCFolderPath = string.Format(@"{0}\{1}_{2}", Path.GetDirectoryName(displayPart.FullPath), "NC", CurrentNCGroup);
+            }
+
+
+            if (!Directory.Exists(NCFolderPath))
+            {
+                System.IO.Directory.CreateDirectory(NCFolderPath);
+            }
+            #endregion
+
             //取得選擇的NC
             foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
             {

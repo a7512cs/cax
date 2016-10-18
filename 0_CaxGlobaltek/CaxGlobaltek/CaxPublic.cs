@@ -702,7 +702,5 @@ namespace CaxGlobaltek
             }
             return true;
         }
-
-
     }
 }

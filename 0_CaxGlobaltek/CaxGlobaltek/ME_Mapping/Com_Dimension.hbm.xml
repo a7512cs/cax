@@ -35,7 +35,9 @@ License Type: Evaluation
     <property name="location" column="location" type="String" length="255" not-null="false"/>
     <property name="instrument" column="instrument" type="String" length="255" not-null="false"/>
     <property name="frequency" column="frequency" type="String" length="255" not-null="false"/>
-		<many-to-one name="comMEMain" column="meSrNo" class="Com_MEMain" not-null="true" lazy="proxy">
+    <property name="dimensionType" column="dimensionType" type="String" length="255" not-null="false"/>
+    <property name="toleranceType" column="toleranceType" type="String" length="255" not-null="false"/>
+    <many-to-one name="comMEMain" column="meSrNo" class="Com_MEMain" not-null="true" lazy="proxy">
 		</many-to-one>
 	</class>
 </hibernate-mapping>

@@ -142,7 +142,7 @@
     <Content Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Database.cs" />
+    <Compile Include="DatabaseClass\Database.cs" />
     <Compile Include="ExportShopDocDlg.cs">
       <SubType>Form</SubType>
     </Compile>

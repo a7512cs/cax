@@ -397,8 +397,8 @@ namespace MEUpload
 
             if (excelType != "")
             {
-                #region 取得PartInformation資訊(draftingVer、draftingDate、createDate)
-                string draftingVer = "", draftingDate = "", createDate = "";
+                #region 取得PartInformation資訊(draftingVer、draftingDate、createDate、partDescription)
+                string draftingVer = "", draftingDate = "", createDate = "", partDescription = "";
                 try
                 {
                     draftingVer = workPart.GetStringAttribute("REVSTARTPOS");
@@ -406,6 +406,14 @@ namespace MEUpload
                 catch (System.Exception ex)
                 {
                     draftingVer = "";
+                }
+                try
+                {
+                    partDescription = workPart.GetStringAttribute("PARTDESCRIPTIONPOS");
+                }
+                catch (System.Exception ex)
+                {
+                    partDescription = "";
                 }
                 try
                 {
@@ -420,7 +428,7 @@ namespace MEUpload
 
                 bool dataOK = true;
                 #region 資訊遺漏提醒事項
-                if (draftingVer == "" || draftingDate == "")
+                if (draftingVer == "" || draftingDate == "" || partDescription == "")
                 {
                     dataOK = false;
                     MessageBox.Show("量測資訊不足，僅上傳實體檔案到伺服器");
@@ -504,10 +512,10 @@ namespace MEUpload
 
                         try
                         {
-
                             Com_MEMain cCom_MEMain = new Com_MEMain();
                             cCom_MEMain.comPartOperation = comPartOperation;
                             cCom_MEMain.sysMEExcel = sysMEExcel;
+                            cCom_MEMain.partDescription = partDescription;
                             cCom_MEMain.createDate = createDate;
 
                             IList<Com_Dimension> listCom_Dimension = new List<Com_Dimension>();
@@ -515,85 +523,7 @@ namespace MEUpload
                             {
                                 Com_Dimension cCom_Dimension = new Com_Dimension();
                                 cCom_Dimension.comMEMain = cCom_MEMain;
-                                cCom_Dimension.draftingVer = i.draftingVer;
-                                cCom_Dimension.draftingDate = i.draftingDate;
-                                cCom_Dimension.ballon = i.ballonNum;
-                                cCom_Dimension.location = i.location;
-                                cCom_Dimension.instrument = i.instrument;
-                                cCom_Dimension.frequency = i.frequency;
-                                if (i.type == "NXOpen.Annotations.DraftingFcf")
-                                {
-                                    #region DraftingFcf
-
-                                    if (i.characteristic != "")
-                                    {
-                                        cCom_Dimension.characteristic = Database.GetCharacteristicSymbol(i.characteristic);
-                                    }
-                                    if (i.zoneShape != "")
-                                    {
-                                        cCom_Dimension.zoneShape = Database.GetZoneShapeSymbol(i.zoneShape);
-                                    }
-                                    if (i.toleranceValue != "")
-                                    {
-                                        cCom_Dimension.toleranceValue = i.toleranceValue;
-                                    }
-                                    if (i.materialModifier != "")
-                                    {
-                                        cCom_Dimension.materialModifer = Database.GetMaterialModifier(i.materialModifier);
-                                    }
-                                    if (i.primaryDatum != "")
-                                    {
-                                        cCom_Dimension.primaryDatum = i.primaryDatum;
-                                    }
-                                    if (i.primaryMaterialModifier != "")
-                                    {
-                                        cCom_Dimension.primaryMaterialModifier = Database.GetMaterialModifier(i.primaryMaterialModifier);
-                                    }
-                                    if (i.secondaryDatum != "")
-                                    {
-                                        cCom_Dimension.secondaryDatum = i.secondaryDatum;
-                                    }
-                                    if (i.secondaryMaterialModifier != "")
-                                    {
-                                        cCom_Dimension.secondaryMaterialModifier = Database.GetMaterialModifier(i.secondaryMaterialModifier);
-                                    }
-                                    if (i.tertiaryDatum != "")
-                                    {
-                                        cCom_Dimension.tertiaryDatum = i.tertiaryDatum;
-                                    }
-                                    if (i.tertiaryMaterialModifier != "")
-                                    {
-                                        cCom_Dimension.tertiaryMaterialModifier = Database.GetMaterialModifier(i.tertiaryMaterialModifier);
-                                    }
-                                    #endregion
-                                }
-                                else if (i.type == "NXOpen.Annotations.Label")
-                                {
-                                    #region Label
-                                    if (i.mainText != "")
-                                    {
-                                        cCom_Dimension.mainText = i.mainText;
-                                    }
-                                    #endregion
-                                }
-                                else
-                                {
-                                    #region Dimension
-
-                                    if (i.beforeText != null)
-                                    {
-                                        cCom_Dimension.beforeText = Database.GetGDTWord(i.beforeText);
-                                    }
-                                    if (i.mainText != "")
-                                    {
-                                        cCom_Dimension.mainText = Database.GetGDTWord(i.mainText);
-                                    }
-                                    if (i.upperTol != "")
-                                    {
-                                        Database.GetTolerance(i, ref cCom_Dimension);
-                                    }
-                                    #endregion
-                                }
+                                Database.MappingData(i, ref cCom_Dimension);
                                 listCom_Dimension.Add(cCom_Dimension);
                             }
 
