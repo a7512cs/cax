@@ -266,7 +266,7 @@ namespace PartInformation
                 else if (cDraftingConfig.Drafting[i].PartNumberPosText == KeyToCompare)
                 {
                     ptStr = cDraftingConfig.Drafting[i].PartNumberPos;
-                    int Subtraction = ValueToCompare.Length - 15;
+                    int Subtraction = ValueToCompare.Length - 17;
                     if (Subtraction <= 0)
                     {
                         FontSize = cDraftingConfig.Drafting[i].PartNumberFontSize;

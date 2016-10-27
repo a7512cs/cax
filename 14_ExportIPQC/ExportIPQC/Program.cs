@@ -817,7 +817,6 @@ public class Program
                     }
                     else
                     {
-
                         #region Dimension¶ñ¸ê®Æ
                         if (cTextData.BeforeText != null)
                         {

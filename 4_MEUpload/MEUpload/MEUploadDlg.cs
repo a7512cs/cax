@@ -27,7 +27,7 @@ namespace MEUpload
         public static METE_Download_Upload_Path cMETE_Download_Upload_Path = new METE_Download_Upload_Path();
         public static Dictionary<string, PartDirData> DicPartDirData = new Dictionary<string, PartDirData>();
         public static ExcelDirData sExcelDirData = new ExcelDirData();
-
+        public static ISession session = MyHibernateHelper.SessionFactory.OpenSession();
 
         public struct PartDirData
         {
@@ -385,17 +385,17 @@ namespace MEUpload
 
             #region 資料上傳至Database
             //取得excelType是哪一種報表
-            string excelType = "";
+            string meExcelType = "";
             try
             {
-                excelType = workPart.GetStringAttribute("EXCELTYPE");
+                meExcelType = workPart.GetStringAttribute("EXCELTYPE");
             }
             catch (System.Exception ex)
             {
-                excelType = "";
+                meExcelType = "";
             }
 
-            if (excelType != "")
+            if (meExcelType != "")
             {
                 #region 取得PartInformation資訊(draftingVer、draftingDate、createDate、partDescription)
                 string draftingVer = "", draftingDate = "", createDate = "", partDescription = "";
@@ -453,7 +453,7 @@ namespace MEUpload
                         foreach (DisplayableObject singleObj in SheetObj)
                         {
                             DimensionData cDimensionData = new DimensionData();
-                            bool status = Database.GetDimensionData(excelType, singleObj, out cDimensionData);
+                            bool status = Database.GetDimensionData(meExcelType, singleObj, out cDimensionData);
                             if (!status)
                             {
                                 continue;
@@ -465,51 +465,66 @@ namespace MEUpload
                     }
                     #endregion
 
-                    using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
+                    Com_PEMain comPEMain = new Com_PEMain();
+                    #region 由料號查peSrNo  
+                    try
                     {
-                        Com_PEMain comPEMain = new Com_PEMain();
-                        #region 由料號查peSrNo  PartInfo.PartNo
-                        try
-                        {
-                            comPEMain = session.QueryOver<Com_PEMain>().Where(x => x.partName == PartInfo.PartNo).SingleOrDefault<Com_PEMain>();
-                        }
-                        catch (System.Exception ex)
-                        {
-                            MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
-                            return;
-                        }
-                        #endregion
+                        comPEMain = session.QueryOver<Com_PEMain>().Where(x => x.partName == PartInfo.PartNo).SingleOrDefault<Com_PEMain>();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                        return;
+                    }
+                    #endregion
 
-                        Com_PartOperation comPartOperation = new Com_PartOperation();
-                        #region 由peSrNo查partOperationSrNo
-                        try
-                        {
-                            comPartOperation = session.QueryOver<Com_PartOperation>()
-                                                                 .Where(x => x.comPEMain.peSrNo == comPEMain.peSrNo)
-                                                                 .Where(x => x.operation1 == PartInfo.OpNum)
-                                                                 .SingleOrDefault<Com_PartOperation>();
-                        }
-                        catch (System.Exception ex)
-                        {
-                            MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
-                            return;
-                        }
-                        #endregion
+                    Com_PartOperation comPartOperation = new Com_PartOperation();
+                    #region 由peSrNo和Op查partOperationSrNo
+                    try
+                    {
+                        comPartOperation = session.QueryOver<Com_PartOperation>()
+                                                             .Where(x => x.comPEMain.peSrNo == comPEMain.peSrNo)
+                                                             .Where(x => x.operation1 == PartInfo.OpNum)
+                                                             .SingleOrDefault<Com_PartOperation>();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                        return;
+                    }
+                    #endregion
 
-                        Sys_MEExcel sysMEExcel = new Sys_MEExcel();
-                        #region 由excelType查meExcelSrNo
-                        try
-                        {
-                            sysMEExcel = session.QueryOver<Sys_MEExcel>().Where(x => x.excelType == excelType).SingleOrDefault<Sys_MEExcel>();
-                        }
-                        catch (System.Exception ex)
-                        {
-                            MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
-                            return;
-                        }
-                        #endregion
+                    Sys_MEExcel sysMEExcel = new Sys_MEExcel();
+                    #region 由excelType查meExcelSrNo
+                    try
+                    {
+                        sysMEExcel = session.QueryOver<Sys_MEExcel>().Where(x => x.meExcelType == meExcelType).SingleOrDefault<Sys_MEExcel>();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MessageBox.Show("資料庫中沒有此料號的紀錄，故無法上傳量測尺寸，僅成功上傳實體檔案");
+                        return;
+                    }
+                    #endregion
 
+                    #region 比對資料庫MEMain是否有同筆數據
+                    IList<Com_MEMain> DBData_ComMEMain = new List<Com_MEMain>();
+                    DBData_ComMEMain = session.QueryOver<Com_MEMain>().List<Com_MEMain>();
 
+                    bool Is_Exist = false;
+                    foreach (Com_MEMain i in DBData_ComMEMain)
+                    {
+                        if (i.comPartOperation == comPartOperation && i.partDescription == partDescription && i.sysMEExcel == sysMEExcel)
+                        {
+                            Is_Exist = true;
+                            break;
+                        }
+                    }
+                    #endregion
+
+                    #region 如果本次上傳的資料不存在於資料庫，則開始上傳資料
+                    if (!Is_Exist)
+                    {
                         try
                         {
                             Com_MEMain cCom_MEMain = new Com_MEMain();
@@ -540,6 +555,7 @@ namespace MEUpload
                             MessageBox.Show("上傳資料庫時發生錯誤，僅上傳實體檔案");
                         }
                     }
+                    #endregion
                 }
             }
             else

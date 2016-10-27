@@ -11,6 +11,8 @@ using DevComponents.DotNetBar.SuperGrid;
 using System.Collections;
 using NHibernate;
 using System.IO;
+using DevComponents.DotNetBar;
+using OutputExcelForm.Excel;
 
 namespace OutputExcelForm
 {
@@ -18,10 +20,15 @@ namespace OutputExcelForm
     {
         #region 全域變數
         bool status;
-        public static GridPanel panel = new GridPanel();
+        public static GridPanel MEPanel = new GridPanel();
+        public static GridPanel TEPanel = new GridPanel();
         public static ISession session = MyHibernateHelper.SessionFactory.OpenSession();
-        public static string serverMEConfig = "", serverTEConfig = "";
-        public static Dictionary<DB_MEMain, IList<Com_Dimension>> DicDimenData = new Dictionary<DB_MEMain, IList<Com_Dimension>>();
+        public static Dictionary<DB_MEMain, IList<Com_Dimension>> DicDimensionData = new Dictionary<DB_MEMain, IList<Com_Dimension>>();
+        public static Dictionary<DB_TEMain, IList<Com_ShopDoc>> DicShopDocData = new Dictionary<DB_TEMain, IList<Com_ShopDoc>>();
+//         public string partNoComboboxText
+//         {
+//             get { return PartNoCombobox.Text; }
+//         }
         #endregion
 
         public OutputForm()
@@ -34,9 +41,9 @@ namespace OutputExcelForm
 
         private void InitializeGrid()
         {
-            panel = SGCPanel.PrimaryGrid;
-
-            
+            MEPanel = SGC_MEPanel.PrimaryGrid;
+            TEPanel = SGC_TEPanel.PrimaryGrid;
+            //GetDataFromDatabase aaa = new GetDataFromDatabase(this);
             //string[] orderArray = new string[]{};            
         }
 
@@ -123,9 +130,14 @@ namespace OutputExcelForm
 
         private void Op1Combobox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            panel.Rows.Clear();
+            MEPanel.Rows.Clear();
+            TEPanel.Rows.Clear();
             //從資料庫中取得有關ME的表單資料
-            status = GetDataFromDatabase.SetMEExcelData(((Com_PartOperation)Op1Combobox.SelectedItem), ref panel);
+            status = GetDataFromDatabase.SetMEExcelData(((Com_PartOperation)Op1Combobox.SelectedItem)
+                                                        , PartNoCombobox.Text
+                                                        , CusVerCombobox.Text
+                                                        , Op1Combobox.Text
+                                                        , ref MEPanel);
             if (!status)
             {
                 MessageBox.Show("SetMEExcelData資料取得失敗，請聯繫開發工程師");
@@ -133,7 +145,11 @@ namespace OutputExcelForm
             }
 
             //從資料庫中取得有關TE的表單資料
-            status = GetDataFromDatabase.SetTEExcelData(((Com_PartOperation)Op1Combobox.SelectedItem), ref panel);
+            status = GetDataFromDatabase.SetTEExcelData(((Com_PartOperation)Op1Combobox.SelectedItem)
+                                                        , PartNoCombobox.Text
+                                                        , CusVerCombobox.Text
+                                                        , Op1Combobox.Text
+                                                        , ref TEPanel);
             if (!status)
             {
                 MessageBox.Show("SetTEExcelData資料取得失敗，請聯繫開發工程師");
@@ -144,47 +160,81 @@ namespace OutputExcelForm
 
         private void OK_Click(object sender, EventArgs e)
         {
-            //檢查是否有選取表單格式
-            status = CheckFun.CheckAll();
+            string ExcelFolder = string.Format(@"{0}\{1}_{2}_OP{3}"
+                                                , Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+                                                , PartNoCombobox.Text
+                                                , CusVerCombobox.Text
+                                                , Op1Combobox.Text);
+
+            status = Excel_CommonFun.CheckExcelProcess();
             if (!status)
             {
+                MessageBox.Show("請先關閉所有Excel再重新執行輸出，如沒有EXCEL在執行，請開啟工作管理員關閉背景EXCEL");
                 return;
             }
 
-            //建立桌面資料夾存放產生的Excel
-            string ExcelFolder = string.Format(@"{0}\{1}_{2}_OP{3}", Environment.GetFolderPath(Environment.SpecialFolder.Desktop), PartNoCombobox.Text, CusVerCombobox.Text, Op1Combobox.Text);
-            if (!Directory.Exists(ExcelFolder))
+            if (SuperTabControl.SelectedTab.Text == "ME表單")
             {
-                Directory.CreateDirectory(ExcelFolder);
-            }
-            
-            try
-            {
-                //由選取的Op1與Excel表單，查出資料庫的Com_MEMain
-                status = GetDataFromDatabase.GetDimensionDataFromPanel(out DicDimenData);
+                //檢查是否有選取表單格式
+                status = CheckFun.CheckAll("ME", MEPanel);
                 if (!status)
                 {
-                    MessageBox.Show("由Panel資料查DB時發生錯誤，請聯繫開發工程師");
+                    return;
+                }
+
+                //建立桌面資料夾存放產生的Excel
+                if (!Directory.Exists(ExcelFolder))
+                {
+                    Directory.CreateDirectory(ExcelFolder);
+                }
+
+                //由選取的Op1與Excel表單，查出資料庫的Com_MEMain
+                status = GetDataFromDatabase.GetDimensionDataFromPanel(Op1Combobox, out DicDimensionData);
+                if (!status)
+                {
+                    MessageBox.Show("由Panel資料查DicDimensionData時發生錯誤，請聯繫開發工程師");
                     this.Close();
                 }
                 //開始輸出ME的Excel
-                status = GetExcelForm.InsertDataToExcel();
+                status = GetExcelForm.InsertDataToMEExcel(PartNoCombobox.Text, CusVerCombobox.Text, Op1Combobox.Text);
                 if (!status)
                 {
                     MessageBox.Show("輸出ME的Excel時發生錯誤，請聯繫開發工程師");
                     this.Close();
                 }
+            }
+            else if (SuperTabControl.SelectedTab.Text == "TE表單")
+            {
+                //檢查是否有選取表單格式
+                status = CheckFun.CheckAll("TE", TEPanel);
+                if (!status)
+                {
+                    return;
+                }
+
+                //建立桌面資料夾存放產生的Excel
+                if (!Directory.Exists(ExcelFolder))
+                {
+                    Directory.CreateDirectory(ExcelFolder);
+                }
 
                 //由選取的Op1與Excel表單，查出資料庫的Com_TEMain
-
-
-                MessageBox.Show("表單輸出完成！");
+                status = GetDataFromDatabase.GetShopDocDataFromPanel(Op1Combobox, out DicShopDocData);
+                if (!status)
+                {
+                    MessageBox.Show("由Panel資料查DicShopDocData時發生錯誤，請聯繫開發工程師");
+                    this.Close();
+                }
+                //開始輸出TE的Excel
+                status = GetExcelForm.InsertDataToTEExcel(PartNoCombobox.Text, CusVerCombobox.Text, Op1Combobox.Text);
+                if (!status)
+                {
+                    MessageBox.Show("輸出TE的Excel時發生錯誤，請聯繫開發工程師");
+                    this.Close();
+                }
             }
-            catch (System.Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                this.Close();
-            }
+
+            MessageBox.Show("表單輸出完成！");
         }
 
         private void Close_Click(object sender, EventArgs e)

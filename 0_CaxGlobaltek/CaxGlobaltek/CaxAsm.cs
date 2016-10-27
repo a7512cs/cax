@@ -352,21 +352,25 @@ namespace CaxGlobaltek
         }
 
         /// <summary>
-        /// 取得子Comp集合(遞迴搜尋)
+        /// 取得子Comp集合(IsCycle=true 遞迴; IsCycle=false 不遞迴，預設為true)
         /// </summary>
         /// <param name="FatherComp"></param>
         /// <param name="ListChildrenComp"></param>
         /// <returns></returns>
-        public static bool GetCompChildren(NXOpen.Assemblies.Component FatherComp, ref List<NXOpen.Assemblies.Component> ListChildrenComp)
+        public static bool GetCompChildren(NXOpen.Assemblies.Component FatherComp, ref List<NXOpen.Assemblies.Component> ListChildrenComp, bool IsCycle = true)
         {
             try
             {
                 NXOpen.Assemblies.Component[] ChildrenCompAry = FatherComp.GetChildren();
                 ListChildrenComp.AddRange(ChildrenCompAry.ToArray());
-                foreach (NXOpen.Assemblies.Component i in ChildrenCompAry)
+                if (!IsCycle)
                 {
-                    GetCompChildren(i, ref ListChildrenComp);
+                    foreach (NXOpen.Assemblies.Component i in ChildrenCompAry)
+                    {
+                        GetCompChildren(i, ref ListChildrenComp, IsCycle);
+                    }
                 }
+                
             }
             catch (System.Exception ex)
             {

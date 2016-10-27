@@ -5,11 +5,13 @@ using System.Text;
 using Microsoft.Office.Interop.Excel;
 using CaxGlobaltek;
 using System.IO;
+using System.Windows.Forms;
 
-namespace OutputExcelForm
+namespace OutputExcelForm.Excel
 {
     public class Excel_FAI
     {
+        private static bool status;
         public static ApplicationClass excelApp = new ApplicationClass();
         public static Workbook workBook = null;
         public static Worksheet workSheet = null;
@@ -165,7 +167,7 @@ namespace OutputExcelForm
 
             return ExcelSymbol;
         }
-        public static bool CreateFAIExcel_XinWu(DB_MEMain sDB_MEMain, IList<Com_Dimension> cComDimension)
+        public static bool CreateFAIExcel_XinWu(string partNo, string cusVer, string op1, DB_MEMain sDB_MEMain, IList<Com_Dimension> cCom_Dimension)
         {
             try
             {
@@ -175,17 +177,15 @@ namespace OutputExcelForm
                     return false;
                 }
 
-                //開啟Excel
+                //1.開啟Excel
+                //2.將Excel設為不顯示
+                //3.取得第一頁Sheet
                 workBook = excelApp.Workbooks.Open(sDB_MEMain.excelTemplateFilePath);
-
-                //將Excel設為不顯示
                 excelApp.Visible = false;
-
-                //取得第一頁sheet
                 workSheet = (Worksheet)workBook.Sheets[1];
                 #region 處理第一頁
                 workRange = (Range)workSheet.Cells;
-                workRange[10, 1] = OutputForm.PartNoCombobox.Text;
+                workRange[10, 1] = partNo;
                 workRange[10, 2] = sDB_MEMain.comMEMain.partDescription;
                 #endregion
 
@@ -193,7 +193,7 @@ namespace OutputExcelForm
                 workSheet = (Worksheet)workBook.Sheets[2];
                 #region 處理第二頁
                 workRange = (Range)workSheet.Cells;
-                workRange[10, 1] = OutputForm.PartNoCombobox.Text;
+                workRange[10, 1] = partNo;
                 workRange[10, 2] = sDB_MEMain.comMEMain.partDescription;
                 #endregion
 
@@ -201,85 +201,49 @@ namespace OutputExcelForm
                 workSheet = (Worksheet)workBook.Sheets[3];
                 #region 處理第三頁
                 workRange = (Range)workSheet.Cells;
-                workRange[10, 1] = OutputForm.PartNoCombobox.Text;
+                workRange[10, 1] = partNo;
                 workRange[10, 5] = sDB_MEMain.comMEMain.partDescription;
 
                 //Insert所需欄位
-                for (int i = 1; i < cComDimension.Count; i++)
+                for (int i = 1; i < cCom_Dimension.Count; i++)
                 {
                     workRange = (Range)workSheet.Range["A17"].EntireRow;
                     workRange.Insert(XlInsertShiftDirection.xlShiftDown, XlInsertFormatOrigin.xlFormatFromRightOrBelow);
                 }
 
-                //填入資料
+                //設定欄位的Row,Column
                 int currentRow = 16, ballonColumn = 1, locationColumn = 2, dimenColumn = 4, instrumentColumn = 6;
 
-                for (int i = 0; i < cComDimension.Count; i++)
+                for (int i = 0; i < cCom_Dimension.Count; i++)
                 {
                     workRange = (Range)workSheet.Cells;
 
                     //取得Row,Column
                     currentRow = currentRow + 1;
 
-                    if (cComDimension[i].dimensionType == "NXOpen.Annotations.DraftingFcf")
+                    status = Excel_CommonFun.MappingDimenData(cCom_Dimension[i], workRange, currentRow, dimenColumn);
+                    if (!status)
                     {
-                    }
-                    else if (cComDimension[i].dimensionType == "NXOpen.Annotations.Label")
-                    {
-                    }
-                    else
-                    {
-                        if (cComDimension[i].beforeText != null)
-                        {
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + GetGDTWord(cComDimension[i].beforeText);
-                        }
-                        if (cComDimension[i].mainText != "")
-                        {
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + GetGDTWord(cComDimension[i].mainText);
-                        }
-                        if (cComDimension[i].upTolerance != "" & cComDimension[i].toleranceType == "BilateralOneLine")
-                        {
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + "±";
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + cComDimension[i].upTolerance;
-                            string MaxMinStr = "(" + (Convert.ToDouble(cComDimension[i].mainText) - Convert.ToDouble(cComDimension[i].upTolerance)).ToString() + "-" + (Convert.ToDouble(cComDimension[i].mainText) + Convert.ToDouble(cComDimension[i].upTolerance)).ToString() + ")";
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + MaxMinStr;
-                        }
-                        else if (cComDimension[i].upTolerance != "" & cComDimension[i].toleranceType == "BilateralTwoLines")
-                        {
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + "+";
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + cComDimension[i].upTolerance;
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + "/";
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + cComDimension[i].lowTolerance;
-                            string MaxMinStr = "(" + (Convert.ToDouble(cComDimension[i].mainText) + Convert.ToDouble(cComDimension[i].lowTolerance)).ToString() + "-" + (Convert.ToDouble(cComDimension[i].mainText) + Convert.ToDouble(cComDimension[i].upTolerance)).ToString() + ")";
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + MaxMinStr;
-                        }
-                        else if (cComDimension[i].upTolerance != "" & cComDimension[i].toleranceType == "UnilateralAbove")
-                        {
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + "+";
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + cComDimension[i].upTolerance;
-                        }
-                        else if (cComDimension[i].upTolerance != "" & cComDimension[i].toleranceType == "UnilateralBelow")
-                        {
-                            workRange[currentRow, dimenColumn] = ((Range)workRange[currentRow, dimenColumn]).Value + cComDimension[i].lowTolerance;
-                        }
+                        MessageBox.Show("MappingDimenData時發生錯誤，請聯繫開發工程師");
+                        return false;
                     }
 
                     #region 檢具、頻率、Max、Min、泡泡、泡泡位置、料號、日期
-                    workRange[currentRow, instrumentColumn] = cComDimension[i].instrument;
-                    workRange[currentRow, ballonColumn] = cComDimension[i].ballon;
-                    workRange[currentRow, locationColumn] = cComDimension[i].location;
-                    #endregion
+                    workRange[currentRow, instrumentColumn] = cCom_Dimension[i].instrument;
+                    workRange[currentRow, ballonColumn] = cCom_Dimension[i].ballon;
+                    workRange[currentRow, locationColumn] = cCom_Dimension[i].location;
+                    #endregion                    
                 }
                 #endregion
 
                 //設定輸出路徑
                 string OutputPath = string.Format(@"{0}\{1}_{2}_OP{3}\{4}_{5}_{6}", Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
-                                                                          , OutputForm.PartNoCombobox.Text
-                                                                          , OutputForm.CusVerCombobox.Text
-                                                                          , OutputForm.Op1Combobox.Text
-                                                                          , OutputForm.PartNoCombobox.Text 
-                                                                          , OutputForm.CusVerCombobox.Text
-                                                                          , OutputForm.Op1Combobox.Text + "_" + "FAI" + ".xls");
+                                                                                  , partNo
+                                                                                  , cusVer
+                                                                                  , op1
+                                                                                  , partNo
+                                                                                  , cusVer
+                                                                                  , op1 + "_" + "FAI" + ".xls");
 
 
                 workBook.SaveAs(OutputPath, XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing,

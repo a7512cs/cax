@@ -3,25 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DevComponents.DotNetBar.SuperGrid;
 
 namespace OutputExcelForm
 {
     public class CheckFun
     {
         public static bool status;
-        public static bool CheckAll()
+        public static bool CheckAll(string section, GridPanel panel)
         {
             try
             {
                 //檢查是否有選擇
-                status = Is_Select();
+                status = Is_Select(panel);
                 if (!status)
                 {
                     return false;
                 }
 
                 //檢查是否有選擇Excel格式
-                status = Is_SelectForm();
+                status = Is_SelectForm(section, panel);
                 if (!status)
                 {
                     return false;
@@ -33,19 +34,19 @@ namespace OutputExcelForm
             }
             return true;
         }
-        public static bool Is_Select()
+        public static bool Is_Select(GridPanel panel)
         {
             try
             {
                 int count = 0;
-                for (int i = 0; i < OutputForm.panel.Rows.Count; i++)
+                for (int i = 0; i < panel.Rows.Count; i++)
                 {
-                    if (((bool)OutputForm.panel.GetCell(i, 0).Value) == false)
+                    if (((bool)panel.GetCell(i, 0).Value) == false)
                     {
                         count++;
                     }
                 }
-                if (count == OutputForm.panel.Rows.Count)
+                if (count == panel.Rows.Count)
                 {
                     MessageBox.Show("尚未選擇欲輸出的Excel表單");
                     return false;
@@ -57,20 +58,31 @@ namespace OutputExcelForm
             }
             return true;
         }
-        public static bool Is_SelectForm()
+        public static bool Is_SelectForm(string section, GridPanel panel)
         {
             try
             {
-                for (int i = 0; i < OutputForm.panel.Rows.Count;i++ )
+                for (int i = 0; i < panel.Rows.Count; i++)
                 {
-                    if (((bool)OutputForm.panel.GetCell(i, 0).Value) == false)
+                    if (((bool)panel.GetCell(i, 0).Value) == false)
                     {
                         continue;
                     }
-                    if (OutputForm.panel.GetCell(i, 2).Value == "" || OutputForm.panel.GetCell(i, 2).Value == "雙擊此區選擇表單")
+                    if (section == "ME")
                     {
-                        MessageBox.Show("表單 " + OutputForm.panel.GetCell(i, 1).Value.ToString() + " 尚未選擇Excel格式");
-                        return false;
+                        if (panel.GetCell(i, 2).Value == "" || panel.GetCell(i, 2).Value == "(雙擊)選擇表單")
+                        {
+                            MessageBox.Show("表單 " + panel.GetCell(i, 1).Value.ToString() + " 尚未選擇Excel格式");
+                            return false;
+                        }
+                    }
+                    else if (section == "TE")
+                    {
+                        if (panel.GetCell(i, 3).Value == "" || panel.GetCell(i, 3).Value == "(雙擊)選擇表單")
+                        {
+                            MessageBox.Show("表單 " + panel.GetCell(i, 1).Value.ToString() + " 尚未選擇Excel格式");
+                            return false;
+                        }
                     }
                 }
             }

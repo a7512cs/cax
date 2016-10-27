@@ -1633,7 +1633,15 @@ namespace ExportShopDoc
             {
                 SetView cSetView = (SetView)sender;
                 CurrentRowIndex = cSetView.EditorCell.RowIndex;
-                CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+                if (Is_Click_Rename)
+                {
+                    CurrentSelOperName = panel.GetCell(CurrentRowIndex, 1).Value.ToString();
+                }
+                else
+                {
+                    CurrentSelOperName = panel.GetCell(CurrentRowIndex, 0).Value.ToString();
+                }
+                
 
                 
 

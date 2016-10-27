@@ -33,7 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CaxGlobaltek">
+    <Reference Include="CaxGlobaltek, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\0_CaxGlobaltek\CaxGlobaltek\bin\Release\CaxGlobaltek.dll</HintPath>
     </Reference>
     <Reference Include="DevComponents.DotNetBar.SuperGrid, Version=12.2.0.7, Culture=neutral, PublicKeyToken=c39c3242a43eee2b, processorArchitecture=MSIL">
@@ -54,41 +55,48 @@
     <Reference Include="NHibernate">
       <HintPath>..\..\..\安裝檔\NHibernate-3.2.0.GA-bin\Required_Bins\NHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="OFFICE, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>C:\Windows\assembly\GAC_MSIL\office\14.0.0.0__71e9bce111e9429c\OFFICE.DLL</HintPath>
+    </Reference>
     <Reference Include="System">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Core">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml.Linq">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Data">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Deployment">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Drawing">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Windows.Forms">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CheckFun.cs" />
+    <Compile Include="Excel\Excel_CommonFun.cs" />
     <Compile Include="Excel\Excel_FAI.cs" />
     <Compile Include="Excel\Excel_FQC.cs" />
     <Compile Include="Excel\Excel_IPQC.cs" />
     <Compile Include="Excel\Excel_IQC.cs" />
     <Compile Include="Excel\Excel_SelfCheck.cs" />
+    <Compile Include="Excel\Excel_ShopDoc.cs" />
     <Compile Include="GetDataFromDatabase.cs" />
     <Compile Include="GetExcelForm.cs" />
     <Compile Include="OutputForm.cs">

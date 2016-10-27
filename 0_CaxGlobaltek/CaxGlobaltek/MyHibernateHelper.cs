@@ -5,6 +5,7 @@ using System.Text;
 using NHibernate;
 using NHibernate.Cfg;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace CaxGlobaltek
 {
@@ -31,7 +32,7 @@ namespace CaxGlobaltek
                     }
                     catch (System.Exception ex)
                     {
-                        CaxLog.ShowListingWindow(ex.ToString());
+                        MessageBox.Show(ex.ToString());
                     }
 
                 }

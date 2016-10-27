@@ -228,7 +228,7 @@ namespace TEUpload
             }
             
             #endregion
-
+            
             #region 上傳至資料庫
             #endregion
 

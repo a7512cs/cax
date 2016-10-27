@@ -177,7 +177,7 @@ namespace MEDownload
             }
             CaxPE.ReadPECreateData(PECreateData_Path, out cPECreateData);
 
-            Oper1comboBox.Items.AddRange(cPECreateData.Oper1Ary.ToArray());
+            Oper1comboBox.Items.AddRange(cPECreateData.oper1Ary.ToArray());
             Oper1comboBox.Items.Add("全部下載");
 
             /*
