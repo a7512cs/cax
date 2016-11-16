@@ -90,10 +90,12 @@
         </member>
         <member name="M:CaxGlobaltek.CaxPublic.OpenFileDialog(System.String@,System.String@,System.String,System.String)">
             <summary>
-            預設為Part檔，使用者可自行定義，fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)
+            fileName=(檔名+副檔名)，filePath=(路徑+檔名+副檔名)，defaultPath=預設開啟路徑，filter=預設為Part檔，使用者可自行定義，
             </summary>
             <param name="fileName"></param>
             <param name="filePath"></param>
+            <param name="defaultPath"></param>
+            <param name="filter"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxPublic.SelectObjects(NXOpen.NXObject[]@)">
@@ -116,6 +118,34 @@
             </summary>
             <param name="jsonPath"></param>
             <param name="cCoordinateData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPublic.ReadFileData(System.String,System.Int32,System.String[]@)">
+            <summary>
+            取得dat每一行的資料
+            </summary>
+            <param name="TxtPath">Dat的路徑</param>
+            <param name="IndexToRead">想要從哪一行開始抓取</param>
+            <param name="TxtData">抓取的資料</param>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPublic.DirectoryCopy(System.String,System.String,System.Boolean)">
+            <summary>
+            複製目錄到指定路徑，參數copySubDirs為是否複製子目錄內的檔案
+            </summary>
+            <param name="sourceDirName">原始目錄路徑</param>
+            <param name="destDirName">目的地目錄路徑</param>
+            <param name="copySubDirs">是否進行遞迴複製子目錄內的檔案</param>
+            <returns></returns>
+        </member>
+        <!-- 忽略成員 "M:CaxGlobaltek.CaxPublic.GetAllPath(System.String,System.String,CaxGlobaltek.METE_Download_Upload_Path@)" 中格式錯誤的 XML 註解 -->
+        <member name="M:CaxGlobaltek.CaxPublic.ReadJsonData``1(System.String,``0@)">
+            <summary>
+            適用於所有Json檔案的讀取
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="JsonDatLoadPath"></param>
+            <param name="JsonRead"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxOper.AskOperNameFromTag(NXOpen.Tag)">
@@ -270,7 +300,7 @@
             <param name="cBoxCoordinate"></param>
             <returns></returns>
         </member>
-        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d)">
+        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d,System.Double)">
             <summary>
             建立泡泡在圖紙上
             </summary>
@@ -341,9 +371,9 @@
             <param name="comp"></param>
             <returns></returns>
         </member>
-        <member name="M:CaxGlobaltek.CaxAsm.GetCompChildren(NXOpen.Assemblies.Component,System.Collections.Generic.List{NXOpen.Assemblies.Component}@)">
+        <member name="M:CaxGlobaltek.CaxAsm.GetCompChildren(NXOpen.Assemblies.Component,System.Collections.Generic.List{NXOpen.Assemblies.Component}@,System.Boolean)">
             <summary>
-            取得子Comp集合(遞迴搜尋)
+            取得子Comp集合(IsCycle=true 遞迴; IsCycle=false 不遞迴，預設為true)
             </summary>
             <param name="FatherComp"></param>
             <param name="ListChildrenComp"></param>
@@ -353,6 +383,13 @@
             <summary>
             回傳：IP\Globaltek\PE\Config
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CaxGlobaltek.CaxPE.ReadPECreateData(System.String,CaxGlobaltek.PECreateData@)">
+            <summary>
+            取得每一筆料號的製程資料
+            </summary>
+            <param name="cPECreateData"></param>
             <returns></returns>
         </member>
         <member name="M:CaxGlobaltek.CaxPart.OpenBaseDisplay(System.String,NXOpen.BasePart@)">

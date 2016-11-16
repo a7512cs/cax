@@ -33,6 +33,10 @@
     <DocumentationFile>bin\Release\CaxGlobaltek.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DevComponents.DotNetBar2, Version=12.2.0.7, Culture=neutral, PublicKeyToken=c39c3242a43eee2b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\DotNetBar for Windows Forms\DevComponents.DotNetBar2.dll</HintPath>
+    </Reference>
     <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\安裝檔\NHibernate-3.2.0.GA-bin\Required_Bins\Iesi.Collections.dll</HintPath>
@@ -70,13 +74,13 @@
     <Compile Include="CaxGetDatData.cs" />
     <Compile Include="CaxLog.cs" />
     <Compile Include="CaxME.cs" />
-    <Compile Include="CaxMEMapping.cs" />
+    <Compile Include="ME_Mapping\CaxMEMapping.cs" />
     <Compile Include="CaxOper.cs" />
     <Compile Include="CaxPart.cs" />
     <Compile Include="CaxPE.cs" />
-    <Compile Include="CaxPEMapping.cs" />
+    <Compile Include="PE_Mapping\CaxPEMapping.cs" />
     <Compile Include="CaxPublic.cs" />
-    <Compile Include="CaxTEMapping.cs" />
+    <Compile Include="TE_Mapping\CaxTEMapping.cs" />
     <Compile Include="MyHibernateHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

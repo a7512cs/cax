@@ -15,14 +15,20 @@ License Type: Evaluation
 
     <property name="partDescription" column="partDescription" type="String" length="255" not-null="true"/>
 		<property name="createDate" column="createDate" type="String" length="255" not-null="true"/>
+    <property name="material" column="material" type="String" length="255" not-null="true"/>
+    <property name="draftingVer" column="draftingVer" type="String" length="255" not-null="true"/>
 		<many-to-one name="comPartOperation" column="partOperationSrNo" class="Com_PartOperation" not-null="true" lazy="proxy">
 		</many-to-one>
     <many-to-one name="sysMEExcel" column="meExcelSrNo" class="Sys_MEExcel" not-null="true" lazy="proxy">
     </many-to-one>
-		<list name="comDimension" lazy="true" cascade="save-update" inverse="true">
+    <!--list name="comDimension" lazy="true" cascade="all" inverse="true">
 			<key column="meSrNo"/>
       <index column="comDimensionIdx"/>
 			<one-to-many class="Com_Dimension"/>
-		</list>
+		</list-->
+    <bag name="comDimension" lazy="true" cascade="all" inverse="true">
+      <key column="meSrNo"/>
+      <one-to-many class="Com_Dimension"/>
+    </bag>
 	</class>
 </hibernate-mapping>

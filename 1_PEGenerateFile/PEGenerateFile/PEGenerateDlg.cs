@@ -62,54 +62,18 @@ namespace PEGenerateFile
 
             using (ISession session = MyHibernateHelper.SessionFactory.OpenSession())
             {
-                //IList<Sys_Customer> customerName = new List<Sys_Customer>();
-                //customerName = session.QueryOver<Sys_Customer>().List();
-                //comboBoxCusName.Items.AddRange(((List<string>)customerName).ToArray());
-
-                //IList<string> customerName = session.QueryOver<Sys_Customer>().Select(x => x.customerName).List<string>();
-                //comboBoxCusName.Items.AddRange(((List<string>)customerName).ToArray());
-
                 IList<Sys_Customer> customerName = session.QueryOver<Sys_Customer>().List<Sys_Customer>();
                 comboBoxCusName.DisplayMember = "customerName";
                 comboBoxCusName.ValueMember = "customerSrNo";
                 foreach (Sys_Customer i in customerName)
                 {
                     comboBoxCusName.Items.Add(i);
-                    //comboBoxCusName.Items.Add(new { customerName = i.customerName, customerSrNo = i.customerSrNo.ToString() });
                 }
-                //comboBoxCusName.DataSource = new BindingSource(customerName, null);
-
-                //可由CAX查到流水號
-                //var aa = session.QueryOver<Sys_Customer>().Where(x => x.customerName == "CAX").Select(x => x.customerSrNo).SingleOrDefault<Int32>();
-                //CaxLog.ShowListingWindow(aa.ToString());
-
-                //方法一
-                listSys_Operation2 = session.QueryOver<Sys_Operation2>().List<Sys_Operation2>();
-                //方法二
-                //IList<string> operation2 = session.QueryOver<Sys_Operation2>().Select(x => x.operation2Name).List<string>();
-                //Oper2StringAry = ((List<string>)operation2).ToArray();
-                
-
+                listSys_Operation2 = session.QueryOver<Sys_Operation2>().OrderBy(x => x.operation2SrNo).Asc
+                                                                        .ThenBy(x => x.operation2Name).Asc
+                                                                        .List<Sys_Operation2>();
                 session.Close();
             }
-            
-            
-            //取得CustomerName配置檔
-            //string CustomerName_dat = "CustomerName.dat";
-            //string CustomerNameDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), CustomerName_dat);
-            //CusName cCusName = new CusName();
-            //CaxPE.ReadCustomerNameData(CustomerNameDatPath, out cCusName);
-
-            //將客戶名稱填入下拉選單-客戶
-            //comboBoxCusName.Items.AddRange(cCusName.CustomerName.ToArray());
-
-            //取得OperationArray配置檔
-            //string OperationArray_dat = "OperationArray.dat";
-            //string OperationArrayDatPath = string.Format(@"{0}\{1}", CaxPE.GetPEConfigDir(), OperationArray_dat);
-            //CaxPE.ReadOperationArrayData(OperationArrayDatPath, out cOperationArray);
-
-            //將Operation2Array塞入陣列Oper2StringAry中
-            //Oper2StringAry = cOperationArray.Operation2Array.ToArray();
             
             //建立GridPanel
             panel = OperSuperGridControl.PrimaryGrid;
@@ -581,38 +545,6 @@ namespace PEGenerateFile
                             }
                             trans.Commit();
                         }
-
-                        
-
-                        /*
-                        #region 插入Com_PEMain
-                        cCom_PEMain.partName = cPECreateData.partName;
-                        cCom_PEMain.customerVer = cPECreateData.cusRev;
-                        cCom_PEMain.createDate = DateTime.Now.ToString();
-
-                        IList<Com_PartOperation> listComPartOperation = new List<Com_PartOperation>();
-                        foreach (Operation i in cPECreateData.listOperation)
-                        {
-                            cCom_PartOperation = new Com_PartOperation();
-                            cCom_PartOperation.operation1 = i.Oper1;
-                            cCom_PartOperation.sysOperation2 = session.QueryOver<Sys_Operation2>()
-                                                                .Where(x => x.operation2Name == i.Oper2).SingleOrDefault();
-                            cCom_PartOperation.comPEMain = cCom_PEMain;
-                            listComPartOperation.Add(cCom_PartOperation);
-                        }
-                        cCom_PEMain.comPartOperation = listComPartOperation;
-
-                        using (ITransaction trans = session.BeginTransaction())
-                        {
-                            //session.Save(cCom_PartOperation);
-                            session.Save(cCom_PEMain);
-
-                            trans.Commit();
-                        }
-                        #endregion
-                        */
-
-
                         session.Close();
                     }
                 }
@@ -721,74 +653,74 @@ namespace PEGenerateFile
                     cPECreateData.cusRev = CusRev.ToUpper();
                     //cPE_OutPutDat.PartPath = PartPath;
                     cPECreateData.listOperation = new List<Operation>();
-                    Operation cOperation = new Operation();
                     cPECreateData.oper1Ary = new List<string>();
                     cPECreateData.oper2Ary = new List<string>();
+                    Operation cOperation = new Operation();
                     for (int i = 0; i < panel.Rows.Count; i++)
                     {
-                    if (panel.Rows.Count == 0)
-                    {
-                        MessageBox.Show("尚未選擇製程序與製程別！");
-                        return;
-                    }
-
-                    if (panel.GetCell(i, 1).Value.ToString() == "")
-                    {
-                        MessageBox.Show("製程序" + panel.GetCell(i, 0).Value + "尚未選取製程別！");
-                        return;
-                    }
-
-                    cOperation = new Operation();
-                    cOperation.Oper1 = panel.GetCell(i, 0).Value.ToString();
-                    cOperation.Oper2 = panel.GetCell(i, 1).Value.ToString();
-
-                    //建立CAM資料夾路徑
-                    CAMFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "CAM");
-
-                    //儲存CAM資料夾路徑
-                    //cOperation.CAMFolderPath = CAMFolderPath;
-
-                    //建立CAM資料夾
-                    if (!File.Exists(CAMFolderPath))
-                    {
-                        try
+                        if (panel.Rows.Count == 0)
                         {
-                            System.IO.Directory.CreateDirectory(CAMFolderPath);
-                        }
-                        catch (System.Exception ex)
-                        {
-                            MessageBox.Show(ex.ToString());
+                            MessageBox.Show("尚未選擇製程序與製程別！");
                             return;
                         }
-                    }
 
-                    //建立OIS資料夾路徑
-                    OISFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "OIS");
-
-                    //儲存OIS資料夾路徑
-                    //cOperation.OISFolderPath = OISFolderPath;
-
-                    //建立OIS資料夾
-                    if (!File.Exists(OISFolderPath))
-                    {
-                        try
+                        if (panel.GetCell(i, 1).Value.ToString() == "")
                         {
-                            System.IO.Directory.CreateDirectory(OISFolderPath);
-                        }
-                        catch (System.Exception ex)
-                        {
-                            MessageBox.Show(ex.ToString());
+                            MessageBox.Show("製程序" + panel.GetCell(i, 0).Value + "尚未選取製程別！");
                             return;
                         }
-                    }
 
-                    //建立三階檔案路徑
-                    ThridOperPartPath = Path.GetDirectoryName(AsmCompFileFullPath);
+                        cOperation = new Operation();
+                        cOperation.Oper1 = panel.GetCell(i, 0).Value.ToString();
+                        cOperation.Oper2 = panel.GetCell(i, 1).Value.ToString();
 
-                    cPECreateData.listOperation.Add(cOperation);
+                        //建立CAM資料夾路徑
+                        CAMFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "CAM");
 
-                    cPECreateData.oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
-                    cPECreateData.oper2Ary.Add(panel.GetCell(i, 1).Value.ToString()); 
+                        //儲存CAM資料夾路徑
+                        //cOperation.CAMFolderPath = CAMFolderPath;
+
+                        //建立CAM資料夾
+                        if (!File.Exists(CAMFolderPath))
+                        {
+                            try
+                            {
+                                System.IO.Directory.CreateDirectory(CAMFolderPath);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                MessageBox.Show(ex.ToString());
+                                return;
+                            }
+                        }
+
+                        //建立OIS資料夾路徑
+                        OISFolderPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(AsmCompFileFullPath), "OP" + panel.GetCell(i, 0).Value.ToString(), "OIS");
+
+                        //儲存OIS資料夾路徑
+                        //cOperation.OISFolderPath = OISFolderPath;
+
+                        //建立OIS資料夾
+                        if (!File.Exists(OISFolderPath))
+                        {
+                            try
+                            {
+                                System.IO.Directory.CreateDirectory(OISFolderPath);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                MessageBox.Show(ex.ToString());
+                                return;
+                            }
+                        }
+
+                        //建立三階檔案路徑
+                        //ThridOperPartPath = Path.GetDirectoryName(AsmCompFileFullPath);
+
+                        cPECreateData.listOperation.Add(cOperation);
+
+                        cPECreateData.oper1Ary.Add(panel.GetCell(i, 0).Value.ToString());
+                        cPECreateData.oper2Ary.Add(panel.GetCell(i, 1).Value.ToString()); 
                     }
 
                     #endregion
@@ -856,7 +788,35 @@ namespace PEGenerateFile
                     for (int i = 0; i < ChildenComp.Count; i++)
                     {
                         CaxAsm.SetWorkComponent(ChildenComp[i]);
+                        
                         string OperStr = ChildenComp[i].Name.Split(new string[] { "OP" }, StringSplitOptions.RemoveEmptyEntries)[1];
+
+                        #region 建立三階OIS檔
+                        //先複製drafting_template.prt到OIS檔
+                        //string drafting_template_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekEnvDir(), "drafting_template.prt");
+                        OISCompFullPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OIS" + OperStr + ".prt");
+                        //if (!File.Exists(drafting_template_Path))
+                        //{
+                        //    CaxLog.ShowListingWindow("drafting_template.prt遺失，請聯繫開發工程師");
+                        //    return;
+                        //}
+                        //System.IO.File.Copy(drafting_template_Path, OISCompFullPath, true);
+
+                        //組立三階OIS檔
+                        status = CaxAsm.CreateNewEmptyComp(OISCompFullPath, out tempComp);
+                        //status = CaxAsm.AddComponentToAsmByDefault(OISCompFullPath, out tempComp);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("組立三階OIS檔失敗");
+                            return;
+                        }
+                        #endregion
+
+                        //OP900不需要建立CAM檔
+                        if (ChildenComp[i].Name.Contains("OP900"))
+                        {
+                            continue;
+                        }
 
                         #region 建立三階CAM檔
                         //建立三階CAM檔
@@ -868,29 +828,6 @@ namespace PEGenerateFile
                             return;
                         }
                         #endregion
-                    
-
-                        #region 建立三階OIS檔
-                        //先複製drafting_template.prt到OIS檔
-                        string drafting_template_Path = string.Format(@"{0}\{1}", CaxEnv.GetGlobaltekEnvDir(), "drafting_template.prt");
-                        OISCompFullPath = string.Format(@"{0}\{1}", Path.GetDirectoryName(AsmCompFileFullPath), PartNo + "_OIS" + OperStr + ".prt");
-                        if (!File.Exists(drafting_template_Path))
-                        {
-                            CaxLog.ShowListingWindow("drafting_template.prt遺失，請聯繫開發工程師");
-                            return;
-                        }
-                        System.IO.File.Copy(drafting_template_Path, OISCompFullPath, true);
-
-                        //組立三階OIS檔
-                        //status = CaxAsm.CreateNewEmptyComp(OISCompFullPath, out tempComp);
-                        status = CaxAsm.AddComponentToAsmByDefault(OISCompFullPath, out tempComp);
-                        if (!status)
-                        {
-                            CaxLog.ShowListingWindow("組立三階OIS檔失敗");
-                            return;
-                        }
-                        #endregion
-                    
                     }
 
                     #endregion
@@ -1318,7 +1255,7 @@ namespace PEGenerateFile
         public PEComboBox(IEnumerable Oper2StringAry)
         {
             DataSource = Oper2StringAry;
-
+            
             DisplayMember = "operation2Name";
             //ValueMember = "operation2SrNo";
             

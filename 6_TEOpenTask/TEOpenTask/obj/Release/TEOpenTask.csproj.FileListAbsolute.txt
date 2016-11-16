@@ -24,3 +24,9 @@ D:\GlobalCode\6_TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.TEOpenTaskDlg.resou
 D:\GlobalCode\6_TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.csproj.GenerateResource.Cache
 D:\GlobalCode\6_TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.dll
 D:\GlobalCode\6_TEOpenTask\TEOpenTask\obj\Release\TEOpenTask.pdb
+D:\GlobalCode\6_TEOpenTask\TEOpenTask\bin\Release\NHibernate.dll
+D:\GlobalCode\6_TEOpenTask\TEOpenTask\bin\Release\Iesi.Collections.dll
+D:\GlobalCode\6_TEOpenTask\TEOpenTask\bin\Release\NHibernate.pdb
+D:\GlobalCode\6_TEOpenTask\TEOpenTask\bin\Release\NHibernate.xml
+D:\GlobalCode\6_TEOpenTask\TEOpenTask\bin\Release\Iesi.Collections.pdb
+D:\GlobalCode\6_TEOpenTask\TEOpenTask\bin\Release\Iesi.Collections.xml

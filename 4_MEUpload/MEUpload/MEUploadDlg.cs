@@ -13,6 +13,7 @@ using System.IO;
 using NHibernate;
 using MEUpload.DatabaseClass;
 using NXOpen.Utilities;
+using DevComponents.DotNetBar;
 
 namespace MEUpload
 {
@@ -65,6 +66,14 @@ namespace MEUpload
 
         private void MEUploadDlg_Load(object sender, EventArgs e)
         {
+            //int module_id;
+            //theUfSession.UF.AskApplicationModule(out module_id);
+            //if (module_id != UFConstants.UF_APP_DRAFTING)
+            //{
+            //    MessageBox.Show("請先轉換為製圖模組後再執行！");
+            //    this.Close();
+            //}
+
             //取得METEDownload_Upload.dat
             CaxGetDatData.GetMETEDownload_Upload(out cMETE_Download_Upload_Path);
 
@@ -304,6 +313,7 @@ namespace MEUpload
                 }
                 catch (System.Exception ex)
                 {
+                    CaxLog.ShowListingWindow(ex.ToString());
                     CaxLog.ShowListingWindow(Path.GetFileName(kvp.Value.PartLocalDir) + "上傳失敗");
                     this.Close();
                 }
@@ -397,8 +407,8 @@ namespace MEUpload
 
             if (meExcelType != "")
             {
-                #region 取得PartInformation資訊(draftingVer、draftingDate、createDate、partDescription)
-                string draftingVer = "", draftingDate = "", createDate = "", partDescription = "";
+                #region 取得PartInformation資訊(draftingVer、draftingDate、createDate、partDescription、material)
+                string draftingVer = "", draftingDate = "", createDate = "", partDescription = "", material = "";
                 try
                 {
                     draftingVer = workPart.GetStringAttribute("REVSTARTPOS");
@@ -423,12 +433,20 @@ namespace MEUpload
                 {
                     draftingDate = "";
                 }
+                try
+                {
+                    material = workPart.GetStringAttribute("MATERIALPOS");
+                }
+                catch (System.Exception ex)
+                {
+                    material = "";
+                }
                 createDate = DateTime.Now.ToString();
                 #endregion
 
                 bool dataOK = true;
                 #region 資訊遺漏提醒事項
-                if (draftingVer == "" || draftingDate == "" || partDescription == "")
+                if (draftingVer == "" || draftingDate == "" || partDescription == "" || material == "")
                 {
                     dataOK = false;
                     MessageBox.Show("量測資訊不足，僅上傳實體檔案到伺服器");
@@ -512,19 +530,23 @@ namespace MEUpload
                     DBData_ComMEMain = session.QueryOver<Com_MEMain>().List<Com_MEMain>();
 
                     bool Is_Exist = false;
+                    Com_MEMain currentComMEMain = new Com_MEMain();
                     foreach (Com_MEMain i in DBData_ComMEMain)
                     {
-                        if (i.comPartOperation == comPartOperation && i.partDescription == partDescription && i.sysMEExcel == sysMEExcel)
+                        if (i.comPartOperation == comPartOperation && i.partDescription == partDescription && 
+                            i.sysMEExcel == sysMEExcel && i.draftingVer == draftingVer && i.material == material)
                         {
                             Is_Exist = true;
+                            currentComMEMain = i;
                             break;
                         }
                     }
                     #endregion
 
-                    #region 如果本次上傳的資料不存在於資料庫，則開始上傳資料
+                    #region 如果本次上傳的資料不存在於資料庫，則開始上傳資料；如果已存在資料庫，則詢問是否要更新尺寸
                     if (!Is_Exist)
                     {
+                        #region 整理資料並上傳
                         try
                         {
                             Com_MEMain cCom_MEMain = new Com_MEMain();
@@ -532,6 +554,8 @@ namespace MEUpload
                             cCom_MEMain.sysMEExcel = sysMEExcel;
                             cCom_MEMain.partDescription = partDescription;
                             cCom_MEMain.createDate = createDate;
+                            cCom_MEMain.material = material;
+                            cCom_MEMain.draftingVer = draftingVer;
 
                             IList<Com_Dimension> listCom_Dimension = new List<Com_Dimension>();
                             foreach (DimensionData i in Database.listDimensionData)
@@ -553,6 +577,52 @@ namespace MEUpload
                         catch (System.Exception ex)
                         {
                             MessageBox.Show("上傳資料庫時發生錯誤，僅上傳實體檔案");
+                        }
+                        #endregion
+                    }
+                    else
+                    {
+                        if (eTaskDialogResult.Yes == CaxPublic.ShowMsgYesNo("此料號已存在上一次的標註尺寸資料，是否更新?"))
+                        {
+                            try
+                            {
+                                #region 先刪除尺寸資料表
+                                IList<Com_Dimension> DB_ComDimension = new List<Com_Dimension>();
+                                DB_ComDimension = session.QueryOver<Com_Dimension>()
+                                                         .Where(x => x.comMEMain == currentComMEMain).List<Com_Dimension>();
+                                using (ITransaction trans = session.BeginTransaction())
+                                {
+                                    foreach (Com_Dimension i in DB_ComDimension)
+                                    {
+                                        session.Delete(i);
+                                    }
+                                    trans.Commit();
+                                }
+                                #endregion
+
+                                #region 重新插入所有尺寸
+                                IList<Com_Dimension> listCom_Dimension = new List<Com_Dimension>();
+                                foreach (DimensionData i in Database.listDimensionData)
+                                {
+                                    Com_Dimension cCom_Dimension = new Com_Dimension();
+                                    cCom_Dimension.comMEMain = currentComMEMain;
+                                    Database.MappingData(i, ref cCom_Dimension);
+                                    listCom_Dimension.Add(cCom_Dimension);
+                                }
+                                using (ITransaction trans = session.BeginTransaction())
+                                {
+                                    foreach (Com_Dimension i in listCom_Dimension)
+                                    {
+                                        session.Save(i);
+                                    }
+                                    trans.Commit();
+                                }
+                                #endregion
+                            }
+                            catch (System.Exception ex)
+                            {
+                                MessageBox.Show(ex.ToString());
+                            }
                         }
                     }
                     #endregion

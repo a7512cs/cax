@@ -60,6 +60,5 @@ namespace CreateBallon
             this.DialogResult = DialogResult.No;
             this.Close();
         }
-
     }
 }

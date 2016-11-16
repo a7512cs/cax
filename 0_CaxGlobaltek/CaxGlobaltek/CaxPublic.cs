@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using NXOpen;
 using System.IO;
 using System.Text.RegularExpressions;
+using DevComponents.DotNetBar;
 
 namespace CaxGlobaltek
 {
@@ -701,6 +702,14 @@ namespace CaxGlobaltek
                 return false;
             }
             return true;
+        }
+
+        public static eTaskDialogResult ShowMsgYesNo(string dialogText, eTaskDialogIcon dialogIcon = eTaskDialogIcon.Help, string dialogTitle = "Message", string dialogHeader = "")
+        {
+            eTaskDialogButton dialogButtons = eTaskDialogButton.Yes | eTaskDialogButton.No;
+            eTaskDialogBackgroundColor dialogColor = eTaskDialogBackgroundColor.Silver;
+            eTaskDialogResult result = TaskDialog.Show(dialogTitle, dialogIcon, dialogHeader, dialogText, dialogButtons, dialogColor);
+            return result;
         }
     }
 }

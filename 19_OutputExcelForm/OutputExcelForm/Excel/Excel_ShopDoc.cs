@@ -40,6 +40,8 @@ namespace OutputExcelForm.Excel
             public int TotalCuttingTimeColumn { get; set; }
             public int PartNoRow { get; set; }
             public int PartNoColumn { get; set; }
+            public int PartDescRow { get; set; }
+            public int PartDescColumn { get; set; }
         }
         public struct OperImgPosiSize
         {
@@ -62,6 +64,8 @@ namespace OutputExcelForm.Excel
             sRowColumn.PartNoColumn = 11;
             sRowColumn.TotalCuttingTimeRow = 51;
             sRowColumn.TotalCuttingTimeColumn = 2;
+            sRowColumn.PartDescRow = 51;
+            sRowColumn.PartDescColumn = 11;
 
 
             int currentNo = (i % 8);
@@ -431,12 +435,16 @@ namespace OutputExcelForm.Excel
                     workRange[sRowColumn.CuttingTimeRow, sRowColumn.CuttingTimeColumn] = cCom_ShopDoc[i].machiningtime;
                     workRange[sRowColumn.PartNoRow, sRowColumn.PartNoColumn] = partNo;
                     workRange[sRowColumn.TotalCuttingTimeRow, sRowColumn.TotalCuttingTimeColumn] = sDB_TEMain.comTEMain.totalCuttingTime;
+                    workRange[sRowColumn.PartDescRow, sRowColumn.PartDescColumn] = sDB_TEMain.partDesc;
 
                     OperImgPosiSize sImgPosiSize = new OperImgPosiSize();
                     GetOperImgPosiAndSize(i, out sImgPosiSize);
-                    workSheet.Shapes.AddPicture(cCom_ShopDoc[i].opImagePath, Microsoft.Office.Core.MsoTriState.msoFalse,
-                                Microsoft.Office.Core.MsoTriState.msoTrue, sImgPosiSize.OperPosiLeft,
-                                sImgPosiSize.OperPosiTop, sImgPosiSize.OperImgWidth, sImgPosiSize.OperImgHeight);
+                    if (File.Exists(cCom_ShopDoc[i].opImagePath))
+                    {
+                        workSheet.Shapes.AddPicture(cCom_ShopDoc[i].opImagePath, Microsoft.Office.Core.MsoTriState.msoFalse,
+                                   Microsoft.Office.Core.MsoTriState.msoTrue, sImgPosiSize.OperPosiLeft,
+                                   sImgPosiSize.OperPosiTop, sImgPosiSize.OperImgWidth, sImgPosiSize.OperImgHeight);
+                    }
                 }
                 if (sDB_TEMain.comTEMain.fixtureImgPath != "")
                 {
@@ -446,9 +454,12 @@ namespace OutputExcelForm.Excel
                     {
                         workSheet = (Worksheet)workBook.Sheets[i + 1];
 
-                        workSheet.Shapes.AddPicture(sDB_TEMain.comTEMain.fixtureImgPath, Microsoft.Office.Core.MsoTriState.msoFalse,
+                        if (File.Exists(sDB_TEMain.comTEMain.fixtureImgPath))
+                        {
+                            workSheet.Shapes.AddPicture(sDB_TEMain.comTEMain.fixtureImgPath, Microsoft.Office.Core.MsoTriState.msoFalse,
                             Microsoft.Office.Core.MsoTriState.msoTrue, sFixImgPosiSize.FixPosiLeft,
                             sFixImgPosiSize.FixPosiTop, sFixImgPosiSize.FixImgWidth, sFixImgPosiSize.FixImgHeight);
+                        }
                     }
                 }
 

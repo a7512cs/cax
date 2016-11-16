@@ -10,7 +10,7 @@ License Type: Evaluation
 		<property name="connection.provider">NHibernate.Connection.DriverConnectionProvider</property>
 		<property name="dialect">NHibernate.Dialect.MsSql7Dialect</property>
 		<property name="connection.driver_class">NHibernate.Driver.SqlClientDriver</property>
-		<property name="connection.connection_string">Server=192.168.31.138,1433;Database=CaxDatabase;User ID=CAX;Password=123456</property>
+		<property name="connection.connection_string">Server=192.168.31.55,1433;Database=CaxDatabase;User ID=CAX;Password=123456</property>
 		<property name="show_sql">true</property>
 		<property name="query.substitutions">true 1, false 0, yes 'Y', no 'N'</property>
 		<!-- mapping files -->

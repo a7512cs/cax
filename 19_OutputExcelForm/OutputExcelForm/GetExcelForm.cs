@@ -29,7 +29,7 @@ namespace OutputExcelForm
             {
                 //取得Server->ME_Config->Config內的ExcelForm資料
                 string serverMEConfig = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", "\\\\192.168.31.55", "cax", "Globaltek", "ME_Config", "Config", ExcelType);
-                //string ServerMEConfig = string.Format(@"{0}\{1}\{2}\{3}", GetGlobaltekEnvDir(), "ME_Config", "Config", ExcelType);
+                //string serverMEConfig = string.Format(@"{0}\{1}\{2}\{3}", GetGlobaltekEnvDir(), "ME_Config", "Config", ExcelType);
                 if (!Directory.Exists(serverMEConfig))
                 {
                     MessageBox.Show(string.Format(@"{0}{1}{2}", "路徑：", serverMEConfig, "不存在，請確定ServerIP是否正確"));
@@ -61,7 +61,7 @@ namespace OutputExcelForm
             {
                 //取得Server->TE_Config->Config內的ExcelForm資料
                 string serverTEConfig = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}", "\\\\192.168.31.55", "cax", "Globaltek", "TE_Config", "Config", ExcelType);
-                //string ServerMEConfig = string.Format(@"{0}\{1}\{2}\{3}", GetGlobaltekEnvDir(), "ME_Config", "Config", ExcelType);
+                //string serverTEConfig = string.Format(@"{0}\{1}\{2}\{3}", GetGlobaltekEnvDir(), "TE_Config", "Config", ExcelType);
                 if (!Directory.Exists(serverTEConfig))
                 {
                     MessageBox.Show(string.Format(@"{0}{1}{2}", "路徑：", serverTEConfig, "不存在，請確定ServerIP是否正確"));

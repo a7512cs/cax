@@ -300,7 +300,7 @@
             <param name="cBoxCoordinate"></param>
             <returns></returns>
         </member>
-        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d)">
+        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d,System.Double)">
             <summary>
             建立泡泡在圖紙上
             </summary>

@@ -17,15 +17,23 @@ License Type: Evaluation
 		</many-to-one>
     <many-to-one name="sysOperation2" column="operation2SrNo" class="Sys_Operation2" not-null="true" lazy="proxy">
 		</many-to-one>
-    <list name="comMEMain" lazy="true" cascade="save-update" inverse="true">
+    <!--list name="comMEMain" lazy="true" cascade="all" inverse="true">
 			<key column="partOperationSrNo"/>
       <index column="comMEMainIdx"/>
 			<one-to-many class="Com_MEMain"/>
-		</list>
-    <list name="comTEMain" lazy="true" cascade="save-update" inverse="true">
+		</list-->
+    <bag name="comMEMain" lazy="true" cascade="all" inverse="true">
+      <key column="partOperationSrNo"/>
+      <one-to-many class="Com_MEMain"/>
+    </bag>
+    <!--list name="comTEMain" lazy="true" cascade="all" inverse="true">
 			<key column="partOperationSrNo"/>
       <index column="comTEMainIdx"/>
 			<one-to-many class="Com_TEMain"/>
-		</list>
+		</list-->
+    <bag name="comTEMain" lazy="true" cascade="all" inverse="true">
+      <key column="partOperationSrNo"/>
+      <one-to-many class="Com_TEMain"/>
+    </bag>
 	</class>
 </hibernate-mapping>

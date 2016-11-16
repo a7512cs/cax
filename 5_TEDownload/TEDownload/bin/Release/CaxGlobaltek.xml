@@ -300,7 +300,7 @@
             <param name="cBoxCoordinate"></param>
             <returns></returns>
         </member>
-        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d)">
+        <member name="M:CaxGlobaltek.CaxME.CreateBallonOnSheet(System.String,NXOpen.Point3d,System.Double)">
             <summary>
             建立泡泡在圖紙上
             </summary>
@@ -371,9 +371,9 @@
             <param name="comp"></param>
             <returns></returns>
         </member>
-        <member name="M:CaxGlobaltek.CaxAsm.GetCompChildren(NXOpen.Assemblies.Component,System.Collections.Generic.List{NXOpen.Assemblies.Component}@)">
+        <member name="M:CaxGlobaltek.CaxAsm.GetCompChildren(NXOpen.Assemblies.Component,System.Collections.Generic.List{NXOpen.Assemblies.Component}@,System.Boolean)">
             <summary>
-            取得子Comp集合(遞迴搜尋)
+            取得子Comp集合(IsCycle=true 遞迴; IsCycle=false 不遞迴，預設為true)
             </summary>
             <param name="FatherComp"></param>
             <param name="ListChildrenComp"></param>

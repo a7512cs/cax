@@ -234,45 +234,50 @@ namespace MEOpenTask
         {
             #region 檢查是否有選擇組裝方式
 
-            if (SeleOperValue == "001.prt")
-            {
-                if (check001HasBillet.Checked == false && check001NoBillet.Checked == false)
-                {
-                    MessageBox.Show("請選擇一種組裝方式");
-                    return;
-                }
-                if (check001HasBillet.Checked == true && check001NoBillet.Checked == false)
-                {
-                    if (label001.Text == "")
-                    {
-                        MessageBox.Show("請選擇一個零件當作胚料檔，或勾選無胚料檔");
-                        return;
-                    }
-                }
-            }
-            else if (SeleOperValue == "900.prt")
-            {
+            //if (SeleOperValue == "001.prt")
+            //{
+            //    if (check001HasBillet.Checked == false && check001NoBillet.Checked == false)
+            //    {
+            //        MessageBox.Show("請選擇一種組裝方式");
+            //        return;
+            //    }
+            //    if (check001HasBillet.Checked == true && check001NoBillet.Checked == false)
+            //    {
+            //        if (label001.Text == "")
+            //        {
+            //            MessageBox.Show("請選擇一個零件當作胚料檔，或勾選無胚料檔");
+            //            return;
+            //        }
+            //    }
+            //}
+            //else if (SeleOperValue == "900.prt")
+            //{
 
-            }
-            else
-            {
-                if (checkWHasBillet.Checked == false && checkWNoBillet.Checked == false)
-                {
-                    MessageBox.Show("請選擇一種組裝方式");
-                    return;
-                }
-                if (checkWHasBillet.Checked == true && checkWHasBillet.Checked == false)
-                {
-                    if (labelW.Text == "")
-                    {
-                        MessageBox.Show("請選擇一個前段工序檔當作此工序零件檔，或勾選無前段工序檔");
-                        return;
-                    }
-                }
-            }
+            //}
+            //else
+            //{
+            //    if (checkWHasBillet.Checked == false && checkWNoBillet.Checked == false)
+            //    {
+            //        MessageBox.Show("請選擇一種組裝方式");
+            //        return;
+            //    }
+            //    if (checkWHasBillet.Checked == true && checkWNoBillet.Checked == false)
+            //    {
+            //        if (labelW.Text == "")
+            //        {
+            //            MessageBox.Show("請選擇一個前段工序檔當作此工序零件檔，或勾選無前段工序檔");
+            //            return;
+            //        }
+            //    }
+            //}
 
             #endregion
-            
+
+            if (SeleOperValue == "")
+            {
+                MessageBox.Show("請選擇欲開啟的零件！");
+                return;
+            }
             string Local_OISPartFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}", CaxEnv.GetLocalTaskDir(),
                                                                                  CurrentCusName,
                                                                                  CurrentPartNo,
@@ -290,8 +295,6 @@ namespace MEOpenTask
                                                                                          CurrentCusName, 
                                                                                          CurrentPartNo, 
                                                                                          CurrentCusVer);
-
-            //組件存在，直接開啟任務組立
             BasePart newAsmPart;
             status = CaxPart.OpenBaseDisplay(Local_OISPartFullPath, out newAsmPart);
             if (!status)
@@ -299,163 +302,57 @@ namespace MEOpenTask
                 CaxLog.ShowListingWindow("組立開啟失敗！");
                 return;
             }
-            
-            //判斷組件是否曾經被開啟。如已被開啟過，則開啟檔案後離開；反之則塞上屬性(Title=IsOpend，Value=Y)並組裝客戶零件與胚料零件
-            string checkIsOpened = "";
-            try
-            {
-                checkIsOpened = newAsmPart.GetStringAttribute("IsOpened");
-                if (checkIsOpened == "Y")
-                {
-                    CaxPart.Save();
-                    this.Close();
-                    return;
-                }
-            }
-            catch (System.Exception ex)
-            {
-                newAsmPart.SetAttribute("IsOpened", "Y");
-            }
-            
-            NXOpen.Assemblies.Component newComponent = null;
-            
-            #region 組裝客戶檔案
 
-            string Local_NewModelPartFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}", CaxEnv.GetLocalTaskDir(),
+            if (check001HasBillet.Checked == true || check001NoBillet.Checked == true ||
+                checkWHasBillet.Checked == true || checkWNoBillet.Checked == true)
+            {
+                #region 組裝客戶檔案
+                NXOpen.Assemblies.Component newComponent = null;
+                string Local_NewModelPartFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}", CaxEnv.GetLocalTaskDir(),
                                                                                        CurrentCusName,
                                                                                        CurrentPartNo,
                                                                                        CurrentCusVer,
                                                                                        CurrentPartNo + ".prt");
-            //判斷是否已經有客戶檔案，如果沒有則複製過來
-            if (!System.IO.File.Exists(Local_NewModelPartFullPath))
-            {
-                File.Copy(Local_ModelPartFullPath, Local_NewModelPartFullPath, true);
-            }
-            
-            status = CaxAsm.AddComponentToAsmByDefault(Local_NewModelPartFullPath, out newComponent);
-            if (!status)
-            {
-                CaxLog.ShowListingWindow("ERROR,組裝失敗！");
-                this.Close();
-                return;
-            }
-
-            #endregion
-            
-            CaxAsm.SetWorkComponent(null);
-
-            #region 建立三階製程檔
-            
-            string Local_CurrentOperPartFullPath = "";
-            if (groupBox001.Enabled == true)
-            {
-                #region 001
-                if (check001HasBillet.Checked == true)
+                //判斷是否已經有客戶檔案，如果沒有則複製過來
+                if (!System.IO.File.Exists(Local_NewModelPartFullPath))
                 {
-                    if (System.IO.File.Exists(label001BilletPath))
-                    {
-                        status = CaxAsm.AddComponentToAsmByDefault(label001BilletPath, out newComponent);
-                        if (!status)
-                        {
-                            CaxLog.ShowListingWindow("001胚料檔組裝失敗");
-                            return;
-                        }
-                        //複製檔案到任務資料夾
-                        string tempBilletPath = label001BilletPath;
-                        tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
-                        File.Copy(labelWBilletPath, tempBilletPath, true);
-                    }
+                    File.Copy(Local_ModelPartFullPath, Local_NewModelPartFullPath, true);
                 }
-                Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
-                if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+
+                status = CaxAsm.AddComponentToAsmByDefault(Local_NewModelPartFullPath, out newComponent);
+                if (!status)
                 {
-                    status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
-                    if (!status)
-                    {
-                        CaxLog.ShowListingWindow("建立三階製程檔失敗");
-                        return;
-                    }
+                    MessageBox.Show("客戶檔案組裝失敗！");
+                    this.Close();
+                    return;
                 }
                 #endregion
 
-                #region 001(註解中)
-                /*
-                if (check001NoBillet.Checked == true)
+                CaxAsm.SetWorkComponent(null);
+
+                #region 建立三階製程檔
+
+                string Local_CurrentOperPartFullPath = "";
+                if (groupBox001.Enabled == true)
                 {
-                    //選擇無胚料檔--新建檔案(檔名：料號+製程序)
-                    Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
-                    if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+                    #region 001
+                    //組立"胚料檔"
+                    if (check001HasBillet.Checked == true & System.IO.File.Exists(label001BilletPath))
                     {
-                        status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
-                        if (!status)
-                        {
-                            CaxLog.ShowListingWindow("建立三階製程檔失敗");
-                            this.Close();
-                            return;
-                        }
-                    }
-                }
-                else
-                {
-                    //選擇有胚料檔--組裝胚料檔(檔名：胚料檔原始名稱)
-                    //Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, label001.Text);
-                    //Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, label001.Text);
-                    if (System.IO.File.Exists(label001BilletPath))
-                    {
-                        status = CaxAsm.AddComponentToAsmByDefault(label001BilletPath, out newComponent);
-                        if (!status)
-                        {
-                            CaxLog.ShowListingWindow("001胚料檔組裝失敗");
-                            return;
-                        }
                         //複製檔案到任務資料夾
                         string tempBilletPath = label001BilletPath;
                         tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
                         File.Copy(label001BilletPath, tempBilletPath, true);
-                    }
-                }
-                */
-                #endregion
-            }
-            else if (groupBox900.Enabled == true)
-            {
-            }
-            else
-            {
-                #region W階
-                if (checkWHasBillet.Checked == true)
-                {
-                    if (System.IO.File.Exists(labelWBilletPath))
-                    {
-                        status = CaxAsm.AddComponentToAsmByDefault(labelWBilletPath, out newComponent);
+
+                        status = CaxAsm.AddComponentToAsmByDefault(tempBilletPath, out newComponent);
                         if (!status)
                         {
-                            CaxLog.ShowListingWindow("W階胚料檔組裝失敗");
+                            CaxLog.ShowListingWindow("001胚料檔組裝失敗");
                             return;
                         }
-                        //複製檔案到任務資料夾
-                        string tempBilletPath = labelWBilletPath;
-                        tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
-                        File.Copy(labelWBilletPath, tempBilletPath, true);
                     }
-                }
-                Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
-                if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
-                {
-                    status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
-                    if (!status)
-                    {
-                        CaxLog.ShowListingWindow("建立三階製程檔失敗");
-                        return;
-                    }
-                }
-                #endregion
 
-                #region W階(註解中)
-                /*
-                if (checkWNoBillet.Checked == true)
-                {
-                    //選擇無胚料檔--新建檔案(檔名：料號+製程序)
+                    //組立"料號_ME_OISxxx"
                     Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
                     if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
                     {
@@ -466,28 +363,170 @@ namespace MEOpenTask
                             return;
                         }
                     }
+                    #endregion
+                }
+                else if (groupBox900.Enabled == true)
+                {
                 }
                 else
                 {
-                    //選擇有胚料檔--組裝胚料檔(檔名：胚料檔原始名稱)
-                    //Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, labelW.Text);
-                    if (System.IO.File.Exists(labelWBilletPath))
+                    #region W階
+                    //組立"前段製程檔"
+                    if (checkWHasBillet.Checked == true & System.IO.File.Exists(labelWBilletPath))
                     {
-                        status = CaxAsm.AddComponentToAsmByDefault(labelWBilletPath, out newComponent);
+                        //複製檔案到任務資料夾
+                        string tempBilletPath = labelWBilletPath;
+                        tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
+                        File.Copy(labelWBilletPath, tempBilletPath, true);
+
+                        status = CaxAsm.AddComponentToAsmByDefault(tempBilletPath, out newComponent);
                         if (!status)
                         {
                             CaxLog.ShowListingWindow("W階胚料檔組裝失敗");
                             return;
                         }
-                        //複製檔案到任務資料夾
-                        string tempBilletPath = labelWBilletPath;
-                        tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
-                        File.Copy(labelWBilletPath, tempBilletPath, true);
                     }
+
+                    //組立"料號_ME_OISxxx"
+                    Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
+                    if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+                    {
+                        status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
+                        if (!status)
+                        {
+                            CaxLog.ShowListingWindow("建立三階製程檔失敗");
+                            return;
+                        }
+                    }
+                    #endregion
                 }
-                */
+                    
                 #endregion
             }
+
+            //組件存在，直接開啟任務組立
+            //BasePart newAsmPart;
+            //status = CaxPart.OpenBaseDisplay(Local_OISPartFullPath, out newAsmPart);
+            //if (!status)
+            //{
+            //    CaxLog.ShowListingWindow("組立開啟失敗！");
+            //    return;
+            //}
+            
+            //判斷組件是否曾經被開啟。如已被開啟過，則開啟檔案後離開；反之則塞上屬性(Title=IsOpend，Value=Y)並組裝客戶零件與胚料零件
+            //string checkIsOpened = "";
+            //try
+            //{
+            //    checkIsOpened = newAsmPart.GetStringAttribute("IsOpened");
+            //    if (checkIsOpened == "Y")
+            //    {
+            //        CaxPart.Save();
+            //        this.Close();
+            //        return;
+            //    }
+            //}
+            //catch (System.Exception ex)
+            //{
+            //    newAsmPart.SetAttribute("IsOpened", "Y");
+            //}
+            
+            //NXOpen.Assemblies.Component newComponent = null;
+            
+            #region 組裝客戶檔案
+
+            //string Local_NewModelPartFullPath = string.Format(@"{0}\{1}\{2}\{3}\{4}", CaxEnv.GetLocalTaskDir(),
+            //                                                                           CurrentCusName,
+            //                                                                           CurrentPartNo,
+            //                                                                           CurrentCusVer,
+            //                                                                           CurrentPartNo + ".prt");
+            //判斷是否已經有客戶檔案，如果沒有則複製過來
+            //if (!System.IO.File.Exists(Local_NewModelPartFullPath))
+            //{
+            //    File.Copy(Local_ModelPartFullPath, Local_NewModelPartFullPath, true);
+            //}
+            
+            //status = CaxAsm.AddComponentToAsmByDefault(Local_NewModelPartFullPath, out newComponent);
+            //if (!status)
+            //{
+            //    CaxLog.ShowListingWindow("ERROR,組裝失敗！");
+            //    this.Close();
+            //    return;
+            //}
+
+            #endregion
+            
+            //CaxAsm.SetWorkComponent(null);
+
+            #region 建立三階製程檔
+            
+            //string Local_CurrentOperPartFullPath = "";
+            //if (groupBox001.Enabled == true)
+            //{
+            //    #region 001
+            //    //組立"胚料檔"
+            //    if (check001HasBillet.Checked == true & System.IO.File.Exists(label001BilletPath))
+            //    {
+            //        //複製檔案到任務資料夾
+            //        string tempBilletPath = label001BilletPath;
+            //        tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
+            //        File.Copy(label001BilletPath, tempBilletPath, true);
+
+            //        status = CaxAsm.AddComponentToAsmByDefault(tempBilletPath, out newComponent);
+            //        if (!status)
+            //        {
+            //            CaxLog.ShowListingWindow("001胚料檔組裝失敗");
+            //            return;
+            //        }
+            //    }
+
+            //    //組立"料號_ME_OISxxx"
+            //    Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
+            //    if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+            //    {
+            //        status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
+            //        if (!status)
+            //        {
+            //            CaxLog.ShowListingWindow("建立三階製程檔失敗");
+            //            return;
+            //        }
+            //    }
+            //    #endregion
+            //}
+            //else if (groupBox900.Enabled == true)
+            //{
+            //}
+            //else
+            //{
+            //    #region W階
+            //    //組立"前段製程檔"
+            //    if (checkWHasBillet.Checked == true & System.IO.File.Exists(labelWBilletPath))
+            //    {
+            //        //複製檔案到任務資料夾
+            //        string tempBilletPath = labelWBilletPath;
+            //        tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
+            //        File.Copy(labelWBilletPath, tempBilletPath, true);
+
+            //        status = CaxAsm.AddComponentToAsmByDefault(tempBilletPath, out newComponent);
+            //        if (!status)
+            //        {
+            //            CaxLog.ShowListingWindow("W階胚料檔組裝失敗");
+            //            return;
+            //        }
+            //    }
+
+            //    //組立"料號_ME_OISxxx"
+            //    Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_ME_" + SeleOperValue);
+            //    if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+            //    {
+            //        status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
+            //        if (!status)
+            //        {
+            //            CaxLog.ShowListingWindow("建立三階製程檔失敗");
+            //            return;
+            //        }
+            //    }
+            //    #endregion
+            //}
 
             #endregion
             

@@ -36,6 +36,13 @@
             this.labelX3 = new DevComponents.DotNetBar.LabelX();
             this.CusVerCombobox = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.SuperTabControl = new DevComponents.DotNetBar.SuperTabControl();
+            this.superTabControlPanel1 = new DevComponents.DotNetBar.SuperTabControlPanel();
+            this.SGC_MEPanel = new DevComponents.DotNetBar.SuperGrid.SuperGridControl();
+            this.select = new DevComponents.DotNetBar.SuperGrid.GridColumn();
+            this.ExcelType = new DevComponents.DotNetBar.SuperGrid.GridColumn();
+            this.ExcelForm = new DevComponents.DotNetBar.SuperGrid.GridColumn();
+            this.OutputPath = new DevComponents.DotNetBar.SuperGrid.GridColumn();
+            this.Tab_ME = new DevComponents.DotNetBar.SuperTabItem();
             this.superTabControlPanel2 = new DevComponents.DotNetBar.SuperTabControlPanel();
             this.SGC_TEPanel = new DevComponents.DotNetBar.SuperGrid.SuperGridControl();
             this.gridColumn1 = new DevComponents.DotNetBar.SuperGrid.GridColumn();
@@ -44,13 +51,6 @@
             this.gridColumn4 = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             this.gridColumn5 = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             this.Tab_TE = new DevComponents.DotNetBar.SuperTabItem();
-            this.superTabControlPanel1 = new DevComponents.DotNetBar.SuperTabControlPanel();
-            this.SGC_MEPanel = new DevComponents.DotNetBar.SuperGrid.SuperGridControl();
-            this.select = new DevComponents.DotNetBar.SuperGrid.GridColumn();
-            this.ExcelType = new DevComponents.DotNetBar.SuperGrid.GridColumn();
-            this.ExcelForm = new DevComponents.DotNetBar.SuperGrid.GridColumn();
-            this.OutputPath = new DevComponents.DotNetBar.SuperGrid.GridColumn();
-            this.Tab_ME = new DevComponents.DotNetBar.SuperTabItem();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
@@ -59,10 +59,12 @@
             this.Op1Combobox = new DevComponents.DotNetBar.Controls.ComboBoxEx();
             this.OK = new DevComponents.DotNetBar.ButtonX();
             this.Close = new DevComponents.DotNetBar.ButtonX();
+            this.highlighter1 = new DevComponents.DotNetBar.Validator.Highlighter();
+            this.gridColumn6 = new DevComponents.DotNetBar.SuperGrid.GridColumn();
             ((System.ComponentModel.ISupportInitialize)(this.SuperTabControl)).BeginInit();
             this.SuperTabControl.SuspendLayout();
-            this.superTabControlPanel2.SuspendLayout();
             this.superTabControlPanel1.SuspendLayout();
+            this.superTabControlPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -166,8 +168,8 @@
             this.SuperTabControl.ControlBox.SubItems.AddRange(new DevComponents.DotNetBar.BaseItem[] {
             this.SuperTabControl.ControlBox.MenuBox,
             this.SuperTabControl.ControlBox.CloseBox});
-            this.SuperTabControl.Controls.Add(this.superTabControlPanel2);
             this.SuperTabControl.Controls.Add(this.superTabControlPanel1);
+            this.SuperTabControl.Controls.Add(this.superTabControlPanel2);
             this.SuperTabControl.Location = new System.Drawing.Point(12, 94);
             this.SuperTabControl.Name = "SuperTabControl";
             this.SuperTabControl.ReorderTabsEnabled = true;
@@ -180,6 +182,69 @@
             this.Tab_ME,
             this.Tab_TE});
             this.SuperTabControl.Text = "superTabControl1";
+            // 
+            // superTabControlPanel1
+            // 
+            this.superTabControlPanel1.Controls.Add(this.SGC_MEPanel);
+            this.superTabControlPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.superTabControlPanel1.Location = new System.Drawing.Point(0, 45);
+            this.superTabControlPanel1.Name = "superTabControlPanel1";
+            this.superTabControlPanel1.Size = new System.Drawing.Size(448, 176);
+            this.superTabControlPanel1.TabIndex = 1;
+            this.superTabControlPanel1.TabItem = this.Tab_ME;
+            // 
+            // SGC_MEPanel
+            // 
+            this.SGC_MEPanel.FilterExprColors.SysFunction = System.Drawing.Color.DarkRed;
+            this.SGC_MEPanel.Location = new System.Drawing.Point(3, 3);
+            this.SGC_MEPanel.Name = "SGC_MEPanel";
+            // 
+            // 
+            // 
+            this.SGC_MEPanel.PrimaryGrid.ColumnDragBehavior = DevComponents.DotNetBar.SuperGrid.ColumnDragBehavior.None;
+            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.select);
+            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.ExcelType);
+            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.gridColumn6);
+            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.ExcelForm);
+            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.OutputPath);
+            this.SGC_MEPanel.PrimaryGrid.ShowRowHeaders = false;
+            this.SGC_MEPanel.Size = new System.Drawing.Size(442, 170);
+            this.SGC_MEPanel.TabIndex = 0;
+            this.SGC_MEPanel.Text = "superGridControl1";
+            // 
+            // select
+            // 
+            this.select.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
+            this.select.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridCheckBoxXEditControl);
+            this.select.Name = "選擇";
+            this.select.Width = 40;
+            // 
+            // ExcelType
+            // 
+            this.ExcelType.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
+            this.ExcelType.Name = "Excel";
+            this.ExcelType.Width = 60;
+            // 
+            // ExcelForm
+            // 
+            this.ExcelForm.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
+            this.ExcelForm.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridComboBoxExEditControl);
+            this.ExcelForm.Name = "廠區";
+            this.ExcelForm.Width = 120;
+            // 
+            // OutputPath
+            // 
+            this.OutputPath.AutoSizeMode = DevComponents.DotNetBar.SuperGrid.ColumnAutoSizeMode.Fill;
+            this.OutputPath.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridLabelXEditControl);
+            this.OutputPath.Name = "輸出路徑(桌面)";
+            // 
+            // Tab_ME
+            // 
+            this.Tab_ME.AttachedControl = this.superTabControlPanel1;
+            this.Tab_ME.GlobalItem = false;
+            this.Tab_ME.Image = global::OutputExcelForm.Properties.Resources.files_32px;
+            this.Tab_ME.Name = "Tab_ME";
+            this.Tab_ME.Text = "ME表單";
             // 
             // superTabControlPanel2
             // 
@@ -249,68 +314,6 @@
             this.Tab_TE.Image = global::OutputExcelForm.Properties.Resources.wrench_32px;
             this.Tab_TE.Name = "Tab_TE";
             this.Tab_TE.Text = "TE表單";
-            // 
-            // superTabControlPanel1
-            // 
-            this.superTabControlPanel1.Controls.Add(this.SGC_MEPanel);
-            this.superTabControlPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.superTabControlPanel1.Location = new System.Drawing.Point(0, 45);
-            this.superTabControlPanel1.Name = "superTabControlPanel1";
-            this.superTabControlPanel1.Size = new System.Drawing.Size(448, 176);
-            this.superTabControlPanel1.TabIndex = 1;
-            this.superTabControlPanel1.TabItem = this.Tab_ME;
-            // 
-            // SGC_MEPanel
-            // 
-            this.SGC_MEPanel.FilterExprColors.SysFunction = System.Drawing.Color.DarkRed;
-            this.SGC_MEPanel.Location = new System.Drawing.Point(3, 3);
-            this.SGC_MEPanel.Name = "SGC_MEPanel";
-            // 
-            // 
-            // 
-            this.SGC_MEPanel.PrimaryGrid.ColumnDragBehavior = DevComponents.DotNetBar.SuperGrid.ColumnDragBehavior.None;
-            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.select);
-            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.ExcelType);
-            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.ExcelForm);
-            this.SGC_MEPanel.PrimaryGrid.Columns.Add(this.OutputPath);
-            this.SGC_MEPanel.PrimaryGrid.ShowRowHeaders = false;
-            this.SGC_MEPanel.Size = new System.Drawing.Size(442, 170);
-            this.SGC_MEPanel.TabIndex = 0;
-            this.SGC_MEPanel.Text = "superGridControl1";
-            // 
-            // select
-            // 
-            this.select.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
-            this.select.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridCheckBoxXEditControl);
-            this.select.Name = "選擇";
-            this.select.Width = 40;
-            // 
-            // ExcelType
-            // 
-            this.ExcelType.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
-            this.ExcelType.Name = "Excel";
-            this.ExcelType.Width = 60;
-            // 
-            // ExcelForm
-            // 
-            this.ExcelForm.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
-            this.ExcelForm.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridComboBoxExEditControl);
-            this.ExcelForm.Name = "廠區";
-            this.ExcelForm.Width = 120;
-            // 
-            // OutputPath
-            // 
-            this.OutputPath.AutoSizeMode = DevComponents.DotNetBar.SuperGrid.ColumnAutoSizeMode.Fill;
-            this.OutputPath.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridLabelXEditControl);
-            this.OutputPath.Name = "輸出路徑(桌面)";
-            // 
-            // Tab_ME
-            // 
-            this.Tab_ME.AttachedControl = this.superTabControlPanel1;
-            this.Tab_ME.GlobalItem = false;
-            this.Tab_ME.Image = global::OutputExcelForm.Properties.Resources.files_32px;
-            this.Tab_ME.Name = "Tab_ME";
-            this.Tab_ME.Text = "ME表單";
             // 
             // pictureBox4
             // 
@@ -407,6 +410,17 @@
             this.Close.TextAlignment = DevComponents.DotNetBar.eButtonTextAlignment.Right;
             this.Close.Click += new System.EventHandler(this.Close_Click);
             // 
+            // highlighter1
+            // 
+            this.highlighter1.ContainerControl = this;
+            // 
+            // gridColumn6
+            // 
+            this.gridColumn6.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
+            this.gridColumn6.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridLabelXEditControl);
+            this.gridColumn6.Name = "圖版";
+            this.gridColumn6.Width = 50;
+            // 
             // OutputForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -432,8 +446,8 @@
             this.Text = "輸出表單";
             ((System.ComponentModel.ISupportInitialize)(this.SuperTabControl)).EndInit();
             this.SuperTabControl.ResumeLayout(false);
-            this.superTabControlPanel2.ResumeLayout(false);
             this.superTabControlPanel1.ResumeLayout(false);
+            this.superTabControlPanel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -474,6 +488,8 @@
         private DevComponents.DotNetBar.Controls.ComboBoxEx PartNoCombobox;
         private DevComponents.DotNetBar.Controls.ComboBoxEx CusVerCombobox;
         private DevComponents.DotNetBar.Controls.ComboBoxEx Op1Combobox;
+        private DevComponents.DotNetBar.Validator.Highlighter highlighter1;
+        private DevComponents.DotNetBar.SuperGrid.GridColumn gridColumn6;
     }
 }
 

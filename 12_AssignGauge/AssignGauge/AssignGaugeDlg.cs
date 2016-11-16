@@ -29,6 +29,8 @@ namespace AssignGauge
         public static int BallonNum = 0;
         public static CoordinateData cCoordinateData = new CoordinateData();
         public static double SheetLength = 0.0, SheetHeight = 0.0;
+        public string Is_Local = "";
+        public string[] AGData = new string[] { };
 
         public class GaugeData
         {
@@ -43,29 +45,33 @@ namespace AssignGauge
 
         private void AssignGaugeDlg_Load(object sender, EventArgs e)
         {
-            /*
-            //取回目前泡泡最大值
-            try
+            int module_id;
+            theUfSession.UF.AskApplicationModule(out module_id);
+            if (module_id != UFConstants.UF_APP_DRAFTING)
             {
-                BallonNum = Convert.ToInt32(workPart.GetStringAttribute(CaxME.DimenAttr.BallonNum));
+                MessageBox.Show("請先轉換為製圖模組後再執行！");
+                this.Close();
             }
-            catch (System.Exception ex)
-            {
-                BallonNum = 0;
-            }
-            */
 
+            Is_Local = Environment.GetEnvironmentVariable("UGII_ENV_FILE");
+            if (Is_Local != null)
+            {
+                //取得AssignGaugeData
+                status = CaxGetDatData.GetAssignGaugeData(out AGData);
+                if (!status)
+                {
+                    CaxLog.ShowListingWindow("GetAssignGaugeData失敗，請檢查MEConfig是否有檔案");
+                    return;
+                }
+            }
+            else
+            {
+                string AssignGaugeData_dat = "AssignGaugeData.dat";
+                string AssignGaugeData_Path = string.Format(@"{0}\{1}", "D:", AssignGaugeData_dat);
+                AGData = System.IO.File.ReadAllLines(AssignGaugeData_Path);
+            }
             //預設關閉選擇物件
             SelectObject.Enabled = false;
-
-            //取得AssignGaugeData
-            string[] AGData = new string[] { };
-            status = CaxGetDatData.GetAssignGaugeData(out AGData);
-            if (!status)
-            {
-                CaxLog.ShowListingWindow("GetAssignGaugeData失敗，請檢查MEConfig是否有檔案");
-                return;
-            }
 
             #region 存AGData到DicGaugeData中
             foreach (string Row in AGData)
@@ -186,28 +192,71 @@ namespace AssignGauge
             }
 
             #region 選擇Assign
+            string AssignExcelType = "";
             if (chb_Assign.Checked == true)
             {
                 if (FAIcheckBox.Checked == false & IQCcheckBox.Checked == false & IPQCcheckBox.Checked == false & FQCcheckBox.Checked == false)
                 {
-                    CaxLog.ShowListingWindow("請先選擇一種檢驗報告格式！");
+                    MessageBox.Show("請先選擇一種檢驗報告格式！");
                     return;
                 }
-                if (Gauge.Text == "" && SelfCheckGauge.Text == "")
+                if (IPQCcheckBox.Checked == true)
                 {
-                    CaxLog.ShowListingWindow("資料不足，請先填寫【IQC】或【IPQC】或【SelfCheck】！");
-                    return;
+                    if (Gauge.Text == "" || Freq_0.Text == "" || Freq_1.Text == "" || Freq_Units.Text == "")
+                    {
+                        MessageBox.Show("量測資料不足！");
+                        return;
+                    }
                 }
-                if (Gauge.Text != "" && (Freq_0.Text == "" || Freq_1.Text == "" || Freq_Units.Text == ""))
+                if (SameData.Checked == true)
                 {
-                    CaxLog.ShowListingWindow("IQC尚未填寫完畢！");
-                    return;
+                    if (SelfCheckGauge.Text == "" || SelfCheck_0.Text == "" || SelfCheck_1.Text == "" || SelfCheck_Units.Text == "")
+                    {
+                        MessageBox.Show("SelfCheck量測資料不足！");
+                        return;
+                    }
                 }
-                if (SelfCheckGauge.Text != "" && (SelfCheck_0.Text == "" || SelfCheck_1.Text == "" || SelfCheck_Units.Text == ""))
+                if (FAIcheckBox.Checked == true)
                 {
-                    CaxLog.ShowListingWindow("SelfCheck尚未填寫完畢！");
+                    AssignExcelType = FAIcheckBox.Text;
+                }
+                if (IQCcheckBox.Checked == true)
+                {
+                    AssignExcelType = IQCcheckBox.Text;
+                }
+                if (IPQCcheckBox.Checked == true)
+                {
+                    AssignExcelType = IPQCcheckBox.Text;
+                }
+                if (FQCcheckBox.Checked == true)
+                {
+                    AssignExcelType = FQCcheckBox.Text;
+                }
+
+                /*
+                if (FAIcheckBox.Checked == false & IQCcheckBox.Checked == false & IPQCcheckBox.Checked == false & FQCcheckBox.Checked == false)
+                {
+                    MessageBox.Show("請先選擇一種檢驗報告格式！");
                     return;
                 }
+                if (Gauge.Text == "" & SelfCheckGauge.Text == "")
+                {
+                    MessageBox.Show("資料不足，請先選擇量測方式！");
+                    return;
+                }
+                if (Gauge.Text != "" & (Freq_0.Text == "" || Freq_1.Text == "" || Freq_Units.Text == ""))
+                {
+                    MessageBox.Show("檢驗頻率不完全！");
+                    return;
+                }
+                if (SelfCheckGauge.Text != "" & (SelfCheck_0.Text == "" || SelfCheck_1.Text == "" || SelfCheck_Units.Text == ""))
+                {
+                    MessageBox.Show("SelfCheck尚未填寫完畢！");
+                    return;
+                }
+                */
+
+
 
                 foreach (KeyValuePair<NXObject, string> kvp in DicSelDimension)
                 {
@@ -242,6 +291,7 @@ namespace AssignGauge
                     CaxME.SetDimensionColor(kvp.Key, Convert.ToInt32(cGaugeData.Color));
                     //塞屬性
                     kvp.Key.SetAttribute(CaxME.DimenAttr.OldColor, oldColor.ToString());//舊顏色
+                    kvp.Key.SetAttribute(CaxME.DimenAttr.AssignExcelType, AssignExcelType);
                     if (Gauge.Text != "")
                     {
                         if (FAIcheckBox.Checked == true)
@@ -471,6 +521,7 @@ namespace AssignGauge
             #endregion
 
             SelectObject.Text = "選擇物件(0)";
+            MessageBox.Show("Assign成功");
         }
 
         private void Cancel_Click(object sender, EventArgs e)

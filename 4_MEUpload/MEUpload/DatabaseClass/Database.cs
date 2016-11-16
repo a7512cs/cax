@@ -67,10 +67,10 @@ namespace MEUpload.DatabaseClass
                 if (excelType == "FAI")
                 {
                     try { cDimensionData.instrument = singleObj.GetStringAttribute(CaxME.DimenAttr.FAI_Gauge); }
-                    catch (System.Exception ex) { return false; }
+                    catch (System.Exception ex) { /*return false;*/ }
 
                     try { cDimensionData.frequency = singleObj.GetStringAttribute(CaxME.DimenAttr.FAI_Freq); }
-                    catch (System.Exception ex) { return false; }
+                    catch (System.Exception ex) { /*return false;*/ }
                 }
                 else if (excelType == "IPQC")
                 {
@@ -83,10 +83,10 @@ namespace MEUpload.DatabaseClass
                 else if (excelType == "IQC")
                 {
                     try { cDimensionData.instrument = singleObj.GetStringAttribute(CaxME.DimenAttr.IQC_Gauge); }
-                    catch (System.Exception ex) { return false; }
+                    catch (System.Exception ex) { /*return false;*/ }
 
                     try { cDimensionData.frequency = singleObj.GetStringAttribute(CaxME.DimenAttr.IQC_Freq); }
-                    catch (System.Exception ex) { return false; }
+                    catch (System.Exception ex) { /*return false;*/ }
                 }
                 else if (excelType == "SelfCheck")
                 {
@@ -267,7 +267,7 @@ namespace MEUpload.DatabaseClass
                 }
                 else if (singleObjType == "NXOpen.Annotations.RadiusDimension")
                 {
-                    #region MinorAngularDimension取Text
+                    #region RadiusDimension取Text
                     cDimensionData.type = "NXOpen.Annotations.RadiusDimension";
                     NXOpen.Annotations.RadiusDimension temp = (NXOpen.Annotations.RadiusDimension)singleObj;
 
@@ -275,7 +275,7 @@ namespace MEUpload.DatabaseClass
 
                     if (mainText.Length > 0)
                     {
-                        cDimensionData.mainText = mainText[0];
+                        cDimensionData.mainText = "R" + mainText[0];
                     }
                     if (temp.GetAppendedText().GetBeforeText().Length > 0)
                     {
@@ -386,26 +386,62 @@ namespace MEUpload.DatabaseClass
                     #region Note取Text
                     cDimensionData.type = "NXOpen.Annotations.Note";
                     NXOpen.Annotations.Note temp = (NXOpen.Annotations.Note)singleObj;
+
+                    string tempStr = "";
+                    for (int i = 0; i < temp.GetText().Length;i++ )
+                    {
+                        if (i == 0)
+                        {
+                            tempStr = temp.GetText()[i];
+                        }
+                        else
+                        {
+                            tempStr = tempStr + "\r\n" + temp.GetText()[i];
+                        }
+
+
+
+                        //if (i == 0)
+                        //{
+                        //    tempStr = temp.GetText()[i].Replace("<F2>", "");
+                        //    tempStr = tempStr.Replace("<F>", "");
+                        //}
+                        //else
+                        //{
+                        //    string tempStr1 = temp.GetText()[i].Replace("<F2>", "");
+                        //    tempStr1 = tempStr1.Replace("<F>", "");
+
+                        //    tempStr = tempStr + "\r\n" + tempStr1;
+                        //}
+                    }
+                    //foreach (string i in temp.GetText())
+                    //{
+                    //    tempStr = tempStr + i.Replace("<F2>", "");
+                    //    tempStr = tempStr.Replace("<F>", "");
+                    //}
+
+                    cDimensionData.mainText = tempStr;
+
                     //判斷是否由CAX產生的Note
-                    string createby = "";
-                    try
-                    {
-                        createby = temp.GetStringAttribute("Createby");
-                    }
-                    catch (System.Exception ex)
-                    {
-                        createby = "";
-                    }
-                    if (createby == "")
-                    {
-                        string tempStr = temp.GetText()[0].Replace("<F2>", "");
-                        tempStr = tempStr.Replace("<F>", "");
-                        cDimensionData.mainText = tempStr;
-                    }
-                    else
-                    {
-                        cDimensionData.mainText = temp.GetText()[0];
-                    }
+                    //string createdby = "";
+                    //try
+                    //{
+                    //    createdby = temp.GetStringAttribute("CREATEDBY");
+                    //}
+                    //catch (System.Exception ex)
+                    //{
+                    //    createdby = "";
+                    //}
+                    //if (createdby == "")
+                    //{
+                    //    string tempStr = temp.GetText()[0].Replace("<F2>", "");
+                    //    tempStr = tempStr.Replace("<F>", "");
+                    //    cDimensionData.mainText = tempStr;
+                    //}
+                    //else
+                    //{
+                    //    cDimensionData.mainText = temp.GetText()[0];
+                    //}
                     #endregion
                 }
                 else if (singleObjType == "NXOpen.Annotations.DraftingFcf")
@@ -452,7 +488,7 @@ namespace MEUpload.DatabaseClass
 
                     if (mainText.Length > 0)
                     {
-                        cDimensionData.mainText = mainText[0];
+                        cDimensionData.mainText = "n" + mainText[0];
                     }
                     if (temp.GetAppendedText().GetBeforeText().Length > 0)
                     {
@@ -560,7 +596,7 @@ namespace MEUpload.DatabaseClass
 
                     if (mainText.Length > 0)
                     {
-                        cDimensionData.mainText = mainText[0];
+                        cDimensionData.mainText = "n" + mainText[0];
                     }
                     if (temp.GetAppendedText().GetBeforeText().Length > 0)
                     {
@@ -658,7 +694,222 @@ namespace MEUpload.DatabaseClass
                     }
                     #endregion
                 }
+                else if (singleObjType == "NXOpen.Annotations.ArcLengthDimension")
+                {
+                    #region ArcLengthDimension取Text
+                    cDimensionData.type = "NXOpen.Annotations.ArcLengthDimension";
+                    NXOpen.Annotations.ArcLengthDimension temp = (NXOpen.Annotations.ArcLengthDimension)singleObj;
 
+                    temp.GetDimensionText(out mainText, out dualText);
+
+                    if (mainText.Length > 0)
+                    {
+                        cDimensionData.mainText = mainText[0] + "X" + "45" + "<$s>";
+                    }
+                    if (temp.GetAppendedText().GetBeforeText().Length > 0)
+                    {
+                        cDimensionData.beforeText = temp.GetAppendedText().GetBeforeText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAfterText().Length > 0)
+                    {
+                        cDimensionData.afterText = temp.GetAppendedText().GetAfterText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAboveText().Length > 0)
+                    {
+                        cDimensionData.aboveText = temp.GetAppendedText().GetAboveText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetBelowText().Length > 0)
+                    {
+                        cDimensionData.belowText = temp.GetAppendedText().GetBelowText()[0].ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralOneLine")
+                    {
+                        cDimensionData.tolType = "BilateralOneLine";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = (-1 * temp.UpperMetricToleranceValue).ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralTwoLines")
+                    {
+                        cDimensionData.tolType = "BilateralTwoLines";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralAbove")
+                    {
+                        cDimensionData.tolType = "UnilateralAbove";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = "0";
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralBelow")
+                    {
+                        cDimensionData.tolType = "UnilateralBelow";
+                        cDimensionData.upperTol = "0";
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    #endregion
+                }
+                else if (singleObjType == "NXOpen.Annotations.HoleDimension")
+                {
+                    #region HoleDimension取Text
+                    cDimensionData.type = "NXOpen.Annotations.HoleDimension";
+                    NXOpen.Annotations.HoleDimension temp = (NXOpen.Annotations.HoleDimension)singleObj;
+
+                    temp.GetDimensionText(out mainText, out dualText);
+
+                    if (mainText.Length > 0)
+                    {
+                        cDimensionData.mainText = "n" + mainText[0];
+                    }
+                    if (temp.GetAppendedText().GetBeforeText().Length > 0)
+                    {
+                        cDimensionData.beforeText = temp.GetAppendedText().GetBeforeText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAfterText().Length > 0)
+                    {
+                        cDimensionData.afterText = temp.GetAppendedText().GetAfterText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAboveText().Length > 0)
+                    {
+                        cDimensionData.aboveText = temp.GetAppendedText().GetAboveText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetBelowText().Length > 0)
+                    {
+                        cDimensionData.belowText = temp.GetAppendedText().GetBelowText()[0].ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralOneLine")
+                    {
+                        cDimensionData.tolType = "BilateralOneLine";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = (-1 * temp.UpperMetricToleranceValue).ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralTwoLines")
+                    {
+                        cDimensionData.tolType = "BilateralTwoLines";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralAbove")
+                    {
+                        cDimensionData.tolType = "UnilateralAbove";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = "0";
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralBelow")
+                    {
+                        cDimensionData.tolType = "UnilateralBelow";
+                        cDimensionData.upperTol = "0";
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    #endregion
+                }
+                else if (singleObjType == "NXOpen.Annotations.FoldedRadiusDimension")
+                {
+                    #region FoldedRadiusDimension取Text
+                    cDimensionData.type = "NXOpen.Annotations.FoldedRadiusDimension";
+                    NXOpen.Annotations.FoldedRadiusDimension temp = (NXOpen.Annotations.FoldedRadiusDimension)singleObj;
+
+                    temp.GetDimensionText(out mainText, out dualText);
+
+                    if (mainText.Length > 0)
+                    {
+                        cDimensionData.mainText = "R" + mainText[0];
+                    }
+                    if (temp.GetAppendedText().GetBeforeText().Length > 0)
+                    {
+                        cDimensionData.beforeText = temp.GetAppendedText().GetBeforeText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAfterText().Length > 0)
+                    {
+                        cDimensionData.afterText = temp.GetAppendedText().GetAfterText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAboveText().Length > 0)
+                    {
+                        cDimensionData.aboveText = temp.GetAppendedText().GetAboveText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetBelowText().Length > 0)
+                    {
+                        cDimensionData.belowText = temp.GetAppendedText().GetBelowText()[0].ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralOneLine")
+                    {
+                        cDimensionData.tolType = "BilateralOneLine";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = (-1 * temp.UpperMetricToleranceValue).ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralTwoLines")
+                    {
+                        cDimensionData.tolType = "BilateralTwoLines";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralAbove")
+                    {
+                        cDimensionData.tolType = "UnilateralAbove";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = "0";
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralBelow")
+                    {
+                        cDimensionData.tolType = "UnilateralBelow";
+                        cDimensionData.upperTol = "0";
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    #endregion
+                }
+                else if (singleObjType == "NXOpen.Annotations.ParallelDimension")
+                {
+                    #region ParallelDimension取Text
+                    cDimensionData.type = "NXOpen.Annotations.ParallelDimension";
+                    NXOpen.Annotations.ParallelDimension temp = (NXOpen.Annotations.ParallelDimension)singleObj;
+
+                    temp.GetDimensionText(out mainText, out dualText);
+
+                    if (mainText.Length > 0)
+                    {
+                        cDimensionData.mainText = mainText[0];
+                    }
+                    if (temp.GetAppendedText().GetBeforeText().Length > 0)
+                    {
+                        cDimensionData.beforeText = temp.GetAppendedText().GetBeforeText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAfterText().Length > 0)
+                    {
+                        cDimensionData.afterText = temp.GetAppendedText().GetAfterText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetAboveText().Length > 0)
+                    {
+                        cDimensionData.aboveText = temp.GetAppendedText().GetAboveText()[0].ToString();
+                    }
+                    if (temp.GetAppendedText().GetBelowText().Length > 0)
+                    {
+                        cDimensionData.belowText = temp.GetAppendedText().GetBelowText()[0].ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralOneLine")
+                    {
+                        cDimensionData.tolType = "BilateralOneLine";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = (-1 * temp.UpperMetricToleranceValue).ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "BilateralTwoLines")
+                    {
+                        cDimensionData.tolType = "BilateralTwoLines";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralAbove")
+                    {
+                        cDimensionData.tolType = "UnilateralAbove";
+                        cDimensionData.upperTol = temp.UpperMetricToleranceValue.ToString();
+                        cDimensionData.lowerTol = "0";
+                    }
+                    if (temp.ToleranceType.ToString() == "UnilateralBelow")
+                    {
+                        cDimensionData.tolType = "UnilateralBelow";
+                        cDimensionData.upperTol = "0";
+                        cDimensionData.lowerTol = temp.LowerMetricToleranceValue.ToString();
+                    }
+                    #endregion
+                }
             }
             catch (System.Exception ex)
             {

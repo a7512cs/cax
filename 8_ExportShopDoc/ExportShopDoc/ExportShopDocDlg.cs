@@ -20,6 +20,7 @@ using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.IO;
 using NHibernate;
+using DevComponents.DotNetBar;
 
 namespace ExportShopDoc
 {
@@ -122,6 +123,8 @@ namespace ExportShopDoc
 
         public ExportShopDocDlg()
         {
+            
+
             InitializeComponent();
 
             //建立panel物件
@@ -220,18 +223,30 @@ namespace ExportShopDoc
 
         private void ExportShopDocDlg_Load(object sender, EventArgs e)
         {
+            int module_id;
+            theUfSession.UF.AskApplicationModule(out module_id);
+            if (module_id != UFConstants.UF_APP_CAM)
+            {
+                MessageBox.Show("請先轉換為加工模組後再執行！");
+                this.Close();
+            }
 
             Is_Local = Environment.GetEnvironmentVariable("UGII_ENV_FILE");
-            if (Is_Local != "")
+            if (Is_Local != null)
             {
                 //取得本機ShopDoc.xls路徑
                 ShopDocPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(displayPart.FullPath), "MODEL", "ShopDoc.xls");
 
                 //取得METEDownload_Upload.dat
                 CaxGetDatData.GetMETEDownload_Upload(out cMETE_Download_Upload_Path);
+
+                //取得正確路徑
                 CaxPublic.GetAllPath("TE", displayPart.FullPath, ref cMETE_Download_Upload_Path);
             }
-
+            else
+            {
+                ShopDocPath = string.Format(@"{0}\{1}", "D:", "ShopDoc.xls");
+            }
             
 
 
@@ -341,77 +356,64 @@ namespace ExportShopDoc
             DicNCData = new Dictionary<string, OperData>();
             foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
             {
-                //CaxLog.ShowListingWindow(ncGroup.Name);
                 int type;
                 int subtype;
                 theUfSession.Obj.AskTypeAndSubtype(ncGroup.Tag, out type, out subtype);
 
-                if (type == UFConstants.UF_machining_task_type)//此處比對是否為Program群組
+                if (type != UFConstants.UF_machining_task_type)//此處比對是否為Program群組
                 {
-                    if (!ncGroup.Name.Contains("OP"))
-                    {
-                        UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Error, "請先手動將Group名稱：" + ncGroup.Name + "，改為正確格式，再重新啟動功能！");
-                        this.Close();
-                        return;
-                    }
-                    
-                    //ncGroupName = ncGroup.Name;
+                    continue;
+                }
+                if (!ncGroup.Name.Contains("OP"))
+                {
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Error, "請先手動將Group名稱：" + ncGroup.Name + "，改為正確格式，再重新啟動功能！");
+                    this.Close();
+                    return;
+                }
 
-                    //取得此NCGroup下的所有Oper
-                    CAMObject[] OperGroup = ncGroup.GetMembers();
-                    try
+                //取得此NCGroup下的所有Oper
+                CAMObject[] OperGroup = ncGroup.GetMembers();
+                try
+                {
+                    foreach (NXOpen.CAM.Operation item in OperGroup)
                     {
-                        foreach (NXOpen.CAM.Operation item in OperGroup)
+                        string StockStr = "", FloorstockStr = "";
+                        CaxOper.AskOperStock(item, out StockStr, out FloorstockStr);
+
+                        bool cheValue;
+                        OperData sOperData = new OperData();
+                        cheValue = DicNCData.TryGetValue(ncGroup.Name, out sOperData);
+                        if (!cheValue)
                         {
-                            string StockStr = "", FloorstockStr = "";
-                            CaxOper.AskOperStock(item, out StockStr, out FloorstockStr);
-
-                            bool cheValue;
-                            OperData sOperData = new OperData();
-                            cheValue = DicNCData.TryGetValue(ncGroup.Name, out sOperData);
-                            if (!cheValue)
-                            {
-                                sOperData.OperName = item.Name;
-                                //CaxLog.ShowListingWindow(item.Name);
-                                sOperData.ToolName = CaxOper.AskOperToolNameFromTag(item.Tag);
-                                sOperData.HolderDescription = CaxOper.AskOperHolderDescription(item);
-                                sOperData.CuttingLength = Convert.ToDouble(CaxOper.AskOperTotalCuttingLength(item)).ToString("f3");
-                                sOperData.ToolFeed = Math.Round(Convert.ToDouble(CaxOper.AskOperToolFeed(item)), 3, MidpointRounding.AwayFromZero).ToString();
-                                sOperData.CuttingTime = Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString();//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
-                                //CaxLog.ShowListingWindow(Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString());
-                                //CaxLog.ShowListingWindow("---");
-                                sOperData.ToolNumber = "T" + CaxOper.AskOperToolNumber(item);
-                                sOperData.ToolSpeed = CaxOper.AskOperToolSpeed(item);
-                                sOperData.PartStock = StockStr;
-                                sOperData.PartFloorStock = FloorstockStr;
-                                DicNCData.Add(ncGroup.Name, sOperData);
-                            }
-                            else
-                            {
-                                sOperData.OperName = sOperData.OperName + "," + item.Name;
-                                //CaxLog.ShowListingWindow(item.Name);
-                                sOperData.ToolName = sOperData.ToolName + "," + CaxOper.AskOperToolNameFromTag(item.Tag);
-                                sOperData.HolderDescription = sOperData.HolderDescription + "," + CaxOper.AskOperHolderDescription(item);
-                                sOperData.CuttingLength = sOperData.CuttingLength + "," + Convert.ToDouble(CaxOper.AskOperTotalCuttingLength(item)).ToString("f3");
-                                sOperData.ToolFeed = sOperData.ToolFeed + "," + Math.Round(Convert.ToDouble(CaxOper.AskOperToolFeed(item)), 3, MidpointRounding.AwayFromZero).ToString();
-                                sOperData.CuttingTime = sOperData.CuttingTime + "," + Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString();//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
-                                //CaxLog.ShowListingWindow(Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString());
-                                //CaxLog.ShowListingWindow("---");
-                                sOperData.ToolNumber = sOperData.ToolNumber + "," + "T" + CaxOper.AskOperToolNumber(item);
-                                sOperData.ToolSpeed = sOperData.ToolSpeed + "," + CaxOper.AskOperToolSpeed(item);
-                                sOperData.PartStock = sOperData.PartStock + "," + StockStr;
-                                sOperData.PartFloorStock = sOperData.PartFloorStock + "," + FloorstockStr;
-                                DicNCData[ncGroup.Name] = sOperData;
-                            }
+                            sOperData.OperName = item.Name;
+                            sOperData.ToolName = CaxOper.AskOperToolNameFromTag(item.Tag);
+                            sOperData.HolderDescription = CaxOper.AskOperHolderDescription(item);
+                            sOperData.CuttingLength = Convert.ToDouble(CaxOper.AskOperTotalCuttingLength(item)).ToString("f3");
+                            sOperData.ToolFeed = Math.Round(Convert.ToDouble(CaxOper.AskOperToolFeed(item)), 3, MidpointRounding.AwayFromZero).ToString();
+                            sOperData.CuttingTime = Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString();//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
+                            sOperData.ToolNumber = "T" + CaxOper.AskOperToolNumber(item);
+                            sOperData.ToolSpeed = CaxOper.AskOperToolSpeed(item);
+                            sOperData.PartStock = StockStr;
+                            sOperData.PartFloorStock = FloorstockStr;
+                            DicNCData.Add(ncGroup.Name, sOperData);
+                        }
+                        else
+                        {
+                            sOperData.OperName = sOperData.OperName + "," + item.Name;
+                            sOperData.ToolName = sOperData.ToolName + "," + CaxOper.AskOperToolNameFromTag(item.Tag);
+                            sOperData.HolderDescription = sOperData.HolderDescription + "," + CaxOper.AskOperHolderDescription(item);
+                            sOperData.CuttingLength = sOperData.CuttingLength + "," + Convert.ToDouble(CaxOper.AskOperTotalCuttingLength(item)).ToString("f3");
+                            sOperData.ToolFeed = sOperData.ToolFeed + "," + Math.Round(Convert.ToDouble(CaxOper.AskOperToolFeed(item)), 3, MidpointRounding.AwayFromZero).ToString();
+                            sOperData.CuttingTime = sOperData.CuttingTime + "," + Math.Ceiling((Convert.ToDouble(CaxOper.AskOperTotalCuttingTime(item)) * 60)).ToString();//因為進給單位mmpm，距離單位mm，將進給的60放來這邊乘
+                            sOperData.ToolNumber = sOperData.ToolNumber + "," + "T" + CaxOper.AskOperToolNumber(item);
+                            sOperData.ToolSpeed = sOperData.ToolSpeed + "," + CaxOper.AskOperToolSpeed(item);
+                            sOperData.PartStock = sOperData.PartStock + "," + StockStr;
+                            sOperData.PartFloorStock = sOperData.PartFloorStock + "," + FloorstockStr;
+                            DicNCData[ncGroup.Name] = sOperData;
                         }
                     }
-                    catch (System.Exception ex)
-                    {
-                    	
-                    }
-                    
                 }
-                else if (type == UFConstants.UF_machining_tool_type)
+                catch (System.Exception ex)
                 {
 
                 }
@@ -489,7 +491,7 @@ namespace ExportShopDoc
             CurrentNCGroup = comboBoxNCgroup.Text;
 
             #region 建立Folder資料夾
-            if (Is_Local != "")
+            if (Is_Local != null)
             {
                 PhotoFolderPath = string.Format(@"{0}\{1}_Image", cMETE_Download_Upload_Path.Local_Folder_CAM, CurrentNCGroup);
             }
@@ -839,143 +841,54 @@ namespace ExportShopDoc
             preferences1.Commit();
             preferences1.Destroy();
 
-            //檢查PC有無Excel在執行
-            bool flag = false;
-            foreach (var item in Process.GetProcesses())
-            {
-                if (item.ProcessName == "EXCEL")
-                {
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag)
-            {
-                CaxLog.ShowListingWindow("請先關閉所有Excel再重新執行輸出，如沒有EXCEL在執行，請開啟工作管理員關閉背景EXCEL");
-                return;
-            }
-
-            //判斷是否已經指定路徑
-            if (OutputPath.Text == "")
-            {
-                UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Error, "請指定刀具路徑與清單的輸出路徑！");
-                return;
-            }
-
             #region 拍OperToolPath圖片
-
-            //暫時使用版本
             string[] FolderImageAry = System.IO.Directory.GetFileSystemEntries(PhotoFolderPath, "*.jpg");
             OperationAry = displayPart.CAMSetup.CAMOperationCollection.ToArray();
-            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+            status = CreateOpImg(FolderImageAry);
+            if (!status)
             {
-                if (CurrentNCGroup == ncGroup.Name)
-                {
-                    for (int i = 0; i < OperationAry.Length; i++)
-                    {
-                        //取得父層的群組(回傳：NCGroup XXXX)
-                        string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
-                        NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
-                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
-                        string ImagePath = "";
-                        if (NCProgramTag == ncGroup.Tag.ToString())
-                        {
-                            //判斷是否已經手動拍攝過，如拍攝過就不再拍攝
-                            bool checkStatus = false;
-                            foreach (string single in FolderImageAry)
-                            {
-                                if (Path.GetFileNameWithoutExtension(single) == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
-                                {
-                                    checkStatus = true;
-                                }
-                            }
-
-                            if (!checkStatus)
-                            {
-                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
-                                workPart.ModelingViews.WorkView.Orient(NXOpen.View.Canned.Isometric, NXOpen.View.ScaleAdjustment.Fit);
-                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
-
-                                ImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, OperationAry[i].Name);
-                                theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
-                            }
-                        }
-                    }
-                }
+                MessageBox.Show("拍照失敗");
+                return;
             }
-
-            /*-------發布使用版本
-            //取得已經手動拍攝過的OperImg
-            string[] FolderImageAry = System.IO.Directory.GetFileSystemEntries(Local_Folder_CAM, "*.jpg");
-
-            //重新取operationAry獲得新名稱
-            OperationAry = displayPart.CAMSetup.CAMOperationCollection.ToArray();
-
-            foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
-            {
-                if (CurrentNCGroup == ncGroup.Name)
-                {
-                    for (int i = 0; i < OperationAry.Length; i++)
-                    {
-                        //取得父層的群組(回傳：NCGroup XXXX)
-                        string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
-                        NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
-                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
-                        string ImagePath = "";
-                        if (NCProgramTag == ncGroup.Tag.ToString())
-                        {
-                            //判斷是否已經手動拍攝過，如拍攝過就不再拍攝
-                            bool checkStatus = false;
-                            foreach (string single in FolderImageAry)
-                            {
-                                if (Path.GetFileNameWithoutExtension(single) == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
-                                {
-                                    checkStatus = true;
-                                }
-                            }
-
-                            if (!checkStatus)
-                            {
-                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
-                                workPart.ModelingViews.WorkView.Orient(NXOpen.View.Canned.Isometric, NXOpen.View.ScaleAdjustment.Fit);
-                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
-                                
-                                ImagePath = string.Format(@"{0}\{1}", Local_Folder_CAM, OperationAry[i].Name);
-                                theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
-                            }
-                        }
-                    }
-                }
-            }
-            */
-
-
             #endregion
 
-            Excel.ApplicationClass excelApp = new Excel.ApplicationClass();
-            Excel.Workbook book = null;
-            Excel.Worksheet sheet = null;
-            Excel.Range oRng = null;
+            
 
             #region 開始插入excel
+            /*
             try
             {
+                //檢查PC有無Excel在執行
+                //bool flag = false;
+                //foreach (var item in Process.GetProcesses())
+                //{
+                //    if (item.ProcessName == "EXCEL")
+                //    {
+                //        flag = true;
+                //        break;
+                //    }
+                //}
+                //if (flag)
+                //{
+                //    CaxLog.ShowListingWindow("請先關閉所有Excel再重新執行輸出，如沒有EXCEL在執行，請開啟工作管理員關閉背景EXCEL");
+                //    return;
+                //}
+
+                ////判斷是否已經指定路徑
+                //if (OutputPath.Text == "")
+                //{
+                //    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Error, "請指定刀具路徑與清單的輸出路徑！");
+                //    return;
+                //}
+
+                //Excel.ApplicationClass excelApp = new Excel.ApplicationClass();
+                //Excel.Workbook book = null;
+                //Excel.Worksheet sheet = null;
+                //Excel.Range oRng = null;
+             
                 excelApp.Visible = false;
-                if (Is_Local != "")
-                {
-                    if (File.Exists(ShopDocPath))
-                    {
-                        book = excelApp.Workbooks.Open(ShopDocPath);
-                    }
-                    else
-                    {
-                        book = excelApp.Workbooks.Open(@"D:\ShopDoc.xls");
-                    }
-                }
-                else
-                {
-                    book = excelApp.Workbooks.Open(@"D:\ShopDoc.xls");
-                }
+
+                book = excelApp.Workbooks.Open(ShopDocPath);
 
                 sheet = (Excel.Worksheet)book.Sheets[1];
 
@@ -1015,25 +928,6 @@ namespace ExportShopDoc
                     { 
                         sheet.Name = string.Format("{0}({1})", PartNo, (i + 1).ToString());
                     }
-                    
-
-
-                    /*
-                    if (i == 0 && book.Worksheets.Count > 1)
-                    {
-                        sheet.Name = "(1)";
-                        oRng = (Excel.Range)sheet.Cells[4, 1];
-                        oRng.Value = oRng.Value.ToString().Replace("1/1", "1/" + (book.Worksheets.Count).ToString());
-                    }
-                    else
-                    {
-
-                        sheet.Name = "(" + (i + 1) + ")";
-                        oRng = (Excel.Range)sheet.Cells[4, 1];
-                        string temp = (i + 1).ToString();
-                        oRng.Value = oRng.Value.ToString().Replace("1/1", temp + "/" + (book.Worksheets.Count).ToString());
-                    }
-                    */
                 }
 
                 #region 註解中，計算欄位寬高
@@ -1056,13 +950,6 @@ namespace ExportShopDoc
                 //}
                 //CaxLog.ShowListingWindow(abc.ToString());
                 #endregion
-
-
-
-                //book.SaveAs(OutputPath.Text, Excel.XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-                //book.Close(Type.Missing, Type.Missing, Type.Missing);
-                //x.Quit();
-                //return;
 
                 //填表
                 foreach (KeyValuePair<string, OperData> kvp in DicNCData)
@@ -1168,10 +1055,6 @@ namespace ExportShopDoc
                     Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                 book.Close(Type.Missing, Type.Missing, Type.Missing);
                 excelApp.Quit();
-
-                CaxPart.Save();
-                
-                
             }
             catch (System.Exception ex)
             {
@@ -1182,12 +1065,14 @@ namespace ExportShopDoc
                 excelApp.Quit();
                 this.Close();
             }
+            */
             #endregion
 
-            MessageBox.Show("刀具路徑與清單輸出完成！");
+
 
             #region 上傳數據至Database
-            if (Is_Local != "")
+
+            if (Is_Local != null)
             {
                 Com_PEMain comPEMain = new Com_PEMain();
                 #region 由料號查peSrNo
@@ -1218,75 +1103,214 @@ namespace ExportShopDoc
                 }
                 #endregion
 
-                try
-                {
-                    Com_TEMain cCom_TEMain = new Com_TEMain();
-                    cCom_TEMain.comPartOperation = comPartOperation;
-                    cCom_TEMain.fixtureImgPath = string.Format(@"{0}\{1}_Image\{2}", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, FixtureNameStr);
-                    cCom_TEMain.sysTEExcel = session.QueryOver<Sys_TEExcel>().Where(x => x.teExcelType == "ShopDoc").SingleOrDefault<Sys_TEExcel>();
-                    cCom_TEMain.createDate = DateTime.Now.ToString();
+                #region 比對資料庫TEMain是否有同筆數據
+                IList<Com_TEMain> DBData_ComTEMain = new List<Com_TEMain>();
+                DBData_ComTEMain = session.QueryOver<Com_TEMain>().List<Com_TEMain>();
 
-                    OperData sOperData = new OperData();
-                    foreach (KeyValuePair<string, OperData> kvp in DicNCData)
+                bool Is_Exist = false;
+                Com_TEMain currentComTEMain = new Com_TEMain();
+                foreach (Com_TEMain i in DBData_ComTEMain)
+                {
+                    if (i.comPartOperation == comPartOperation && i.ncGroupName == CurrentNCGroup)
                     {
-                        if (CurrentNCGroup != kvp.Key)
+                        Is_Exist = true;
+                        currentComTEMain = i;
+                        break;
+                    }
+                }
+                #endregion
+
+                if (!Is_Exist)
+                {
+                    try
+                    {
+                        Com_TEMain cCom_TEMain = new Com_TEMain();
+                        cCom_TEMain.comPartOperation = comPartOperation;
+                        cCom_TEMain.fixtureImgPath = string.Format(@"{0}\{1}_Image\{2}", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, FixtureNameStr);
+                        cCom_TEMain.sysTEExcel = session.QueryOver<Sys_TEExcel>().Where(x => x.teExcelType == "ShopDoc").SingleOrDefault<Sys_TEExcel>();
+                        cCom_TEMain.createDate = DateTime.Now.ToString();
+
+                        OperData sOperData = new OperData();
+                        foreach (KeyValuePair<string, OperData> kvp in DicNCData)
                         {
-                            continue;
+                            if (CurrentNCGroup != kvp.Key)
+                            {
+                                continue;
+                            }
+                            cCom_TEMain.ncGroupName = CurrentNCGroup;
+                            sOperData = kvp.Value;
                         }
-                        cCom_TEMain.ncGroupName = CurrentNCGroup;
-                        sOperData = kvp.Value;
+
+                        Database.SplitData sSplitData = new Database.SplitData();
+                        Database.GetSplitData(sOperData, out sSplitData);
+
+                        //取得所有加工時間
+                        double ToTalCuttingTime = 0;
+                        foreach (string i in sSplitData.OperCuttingTime)
+                        {
+                            ToTalCuttingTime = ToTalCuttingTime + Convert.ToDouble(i);
+                        }
+                        //循環時間
+                        cCom_TEMain.totalCuttingTime = string.Format("{0}m {1}s", Math.Truncate((ToTalCuttingTime / 60)), (ToTalCuttingTime % 60));
+
+                        Database.comShopDoc = new List<Com_ShopDoc>();
+
+                        for (int i = 0; i < sSplitData.OperName.Length; i++)
+                        {
+                            Com_ShopDoc cCom_ShopDoc = new Com_ShopDoc();
+                            cCom_ShopDoc.comTEMain = cCom_TEMain;
+                            cCom_ShopDoc.operationName = sSplitData.OperName[i];
+                            cCom_ShopDoc.toolID = sSplitData.OperToolID[i];
+                            cCom_ShopDoc.toolNo = sSplitData.OperToolNo[i];
+                            cCom_ShopDoc.holderID = sSplitData.OperHolderID[i];
+                            cCom_ShopDoc.opImagePath = string.Format(@"{0}\{1}_Image\{2}.jpg", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, sSplitData.OperName[i]);
+                            cCom_ShopDoc.machiningtime = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(sSplitData.OperCuttingTime[i]) / 60))
+                                                                                                , (Convert.ToDouble(sSplitData.OperCuttingTime[i]) % 60));
+                            cCom_ShopDoc.feed = sSplitData.OperToolFeed[i];
+                            cCom_ShopDoc.speed = sSplitData.OperToolSpeed[i];
+                            cCom_ShopDoc.partStock = sSplitData.OperPartStock[i] + "/" + sSplitData.OperPartFloorStock[i];
+                            Database.comShopDoc.Add(cCom_ShopDoc);
+                        }
+
+                        cCom_TEMain.comShopDoc = Database.comShopDoc;
+
+                        using (ITransaction trans = session.BeginTransaction())
+                        {
+                            session.Save(cCom_TEMain);
+                            trans.Commit();
+                        }
                     }
-                    
-                    Database.SplitData sSplitData = new Database.SplitData();
-                    Database.GetSplitData(sOperData, out sSplitData);
-
-                    //取得所有加工時間
-                    double ToTalCuttingTime = 0;
-                    foreach (string i in sSplitData.OperCuttingTime)
+                    catch (System.Exception ex)
                     {
-                        ToTalCuttingTime = ToTalCuttingTime + Convert.ToDouble(i);
-                    }
-                    //循環時間
-                    cCom_TEMain.totalCuttingTime = string.Format("{0}m {1}s", Math.Truncate((ToTalCuttingTime / 60)), (ToTalCuttingTime % 60));
-
-                    Database.comShopDoc = new List<Com_ShopDoc>();
-
-                    for (int i = 0; i < sSplitData.OperName.Length;i++ )
-                    {
-                        Com_ShopDoc cCom_ShopDoc = new Com_ShopDoc();
-                        cCom_ShopDoc.comTEMain = cCom_TEMain;
-                        cCom_ShopDoc.operationName = sSplitData.OperName[i];
-                        cCom_ShopDoc.toolID = sSplitData.OperToolID[i];
-                        cCom_ShopDoc.toolNo = sSplitData.OperToolNo[i];
-                        cCom_ShopDoc.holderID = sSplitData.OperHolderID[i];
-                        cCom_ShopDoc.opImagePath = string.Format(@"{0}\{1}_Image\{2}.jpg", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, sSplitData.OperName[i]);
-                        cCom_ShopDoc.machiningtime = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(sSplitData.OperCuttingTime[i]) / 60))
-                                                                                            , (Convert.ToDouble(sSplitData.OperCuttingTime[i]) % 60));
-                        cCom_ShopDoc.feed = sSplitData.OperToolFeed[i];
-                        cCom_ShopDoc.speed = sSplitData.OperToolSpeed[i];
-                        cCom_ShopDoc.partStock = sSplitData.OperPartStock[i] + "/" + sSplitData.OperPartFloorStock[i];
-                        Database.comShopDoc.Add(cCom_ShopDoc);
-                    }
-
-                    cCom_TEMain.comShopDoc = Database.comShopDoc;
-
-                    using (ITransaction trans = session.BeginTransaction())
-                    {
-                        session.Save(cCom_TEMain);
-                        trans.Commit();
+                        CaxLog.ShowListingWindow(ex.ToString());
                     }
                 }
-                catch (System.Exception ex)
+                else
                 {
-                    CaxLog.ShowListingWindow(ex.ToString());
-                }
-            }
-            #endregion
+                    if (eTaskDialogResult.Yes == CaxPublic.ShowMsgYesNo("此程式已存在上一次的資料，是否更新?"))
+                    {
+                        try
+                        {
+                            #region 先刪除程式資料表
+                            IList<Com_ShopDoc> DB_ShopDoc = new List<Com_ShopDoc>();
+                            DB_ShopDoc = session.QueryOver<Com_ShopDoc>()
+                                                     .Where(x => x.comTEMain == currentComTEMain).List<Com_ShopDoc>();
+                            using (ITransaction trans = session.BeginTransaction())
+                            {
+                                foreach (Com_ShopDoc i in DB_ShopDoc)
+                                {
+                                    session.Delete(i);
+                                }
+                                trans.Commit();
+                            }
+                            #endregion
 
+                            #region 重新插入所有程式
+                            IList<Com_ShopDoc> listCom_ShopDoc = new List<Com_ShopDoc>();
+                            OperData sOperData = new OperData();
+                            foreach (KeyValuePair<string, OperData> kvp in DicNCData)
+                            {
+                                if (CurrentNCGroup != kvp.Key)
+                                {
+                                    continue;
+                                }
+                                sOperData = kvp.Value;
+                            }
+
+                            Database.SplitData sSplitData = new Database.SplitData();
+                            Database.GetSplitData(sOperData, out sSplitData);
+
+                            for (int i = 0; i < sSplitData.OperName.Length; i++)
+                            {
+                                Com_ShopDoc cCom_ShopDoc = new Com_ShopDoc();
+                                cCom_ShopDoc.comTEMain = currentComTEMain;
+                                cCom_ShopDoc.operationName = sSplitData.OperName[i];
+                                cCom_ShopDoc.toolID = sSplitData.OperToolID[i];
+                                cCom_ShopDoc.toolNo = sSplitData.OperToolNo[i];
+                                cCom_ShopDoc.holderID = sSplitData.OperHolderID[i];
+                                cCom_ShopDoc.opImagePath = string.Format(@"{0}\{1}_Image\{2}.jpg", cMETE_Download_Upload_Path.Server_Folder_CAM, CurrentNCGroup, sSplitData.OperName[i]);
+                                cCom_ShopDoc.machiningtime = string.Format("{0}m {1}s", Math.Truncate((Convert.ToDouble(sSplitData.OperCuttingTime[i]) / 60))
+                                                                                                    , (Convert.ToDouble(sSplitData.OperCuttingTime[i]) % 60));
+                                cCom_ShopDoc.feed = sSplitData.OperToolFeed[i];
+                                cCom_ShopDoc.speed = sSplitData.OperToolSpeed[i];
+                                cCom_ShopDoc.partStock = sSplitData.OperPartStock[i] + "/" + sSplitData.OperPartFloorStock[i];
+                                listCom_ShopDoc.Add(cCom_ShopDoc);
+                            }
+                            using (ITransaction trans = session.BeginTransaction())
+                            {
+                                foreach (Com_ShopDoc i in listCom_ShopDoc)
+                                {
+                                    session.Save(i);
+                                }
+                                trans.Commit();
+                            }
+
+                            #endregion
+                        }
+                        catch (System.Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString());
+                        }
+                    }
+                }
+                
+            }
             
+            #endregion
+            
+            MessageBox.Show("刀具路徑與清單輸出完成！");
             this.Close();
         }
 
+        private bool CreateOpImg(string[] FolderImageAry)
+        {
+            try
+            {
+                foreach (NXOpen.CAM.NCGroup ncGroup in NCGroupAry)
+                {
+                    if (CurrentNCGroup != ncGroup.Name)
+                    {
+                        continue;
+                    }
+                    for (int i = 0; i < OperationAry.Length; i++)
+                    {
+                        //取得父層的群組(回傳：NCGroup XXXX)
+                        string NCProgramTag = OperationAry[i].GetParent(CAMSetup.View.ProgramOrder).ToString();
+                        NCProgramTag = Regex.Replace(NCProgramTag, "[^0-9]", "");
+                        NXOpen.CAM.CAMObject[] tempObjToCreateImg = new CAMObject[1];
+                        string ImagePath = "";
+                        if (NCProgramTag == ncGroup.Tag.ToString())
+                        {
+                            //判斷是否已手動拍攝，如拍攝過就不再拍攝
+                            bool checkStatus = false;
+                            foreach (string single in FolderImageAry)
+                            {
+                                if (Path.GetFileNameWithoutExtension(single) == CaxOper.AskOperNameFromTag(OperationAry[i].Tag))
+                                {
+                                    checkStatus = true;
+                                    break;
+                                }
+                            }
+
+                            if (!checkStatus)
+                            {
+                                tempObjToCreateImg[0] = (NXOpen.CAM.CAMObject)OperationAry[i];
+                                workPart.ModelingViews.WorkView.Orient(NXOpen.View.Canned.Isometric, NXOpen.View.ScaleAdjustment.Fit);
+                                workPart.CAMSetup.ReplayToolPath(tempObjToCreateImg);
+
+                                ImagePath = string.Format(@"{0}\{1}", PhotoFolderPath, OperationAry[i].Name);
+                                theUfSession.Disp.CreateImage(ImagePath, UFDisp.ImageFormat.Jpeg, UFDisp.BackgroundColor.White);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return false;	
+            }
+            return true;
+        }
         private void CloseDlg_Click(object sender, EventArgs e)
         {
             NXOpen.CAM.Preferences preferences1 = theSession.CAMSession.CreateCamPreferences();

@@ -80,3 +80,12 @@ D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\obj\x86\Release\OutputExcelForm
 D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\obj\x86\Release\OutputExcelForm.exe
 D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\obj\x86\Release\OutputExcelForm.pdb
 D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\obj\x86\Release\OutputExcelForm.csprojResolveAssemblyReference.cache
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\OFFICE.DLL
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Data.DataSetExtensions.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Data.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Deployment.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Drawing.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Windows.Forms.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Xml.dll
+D:\GlobalCode\19_OutputExcelForm\OutputExcelForm\bin\Release\System.Xml.Linq.dll

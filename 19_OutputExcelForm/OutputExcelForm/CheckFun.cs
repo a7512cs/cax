@@ -70,9 +70,12 @@ namespace OutputExcelForm
                     }
                     if (section == "ME")
                     {
-                        if (panel.GetCell(i, 2).Value == "" || panel.GetCell(i, 2).Value == "(雙擊)選擇表單")
+                        if (panel.GetCell(i, 3).Value == "" || panel.GetCell(i, 3).Value == "(雙擊)選擇表單")
                         {
-                            MessageBox.Show("表單 " + panel.GetCell(i, 1).Value.ToString() + " 尚未選擇Excel格式");
+                            panel.GetCell(i, 3).SetActive(((bool)panel.GetCell(i, 0).Value));
+                            panel.GetCell(i, 3).CellStyles.Selected.Background.Color1 = System.Drawing.Color.Red;
+                            panel.GetCell(i, 3).CellStyles.Selected.Background.Color2 = System.Drawing.Color.Red;
+                            MessageBox.Show("表單 " + panel.GetCell(i, 1).Value.ToString() + " 尚未選擇廠區");
                             return false;
                         }
                     }
@@ -80,7 +83,10 @@ namespace OutputExcelForm
                     {
                         if (panel.GetCell(i, 3).Value == "" || panel.GetCell(i, 3).Value == "(雙擊)選擇表單")
                         {
-                            MessageBox.Show("表單 " + panel.GetCell(i, 1).Value.ToString() + " 尚未選擇Excel格式");
+                            panel.GetCell(i, 3).SetActive(((bool)panel.GetCell(i, 0).Value));
+                            panel.GetCell(i, 3).CellStyles.Selected.Background.Color1 = System.Drawing.Color.Red;
+                            panel.GetCell(i, 3).CellStyles.Selected.Background.Color2 = System.Drawing.Color.Red;
+                            MessageBox.Show("表單 " + panel.GetCell(i, 1).Value.ToString() + " 尚未選擇廠區");
                             return false;
                         }
                     }

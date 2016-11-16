@@ -169,7 +169,7 @@ namespace TEDownload
             }
             CaxPE.ReadPECreateData(PECreateData_Path, out cPECreateData);
 
-            Oper1comboBox.Items.AddRange(cPECreateData.Oper1Ary.ToArray());
+            Oper1comboBox.Items.AddRange(cPECreateData.oper1Ary.ToArray());
             Oper1comboBox.Items.Add("全部下載");
 
             /*
@@ -425,6 +425,20 @@ namespace TEDownload
             }
             #endregion
 
+            #region 先刪除本機中該製程的OPxxx->CAM資料夾、TEpart檔
+            //刪除本機OPxxx資料夾路徑
+            string Local_OPxxxPath = string.Format(@"{0}\{1}\{2}", Local_ShareStr, "OP" + CurrentOper1, "CAM");
+            if (Directory.Exists(Local_OPxxxPath))
+            {
+                Directory.Delete(Local_OPxxxPath, true);
+            }
+            string Local_TEpartPath = string.Format(@"{0}\{1}", Local_ShareStr, CurrentPartNo + "_TE_" + CurrentOper1 + ".prt");
+            if (File.Exists(Local_TEpartPath))
+            {
+                File.Delete(Local_TEpartPath);
+            }
+            #endregion
+
             #region 建立Local_Folder_CAM、Local_Folder_OIS資料夾
 
             //暫存一個tempLocal_Folder_CAM、Local_Folder_OIS，目的要讓程式每次都能有[Oper1]可取代
@@ -540,6 +554,13 @@ namespace TEDownload
 
             foreach (string i in ListDownloadPartPath)
             {
+                //刪除本機TEpart
+                string Local_TEpart = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileName(i));
+                if (File.Exists(Local_TEpart))
+                {
+                    File.Delete(Local_TEpart);
+                }
+
                 //判斷Part檔案是否存在
                 if (!File.Exists(i))
                 {

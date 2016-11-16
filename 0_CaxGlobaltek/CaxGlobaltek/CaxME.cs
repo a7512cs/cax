@@ -32,6 +32,7 @@ namespace CaxGlobaltek
             public static string FQC_Freq = "FQC_Freq";
             public static string BallonNum = "BallonNum";
             public static string BallonLocation = "BallonLocation";
+            public static string AssignExcelType = "AssignExcelType";
         }
 
         public class BoxCoordinate
@@ -258,14 +259,14 @@ namespace CaxGlobaltek
                 theUfSession.Drf.AskAnnotationTextBox(AnnotationTag, upper_left, out length, out height);
 
                 //左下角
-                lower_left[0] = upper_left[0] + height * Math.Sin(angRad);
-                lower_left[1] = upper_left[1] - height * Math.Cos(angRad);
+                lower_left[0] = upper_left[0] + height * Math.Sin(angRad); //CaxLog.ShowListingWindow(lower_left[0].ToString());
+                lower_left[1] = upper_left[1] - height * Math.Cos(angRad); //CaxLog.ShowListingWindow(lower_left[1].ToString());
                 //右下角
-                lower_right[0] = lower_left[0] + length * Math.Cos(angRad);
-                lower_right[1] = lower_left[1] + length * Math.Sin(angRad);
+                lower_right[0] = lower_left[0] + length * Math.Cos(angRad); //CaxLog.ShowListingWindow(lower_right[0].ToString());
+                lower_right[1] = lower_left[1] + length * Math.Sin(angRad); //CaxLog.ShowListingWindow(lower_right[1].ToString());
                 //右上角
-                upper_right[0] = upper_left[0] + length * Math.Cos(angRad);
-                upper_right[1] = upper_left[1] + length * Math.Sin(angRad);
+                upper_right[0] = upper_left[0] + length * Math.Cos(angRad); //CaxLog.ShowListingWindow(upper_right[0].ToString());
+                upper_right[1] = upper_left[1] + length * Math.Sin(angRad); //CaxLog.ShowListingWindow(upper_right[1].ToString());
 
                 UFObj.DispProps props = new UFObj.DispProps();
                 props.color = 0; // only color is needed, use system default color
@@ -331,7 +332,7 @@ namespace CaxGlobaltek
         /// <param name="Number"></param>
         /// <param name="BallonPt"></param>
         /// <returns></returns>
-        public static bool CreateBallonOnSheet(string Number, Point3d BallonPt)
+        public static bool CreateBallonOnSheet(string Number, Point3d BallonPt, double textSize)
         {
             try
             {// ----------------------------------------------
@@ -350,9 +351,13 @@ namespace CaxGlobaltek
 
                 idSymbolBuilder1.Origin.Anchor = NXOpen.Annotations.OriginBuilder.AlignmentPosition.MidCenter;
 
-                idSymbolBuilder1.UpperText = "<C0.7>" + Number + "<C>";
+                // 給字體大小
+                idSymbolBuilder1.Style.LetteringStyle.GeneralTextSize = textSize;
 
-                idSymbolBuilder1.Size = 3.5;
+                idSymbolBuilder1.UpperText = Number;
+                //idSymbolBuilder1.UpperText = "<C0.7>" + Number + "<C>";
+
+                idSymbolBuilder1.Size = 4;
 
                 theSession.SetUndoMarkName(markId1, "Identification Symbol Dialog");
 
@@ -416,6 +421,8 @@ namespace CaxGlobaltek
 
                 idSymbolBuilder1.Destroy();
 
+
+                /*
                 NXOpen.Session.UndoMarkId markId3;
                 markId3 = theSession.SetUndoMark(NXOpen.Session.MarkVisibility.Invisible, "Start");
 
@@ -463,7 +470,7 @@ namespace CaxGlobaltek
                 theSession.UndoToMark(markId3, null);
 
                 theSession.DeleteUndoMark(markId3, null);
-
+                */
                 // ----------------------------------------------
                 //   Menu: Tools->Journal->Stop Recording
                 // ----------------------------------------------

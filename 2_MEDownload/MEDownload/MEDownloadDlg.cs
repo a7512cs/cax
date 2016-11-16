@@ -305,19 +305,6 @@ namespace MEDownload
                         Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
                         ListDownloadPartPath.Add(Server_MEDownloadPart);
                     }
-
-
-                    /*
-                    Server_MEDownloadPart = tempServer_MEDownloadPart;
-                    Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
-
-                    string ServerPartPath = "";
-                    status = DicSeleOper1.TryGetValue(Oper1comboBox.Items[i].ToString(), out ServerPartPath);
-                    if (!status)
-                    {
-                        DicSeleOper1.Add(Oper1comboBox.Items[i].ToString(), Server_MEDownloadPart);
-                    }
-                    */
                 }
             }
             else
@@ -342,51 +329,6 @@ namespace MEDownload
                     ListDownloadPartPath.Add(Server_MEDownloadPart);
                 }
             }
-
-
-            /*
-            if (File.Exists(PartNameText_OISPath))
-            {
-                //取得已上傳過的檔案名稱
-                string[] PartNameText_OISData = System.IO.File.ReadAllLines(PartNameText_OISPath);
-                //開始記錄每個零件的路徑
-                foreach (string i in PartNameText_OISData)
-                {
-                    Server_MEDownloadPart = string.Format(@"{0}\{1}", Server_ShareStr, i);
-                    ListDownloadPartPath.Add(Server_MEDownloadPart);
-                    //DicSeleOper1.Add(CurrentOper1, Server_MEDownloadPart);
-                }
-            }
-            else
-            {
-                if (CurrentOper1 == "全部下載")
-                {
-                    for (int i = 0; i < Oper1comboBox.Items.Count; i++)
-                    {
-                        if (Oper1comboBox.Items[i].ToString() == "全部下載")
-                        {
-                            continue;
-                        }
-                        Server_MEDownloadPart = tempServer_MEDownloadPart;
-                        Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", Oper1comboBox.Items[i].ToString());
-
-                        string ServerPartPath = "";
-                        status = DicSeleOper1.TryGetValue(Oper1comboBox.Items[i].ToString(), out ServerPartPath);
-                        if (!status)
-                        {
-                            DicSeleOper1.Add(Oper1comboBox.Items[i].ToString(), Server_MEDownloadPart);
-                        }
-                    }
-                }
-                else
-                {
-                    Server_MEDownloadPart = tempServer_MEDownloadPart;
-                    Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", CurrentOper1);
-                    DicSeleOper1.Add(CurrentOper1, Server_MEDownloadPart);
-                }
-            }
-            */
-
             
             #endregion
 
@@ -597,6 +539,27 @@ namespace MEDownload
 
             #endregion
 
+            #region 先刪除本機中該製程的OPxxx->OIS資料夾、MEpart檔
+            //刪除本機OPxxx資料夾路徑
+            for (int i = 0; i < Oper1comboBox.Items.Count; i++)
+            {
+                if (CurrentOper1 != Oper1comboBox.Items[i].ToString() & CurrentOper1 != "全部下載")
+                {
+                    continue;
+                }
+                string Local_OPxxxPath = string.Format(@"{0}\{1}\{2}", Local_ShareStr, "OP" + Oper1comboBox.Items[i].ToString(), "OIS");
+                if (Directory.Exists(Local_OPxxxPath))
+                {
+                    Directory.Delete(Local_OPxxxPath, true);
+                }
+                string Local_MEpartPath = string.Format(@"{0}\{1}", Local_ShareStr, CurrentPartNo + "_ME_" + Oper1comboBox.Items[i].ToString() + ".prt");
+                if (File.Exists(Local_MEpartPath))
+                {
+                    File.Delete(Local_MEpartPath);
+                }
+            }
+            #endregion
+
             #region 建立Local_Folder_CAM、Local_Folder_OIS資料夾
 
             //暫存一個tempLocal_Folder_CAM、Local_Folder_OIS，目的要讓程式每次都能有[Oper1]可取代
@@ -707,10 +670,17 @@ namespace MEDownload
             }
             */
             #endregion
+
             
-            #region 複製ServerPart檔案到Local資料夾內
             foreach (string i in ListDownloadPartPath)
             {
+                //刪除本機OISpart
+                string Local_OISpart = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileName(i));
+                if (File.Exists(Local_OISpart))
+                {
+                    File.Delete(Local_OISpart);
+                }
+
                 //判斷Part檔案是否存在
                 if (!File.Exists(i))
                 {
@@ -731,78 +701,8 @@ namespace MEDownload
                     this.Close();
                 }
             }
-
-            /*
-            foreach (KeyValuePair<string,string> kvp in DicSeleOper1)
-            {
-                //判斷製程序檔案是否存在
-                //Server_MEDownloadPart = tempServer_MEDownloadPart;
-                //Server_MEDownloadPart = Server_MEDownloadPart.Replace("[Oper1]", kvp.Key);
-                status = System.IO.File.Exists(kvp.Value);
-                if (!status)
-                {
-                    MessageBox.Show("製程序檔案" + Path.GetFileName(kvp.Value) + "不存在，請再次確認");
-                    return;
-                }
-
-                //建立Local_ShareStr資料夾內製程序檔案路徑
-                string Local_Oper1PartFullPath = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileName(kvp.Value));
-
-                //開始複製
-                File.Copy(kvp.Value, Local_Oper1PartFullPath, true);
-
-                
-                status = System.IO.File.Exists(Server_MEDownloadPart);
-                if (!status)
-                {
-                    MessageBox.Show("製程序檔案" + Path.GetFileName(Server_MEDownloadPart) + "不存在，請再次確認");
-                    return;
-                }
-
-                //建立Local_ShareStr資料夾內製程序檔案路徑
-                string Local_Oper1PartFullPath = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileName(Server_MEDownloadPart));
-
-                //開始複製
-                File.Copy(Server_MEDownloadPart, Local_Oper1PartFullPath, true);
-                
-            }
-            */
-
-            #endregion
-
-            #region (註解中)自動開啟檔案組立架構
-            /*
-            //組件存在，直接開啟任務組立
-            BasePart newAsmPart;
-            status = CaxPart.OpenBaseDisplay(Local_Oper1PartFullPath, out newAsmPart);
-            if (!status)
-            {
-                CaxLog.ShowListingWindow("組立開啟失敗！");
-                return;
-            }
-
-            //將客戶檔案組裝進來
-            string NewCusPartName = string.Format(@"{0}\{1}", Local_ShareStr, Path.GetFileNameWithoutExtension(Server_MODEL) + "_" + CurrentOper1 + ".prt");
-            
-            //複製客戶檔案並更名(料號+製程序.prt)後放到新路徑(本機Globaltek\Task\料號\版次\)
-            File.Copy(Local_CusPartFullPath, NewCusPartName, true);
-            `
-            //開始組裝
-            NXOpen.Assemblies.Component newComponent = null;
-            status = CaxAsm.AddComponentToAsmByDefault(NewCusPartName, out newComponent);
-            if (!status)
-            {
-                CaxLog.ShowListingWindow("ERROR,組裝失敗！");
-                return;
-            }
-            */
-            #endregion
-
-            //CaxAsm.SetWorkComponent(null);
             MessageBox.Show("下載完成！");
             this.Close();
-            //CaxPart.Save();
-
         }
 
     }

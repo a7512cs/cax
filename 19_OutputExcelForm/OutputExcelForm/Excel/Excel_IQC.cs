@@ -21,6 +21,8 @@ namespace OutputExcelForm.Excel
             //表單資訊
             public int PartNoRow { get; set; }
             public int PartNoColumn { get; set; }
+            public int PartDescRow { get; set; }
+            public int PartDescColumn { get; set; }
             public int OISRow { get; set; }
             public int OISColumn { get; set; }
             public int DateRow { get; set; }
@@ -114,6 +116,8 @@ namespace OutputExcelForm.Excel
             sRowColumn = new RowColumn();
             sRowColumn.PartNoRow = 5;
             sRowColumn.PartNoColumn = 4;
+            sRowColumn.PartDescRow = 6;
+            sRowColumn.PartDescColumn = 4;
             sRowColumn.MaterialRow = 8;
             sRowColumn.MaterialColumn = 8;
             //sRowColumn.OISRow = 5;
@@ -278,14 +282,14 @@ namespace OutputExcelForm.Excel
                 {
                     return false;
                 }
-
+                
                 //1.開啟Excel
                 //2.將Excel設為不顯示
                 //3.取得第一頁Sheet
                 workBook = excelApp.Workbooks.Open(sDB_MEMain.excelTemplateFilePath);
                 excelApp.Visible = false;
                 workSheet = (Worksheet)workBook.Sheets[1];
-
+                
                 //建立Sheet頁數符合所有的Dimension
                 status = Excel_CommonFun.AddNewSheet(cCom_Dimension.Count, 12, excelApp, workSheet);
                 if (!status)
@@ -293,7 +297,7 @@ namespace OutputExcelForm.Excel
                     MessageBox.Show("建立Sheet頁失敗，請聯繫開發工程師");
                     return false;
                 }
-
+                
                 //修改每一個Sheet名字和頁數
                 status = Excel_CommonFun.ModifySheet(partNo, "IQC", workBook, workSheet, workRange);
                 if (!status)
@@ -301,7 +305,7 @@ namespace OutputExcelForm.Excel
                     MessageBox.Show("修改Sheet名字失敗，請聯繫開發工程師");
                     return false;
                 }
-
+                
                 RowColumn sRowColumn = new RowColumn();
                 int currentSheet_Value;
                 for (int i = 0; i < cCom_Dimension.Count; i++)
@@ -330,9 +334,11 @@ namespace OutputExcelForm.Excel
                     workRange[sRowColumn.BallonRow, sRowColumn.BallonColumn] = cCom_Dimension[i].ballon;
                     workRange[sRowColumn.LocationRow, sRowColumn.LocationColumn] = cCom_Dimension[i].location;
                     workRange[sRowColumn.PartNoRow, sRowColumn.PartNoColumn] = partNo;
-                    //workRange[sRowColumn.MaterialRow, sRowColumn.MaterialColumn] = MaterialStr;(尚未將值帶過來)
+                    workRange[sRowColumn.PartDescRow, sRowColumn.PartDescColumn] = sDB_MEMain.comMEMain.partDescription;
+                    workRange[sRowColumn.MaterialRow, sRowColumn.MaterialColumn] = sDB_MEMain.comMEMain.material;
                     #endregion
                 }
+                
                 //設定輸出路徑
                 string OutputPath = string.Format(@"{0}\{1}_{2}_OP{3}\{4}_{5}_{6}", Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
                                                                                   , partNo
@@ -340,7 +346,7 @@ namespace OutputExcelForm.Excel
                                                                                   , op1
                                                                                   , partNo
                                                                                   , cusVer
-                                                                                  , op1 + "_" + "IQC" + ".xls");
+                                                                                  , "OP" + op1 + "_" + sDB_MEMain.comMEMain.draftingVer + "_" + "IQC" + ".xls");
 
                 workBook.SaveAs(OutputPath, XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, Type.Missing, Type.Missing
                     , XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);

@@ -189,7 +189,7 @@ namespace OutputExcelForm
                 }
 
                 //由選取的Op1與Excel表單，查出資料庫的Com_MEMain
-                status = GetDataFromDatabase.GetDimensionDataFromPanel(Op1Combobox, out DicDimensionData);
+                status = GetDataFromDatabase.GetDimensionData(Op1Combobox, out DicDimensionData);
                 if (!status)
                 {
                     MessageBox.Show("由Panel資料查DicDimensionData時發生錯誤，請聯繫開發工程師");
@@ -219,7 +219,7 @@ namespace OutputExcelForm
                 }
 
                 //由選取的Op1與Excel表單，查出資料庫的Com_TEMain
-                status = GetDataFromDatabase.GetShopDocDataFromPanel(Op1Combobox, out DicShopDocData);
+                status = GetDataFromDatabase.GetShopDocData(Op1Combobox, out DicShopDocData);
                 if (!status)
                 {
                     MessageBox.Show("由Panel資料查DicShopDocData時發生錯誤，請聯繫開發工程師");
@@ -235,6 +235,7 @@ namespace OutputExcelForm
             }
 
             MessageBox.Show("表單輸出完成！");
+            this.Close();
         }
 
         private void Close_Click(object sender, EventArgs e)
@@ -242,7 +243,6 @@ namespace OutputExcelForm
             this.Close();
         }
 
-        
 
     }
 }

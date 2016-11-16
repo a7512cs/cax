@@ -36,6 +36,7 @@ namespace OutputExcelForm
         public string excelTemplateFilePath { get; set; }
         public string ncGroupName { get; set; }
         public string factory { get; set; }
+        public string partDesc { get; set; }
     }
     public struct DB_ShopDoc
     {
@@ -161,21 +162,21 @@ namespace OutputExcelForm
                     #endregion
 
                     #region 插入Panel
-                    object[] o = new object[] { false, sysMEExcel.meExcelType, ""
+                    object[] o = new object[] { false, sysMEExcel.meExcelType, i.draftingVer, ""
                                                 , string.Format("{0}_{1}_OP{2}資料夾"
                                                 , partNo
                                                 , cusVer
                                                 , op1) };
                     MEPanel.Rows.Add(new GridRow(o));
                     MEPanel.GetCell(MECount, 0).Value = false;
-                    MEPanel.GetCell(MECount, 2).EditorType = typeof(GridComboBoxExEditControl);
-                    GridComboBoxExEditControl singleCell = MEPanel.GetCell(MECount, 2).EditControl as GridComboBoxExEditControl;
+                    MEPanel.GetCell(MECount, 3).EditorType = typeof(GridComboBoxExEditControl);
+                    GridComboBoxExEditControl singleCell = MEPanel.GetCell(MECount, 3).EditControl as GridComboBoxExEditControl;
                     singleCell.Items.Add("");
                     foreach (string tempStr in ExcelData)
                     {
                         singleCell.Items.Add(tempStr);
                     }
-                    MEPanel.GetCell(MECount, 2).Value = "(雙擊)選擇表單";
+                    MEPanel.GetCell(MECount, 3).Value = "(雙擊)選擇表單";
                     #endregion
 
                     MECount++;
@@ -247,7 +248,7 @@ namespace OutputExcelForm
             }
             return true;
         }
-        public static bool GetDimensionDataFromPanel(ComboBoxEx Op1Combobox, out Dictionary<DB_MEMain, IList<Com_Dimension>> DicDimensionData)
+        public static bool GetDimensionData(ComboBoxEx Op1Combobox, out Dictionary<DB_MEMain, IList<Com_Dimension>> DicDimensionData)
         {
             DicDimensionData = new Dictionary<DB_MEMain, IList<Com_Dimension>>();
             try
@@ -269,20 +270,19 @@ namespace OutputExcelForm
                     Com_MEMain comMEMain = session.QueryOver<Com_MEMain>()
                                            .Where(x => x.comPartOperation == (Com_PartOperation)Op1Combobox.SelectedItem)
                                            .Where(x => x.sysMEExcel == meExcelSrNo)
+                                           .Where(x => x.draftingVer == OutputForm.MEPanel.GetCell(i, 2).Value.ToString())
                                            .SingleOrDefault<Com_MEMain>();
                     IList<Com_Dimension> comDimension = session.QueryOver<Com_Dimension>()
                                                         .Where(x => x.comMEMain == comMEMain)
                                                         .List<Com_Dimension>();
                     sDB_MEMain.comMEMain = comMEMain;
-                    sDB_MEMain.excelTemplateFilePath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}\{6}.xls"
-                                                                        , "\\\\192.168.31.55"
-                                                                        , "cax"
-                                                                        , "Globaltek"
+                    sDB_MEMain.excelTemplateFilePath = string.Format(@"{0}\{1}\{2}\{3}\{4}.xls"
+                                                                        , GetExcelForm.GetGlobaltekEnvDir()
                                                                         , "ME_Config"
                                                                         , "Config"
                                                                         , OutputForm.MEPanel.GetCell(i, 1).Value.ToString()
-                                                                        , OutputForm.MEPanel.GetCell(i, 2).Value.ToString());
-                    sDB_MEMain.factory = OutputForm.MEPanel.GetCell(i, 2).Value.ToString();
+                                                                        , OutputForm.MEPanel.GetCell(i, 3).Value.ToString());
+                    sDB_MEMain.factory = OutputForm.MEPanel.GetCell(i, 3).Value.ToString();
                     DicDimensionData.Add(sDB_MEMain, comDimension);
                 }
             }
@@ -292,7 +292,7 @@ namespace OutputExcelForm
             }
             return true;
         }
-        public static bool GetShopDocDataFromPanel(ComboBoxEx Op1Combobox, out Dictionary<DB_TEMain, IList<Com_ShopDoc>> DicShopDocData)
+        public static bool GetShopDocData(ComboBoxEx Op1Combobox, out Dictionary<DB_TEMain, IList<Com_ShopDoc>> DicShopDocData)
         {
             DicShopDocData = new Dictionary<DB_TEMain, IList<Com_ShopDoc>>();
             try
@@ -311,29 +311,30 @@ namespace OutputExcelForm
                     {
                         continue;
                     }
-                    IList<Com_TEMain> comTEMain = session.QueryOver<Com_TEMain>()
+                    Com_TEMain comTEMain = session.QueryOver<Com_TEMain>()
                                                   .Where(x => x.comPartOperation == (Com_PartOperation)Op1Combobox.SelectedItem)
                                                   .Where(x => x.sysTEExcel == teExcelSrNo)
-                                                  .List<Com_TEMain>();
-                    foreach (Com_TEMain ii in comTEMain)
-                    {
-                        DB_TEMain sDB_TEMain = new DB_TEMain();
-                        IList<Com_ShopDoc> comDimension = session.QueryOver<Com_ShopDoc>()
-                                                          .Where(x => x.comTEMain == ii)
-                                                          .List<Com_ShopDoc>();
-                        sDB_TEMain.comTEMain = ii;
-                        sDB_TEMain.excelTemplateFilePath = string.Format(@"{0}\{1}\{2}\{3}\{4}\{5}\{6}.xls"
-                                                                            , "\\\\192.168.31.55"
-                                                                            , "cax"
-                                                                            , "Globaltek"
-                                                                            , "TE_Config"
-                                                                            , "Config"
-                                                                            , OutputForm.TEPanel.GetCell(i, 1).Value.ToString()
-                                                                            , OutputForm.TEPanel.GetCell(i, 3).Value.ToString());
-                        sDB_TEMain.ncGroupName = ii.ncGroupName;
-                        sDB_TEMain.factory = OutputForm.TEPanel.GetCell(i, 3).Value.ToString();
-                        DicShopDocData.Add(sDB_TEMain, comDimension);
-                    }
+                                                  .Where(x => x.ncGroupName == OutputForm.TEPanel.GetCell(i, 2).Value.ToString())
+                                                  .SingleOrDefault<Com_TEMain>();
+
+                    DB_TEMain sDB_TEMain = new DB_TEMain();
+                    IList<Com_ShopDoc> comDimension = session.QueryOver<Com_ShopDoc>()
+                                                        .Where(x => x.comTEMain == comTEMain)
+                                                        .List<Com_ShopDoc>();
+                    sDB_TEMain.comTEMain = comTEMain;
+                    sDB_TEMain.excelTemplateFilePath = string.Format(@"{0}\{1}\{2}\{3}\{4}.xls"
+                                                                        , GetExcelForm.GetGlobaltekEnvDir()
+                                                                        , "TE_Config"
+                                                                        , "Config"
+                                                                        , OutputForm.TEPanel.GetCell(i, 1).Value.ToString()
+                                                                        , OutputForm.TEPanel.GetCell(i, 3).Value.ToString());
+                    sDB_TEMain.ncGroupName = comTEMain.ncGroupName;
+                    sDB_TEMain.factory = OutputForm.TEPanel.GetCell(i, 3).Value.ToString();
+                    sDB_TEMain.partDesc = (session.QueryOver<Com_MEMain>()
+                                                    .Where(x => x.comPartOperation == (Com_PartOperation)Op1Combobox.SelectedItem)
+                                                    .SingleOrDefault<Com_MEMain>()).partDescription;
+                    DicShopDocData.Add(sDB_TEMain, comDimension);
+                    
                     
                     //sDB_TEMain.comTEMain = comTEMain;
                     //sDB_TEMain.excelTemplateFilePath = string.Format(@"{0}\{1}.xls", OutputForm.serverTEConfig, OutputForm.TEPanel.GetCell(i, 3).Value.ToString());

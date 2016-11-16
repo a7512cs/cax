@@ -393,7 +393,7 @@ namespace TEOpenTask
             string checkIsOpened = "";
             try
             {
-                checkIsOpened = newAsmPart.GetStringAttribute("IsOpened");
+                checkIsOpened = newAsmPart.GetStringAttribute("ISOPENED");
                 if (checkIsOpened == "Y")
                 {
                     CaxPart.Save();
@@ -403,7 +403,7 @@ namespace TEOpenTask
             }
             catch (System.Exception ex)
             {
-                newAsmPart.SetAttribute("IsOpened", "Y");
+                newAsmPart.SetAttribute("ISOPENED", "Y");
             }
 
             NXOpen.Assemblies.Component newComponent = null;
@@ -432,14 +432,14 @@ namespace TEOpenTask
 
             CaxAsm.SetWorkComponent(null);
 
-            #region 建立二階製程檔
+            #region 建立三階製程檔
 
             string Local_CurrentOperPartFullPath = "";
             if (groupBox001.Enabled == true)
             {
                 if (check001NoBillet.Checked == true)
                 {
-                    //選擇無胚料檔--新建檔案(檔名：料號+製程序)
+                    //選擇無胚料檔--新建檔案(檔名：料號_TE_製程序)
                     Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_TE_" + SeleOperValue + ".prt");
                     if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
                     {
@@ -471,34 +471,35 @@ namespace TEOpenTask
             }
             else
             {
-                if (checkWNoBillet.Checked == true)
+                #region W階
+                //組立"前段製程檔"
+                if (checkWHasBillet.Checked == true & System.IO.File.Exists(labelWBilletPath))
                 {
-                    //選擇無胚料檔--新建檔案(檔名：料號+製程序)
-                    Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_TE_" + SeleOperValue + ".prt");
-                    if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+                    //複製檔案到任務資料夾
+                    string tempBilletPath = labelWBilletPath;
+                    tempBilletPath = tempBilletPath.Replace(Path.GetDirectoryName(tempBilletPath), Path.GetDirectoryName(Local_NewModelPartFullPath));
+                    File.Copy(labelWBilletPath, tempBilletPath, true);
+
+                    status = CaxAsm.AddComponentToAsmByDefault(tempBilletPath, out newComponent);
+                    if (!status)
                     {
-                        status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
-                        if (!status)
-                        {
-                            CaxLog.ShowListingWindow("建立二階製程檔失敗");
-                            return;
-                        }
+                        CaxLog.ShowListingWindow("W階胚料檔組裝失敗");
+                        return;
                     }
                 }
-                else
+
+                //選擇無前段製程檔案--新建檔案(檔名：料號_TE_製程序)
+                Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, CurrentPartNo + "_TE_" + SeleOperValue + ".prt");
+                if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
                 {
-                    //選擇有胚料檔--組裝胚料檔(檔名：胚料檔原始名稱)
-                    Local_CurrentOperPartFullPath = string.Format(@"{0}\{1}", Local_ShareStrPartFullPath, labelW.Text);
-                    if (!System.IO.File.Exists(Local_CurrentOperPartFullPath))
+                    status = CaxAsm.CreateNewEmptyComp(Local_CurrentOperPartFullPath, out newComponent);
+                    if (!status)
                     {
-                        status = CaxAsm.AddComponentToAsmByDefault(Local_CurrentOperPartFullPath, out newComponent);
-                        if (!status)
-                        {
-                            CaxLog.ShowListingWindow("W階胚料檔組裝失敗");
-                            return;
-                        }
+                        CaxLog.ShowListingWindow("建立三階製程檔失敗");
+                        return;
                     }
                 }
+                #endregion
             }
 
             #endregion

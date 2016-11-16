@@ -109,6 +109,7 @@
             // 
             this.comboBoxCus.DisplayMember = "Text";
             this.comboBoxCus.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxCus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxCus.FormattingEnabled = true;
             this.comboBoxCus.ItemHeight = 16;
             this.comboBoxCus.Location = new System.Drawing.Point(72, 54);
@@ -122,6 +123,7 @@
             // 
             this.comboBoxPartNo.DisplayMember = "Text";
             this.comboBoxPartNo.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxPartNo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPartNo.FormattingEnabled = true;
             this.comboBoxPartNo.ItemHeight = 16;
             this.comboBoxPartNo.Location = new System.Drawing.Point(72, 92);
@@ -135,6 +137,7 @@
             // 
             this.comboBoxCusVer.DisplayMember = "Text";
             this.comboBoxCusVer.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBoxCusVer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxCusVer.FormattingEnabled = true;
             this.comboBoxCusVer.ItemHeight = 16;
             this.comboBoxCusVer.Location = new System.Drawing.Point(72, 130);
@@ -155,13 +158,15 @@
             this.superGridPanel.PrimaryGrid.Columns.Add(this.gridColumn1);
             this.superGridPanel.PrimaryGrid.Columns.Add(this.gridColumn2);
             this.superGridPanel.PrimaryGrid.MultiSelect = false;
-            this.superGridPanel.Size = new System.Drawing.Size(222, 143);
+            this.superGridPanel.PrimaryGrid.ShowRowHeaders = false;
+            this.superGridPanel.Size = new System.Drawing.Size(297, 143);
             this.superGridPanel.TabIndex = 6;
             this.superGridPanel.Text = "superGridControl1";
             this.superGridPanel.CellValueChanged += new System.EventHandler<DevComponents.DotNetBar.SuperGrid.GridCellValueChangedEventArgs>(this.superGridPanel_CellValueChanged);
             // 
             // gridColumn1
             // 
+            this.gridColumn1.CellStyles.Default.Alignment = DevComponents.DotNetBar.SuperGrid.Style.Alignment.MiddleCenter;
             this.gridColumn1.ColumnSortMode = DevComponents.DotNetBar.SuperGrid.ColumnSortMode.None;
             this.gridColumn1.EditorType = typeof(DevComponents.DotNetBar.SuperGrid.GridCheckBoxXEditControl);
             this.gridColumn1.FillWeight = 50;
@@ -188,7 +193,7 @@
             this.groupPanel1.DisabledBackColor = System.Drawing.Color.Empty;
             this.groupPanel1.Location = new System.Drawing.Point(12, 158);
             this.groupPanel1.Name = "groupPanel1";
-            this.groupPanel1.Size = new System.Drawing.Size(400, 240);
+            this.groupPanel1.Size = new System.Drawing.Size(475, 240);
             // 
             // 
             // 
@@ -227,7 +232,7 @@
             this.groupBox900.Controls.Add(this.button900SelPart);
             this.groupBox900.Location = new System.Drawing.Point(3, 155);
             this.groupBox900.Name = "groupBox900";
-            this.groupBox900.Size = new System.Drawing.Size(388, 46);
+            this.groupBox900.Size = new System.Drawing.Size(463, 46);
             this.groupBox900.TabIndex = 2;
             this.groupBox900.TabStop = false;
             this.groupBox900.Text = "製程序900";
@@ -241,7 +246,7 @@
             this.label900.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.label900.Location = new System.Drawing.Point(91, 17);
             this.label900.Name = "label900";
-            this.label900.Size = new System.Drawing.Size(291, 23);
+            this.label900.Size = new System.Drawing.Size(366, 23);
             this.label900.TabIndex = 1;
             // 
             // button900SelPart
@@ -265,7 +270,7 @@
             this.groupBoxW.Controls.Add(this.checkWHasBillet);
             this.groupBoxW.Location = new System.Drawing.Point(3, 79);
             this.groupBoxW.Name = "groupBoxW";
-            this.groupBoxW.Size = new System.Drawing.Size(388, 70);
+            this.groupBoxW.Size = new System.Drawing.Size(463, 70);
             this.groupBoxW.TabIndex = 1;
             this.groupBoxW.TabStop = false;
             this.groupBoxW.Text = "製程序W階";
@@ -274,7 +279,7 @@
             // 
             this.buttonWSelPart.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.buttonWSelPart.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.buttonWSelPart.Location = new System.Drawing.Point(112, 21);
+            this.buttonWSelPart.Location = new System.Drawing.Point(137, 21);
             this.buttonWSelPart.Name = "buttonWSelPart";
             this.buttonWSelPart.Size = new System.Drawing.Size(96, 23);
             this.buttonWSelPart.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
@@ -293,7 +298,7 @@
             this.checkWNoBillet.Size = new System.Drawing.Size(127, 23);
             this.checkWNoBillet.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.checkWNoBillet.TabIndex = 3;
-            this.checkWNoBillet.Text = "無前段製程圖";
+            this.checkWNoBillet.Text = "無前段製程檔案";
             this.checkWNoBillet.CheckedChanged += new System.EventHandler(this.checkWNoBillet_CheckedChanged);
             // 
             // labelW
@@ -303,9 +308,9 @@
             // 
             // 
             this.labelW.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.labelW.Location = new System.Drawing.Point(214, 21);
+            this.labelW.Location = new System.Drawing.Point(246, 21);
             this.labelW.Name = "labelW";
-            this.labelW.Size = new System.Drawing.Size(168, 23);
+            this.labelW.Size = new System.Drawing.Size(211, 23);
             this.labelW.TabIndex = 2;
             // 
             // checkWHasBillet
@@ -319,7 +324,7 @@
             this.checkWHasBillet.Size = new System.Drawing.Size(127, 23);
             this.checkWHasBillet.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.checkWHasBillet.TabIndex = 1;
-            this.checkWHasBillet.Text = "有前段製程圖";
+            this.checkWHasBillet.Text = "有前段製程檔案";
             this.checkWHasBillet.CheckedChanged += new System.EventHandler(this.checkWHasBillet_CheckedChanged);
             // 
             // groupBox001
@@ -331,7 +336,7 @@
             this.groupBox001.Controls.Add(this.check001HasBillet);
             this.groupBox001.Location = new System.Drawing.Point(3, 3);
             this.groupBox001.Name = "groupBox001";
-            this.groupBox001.Size = new System.Drawing.Size(388, 70);
+            this.groupBox001.Size = new System.Drawing.Size(463, 70);
             this.groupBox001.TabIndex = 0;
             this.groupBox001.TabStop = false;
             this.groupBox001.Text = "製程序001";
@@ -340,7 +345,7 @@
             // 
             this.button001SelPart.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.button001SelPart.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.button001SelPart.Location = new System.Drawing.Point(112, 21);
+            this.button001SelPart.Location = new System.Drawing.Point(137, 21);
             this.button001SelPart.Name = "button001SelPart";
             this.button001SelPart.Size = new System.Drawing.Size(96, 23);
             this.button001SelPart.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
@@ -355,9 +360,9 @@
             // 
             // 
             this.label001.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.label001.Location = new System.Drawing.Point(214, 21);
+            this.label001.Location = new System.Drawing.Point(246, 21);
             this.label001.Name = "label001";
-            this.label001.Size = new System.Drawing.Size(168, 23);
+            this.label001.Size = new System.Drawing.Size(211, 23);
             this.label001.TabIndex = 3;
             // 
             // check001NoBillet
@@ -371,7 +376,7 @@
             this.check001NoBillet.Size = new System.Drawing.Size(100, 23);
             this.check001NoBillet.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.check001NoBillet.TabIndex = 1;
-            this.check001NoBillet.Text = "無胚料圖檔";
+            this.check001NoBillet.Text = "無胚料檔案";
             this.check001NoBillet.CheckedChanged += new System.EventHandler(this.check001NoBillet_CheckedChanged);
             // 
             // check001HasBillet
@@ -385,14 +390,14 @@
             this.check001HasBillet.Size = new System.Drawing.Size(100, 23);
             this.check001HasBillet.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
             this.check001HasBillet.TabIndex = 0;
-            this.check001HasBillet.Text = "有胚料圖檔";
+            this.check001HasBillet.Text = "有胚料檔案";
             this.check001HasBillet.CheckedChanged += new System.EventHandler(this.check001HasBillet_CheckedChanged);
             // 
             // buttonOpenTask
             // 
             this.buttonOpenTask.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.buttonOpenTask.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.buttonOpenTask.Location = new System.Drawing.Point(167, 408);
+            this.buttonOpenTask.Location = new System.Drawing.Point(208, 405);
             this.buttonOpenTask.Name = "buttonOpenTask";
             this.buttonOpenTask.Size = new System.Drawing.Size(75, 23);
             this.buttonOpenTask.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
@@ -417,7 +422,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(426, 440);
+            this.ClientSize = new System.Drawing.Size(498, 440);
             this.Controls.Add(this.labelX4);
             this.Controls.Add(this.buttonOpenTask);
             this.Controls.Add(this.groupPanel1);

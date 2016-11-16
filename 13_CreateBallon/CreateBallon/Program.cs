@@ -53,6 +53,14 @@ public class Program
             Part workPart = theSession.Parts.Work;
             Part displayPart = theSession.Parts.Display;
 
+            int module_id;
+            theUfSession.UF.AskApplicationModule(out module_id);
+            if (module_id != UFConstants.UF_APP_DRAFTING)
+            {
+                MessageBox.Show("請先轉換為製圖模組後再執行！");
+                return retValue;
+            }
+
             bool status,Is_Keep;
 
             Application.EnableVisualStyles();
@@ -73,13 +81,28 @@ public class Program
 
 
             #region 前置處理
-            //取得圖紙範圍資料Data
+
+            string Is_Local = Environment.GetEnvironmentVariable("UGII_ENV_FILE");
+
             CoordinateData cCoordinateData = new CoordinateData();
-            status = CaxGetDatData.GetDraftingCoordinateData(out cCoordinateData);
-            if (!status)
+            if (Is_Local != null)
             {
-                return retValue;
+                //取得圖紙範圍資料Data
+                status = CaxGetDatData.GetDraftingCoordinateData(out cCoordinateData);
+                if (!status)
+                {
+                    return retValue;
+                }
             }
+            else
+            {
+                string DraftingCoordinate_dat = "DraftingCoordinate.dat";
+                string DraftingCoordinate_Path = string.Format(@"{0}\{1}", "D:", DraftingCoordinate_dat);
+                CaxPublic.ReadCoordinateData(DraftingCoordinate_Path, out cCoordinateData);
+            }
+            
+            
+            
 
             //圖紙長、高
             double SheetLength = 0;
@@ -112,6 +135,7 @@ public class Program
                 {
                     CaxPublic.DelectObject(i);
                 }
+                workPart.DeleteAttributeByTypeAndTitle(NXObject.AttributeType.String, "BALLONNUM");
                 #endregion
                 
                 #region 存DicDimenData(string=檢具名稱,DimenData=尺寸物件、泡泡座標)
@@ -122,11 +146,6 @@ public class Program
                     NXOpen.Drawings.DrawingSheet CurrentSheet = (NXOpen.Drawings.DrawingSheet)NXObjectManager.Get(SheetTagAry[i]);
                     string SheetName = "S" + (i + 1).ToString();
                     CaxME.SheetRename(CurrentSheet, SheetName);
-                    //NXOpen.Drawings.DrawingSheetBuilder drawingSheetBuilder1;
-                    //drawingSheetBuilder1 = workPart.DrawingSheets.DrawingSheetBuilder(CurrentSheet);
-                    //drawingSheetBuilder1.Name = "S" + (i + 1).ToString();
-                    //drawingSheetBuilder1.Commit();
-                    //drawingSheetBuilder1.Destroy();
                     CurrentSheet.Open();
 
                     if (i == 0)
@@ -141,8 +160,25 @@ public class Program
                     DisplayableObject[] SheetObj = CurrentSheet.View.AskVisibleObjects();
                     foreach (DisplayableObject singleObj in SheetObj)
                     {
-                        string IPQC_Gauge = "", IQC_Gauge = "", FQC_Gauge = "", FAI_Gauge = "";
-                        #region 判斷是否有IQC,IPQC屬性，沒有屬性就跳下一個
+                        string IPQC_Gauge = "", IQC_Gauge = "", FQC_Gauge = "", FAI_Gauge = "", AssignExcelType = "";
+                        #region 判斷是否有屬性，沒有屬性就跳下一個
+                        try
+                        {
+                            AssignExcelType = singleObj.GetStringAttribute(CaxME.DimenAttr.AssignExcelType);
+                        }
+                        catch (System.Exception ex)
+                        {
+                        	continue;
+                        }
+                        try
+                        {
+                            IPQC_Gauge = singleObj.GetStringAttribute(CaxME.DimenAttr.IPQC_Gauge);
+                        }
+                        catch (System.Exception ex)
+                        {
+                        	
+                        }
+                        /*
                         try
                         {
                             IPQC_Gauge = singleObj.GetStringAttribute(CaxME.DimenAttr.IPQC_Gauge);
@@ -179,6 +215,7 @@ public class Program
                         {
                             continue;
                         }
+                        */
                         #endregion
 
                         //事先塞入該尺寸所在Sheet
@@ -286,22 +323,51 @@ public class Program
                             CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
                             #endregion
                         }
+                        else if (DimeType == "NXOpen.Annotations.HoleDimension")
+                        {
+                            #region HoleDimension取Location
+                            NXOpen.Annotations.HoleDimension temp = (NXOpen.Annotations.HoleDimension)singleObj;
+                            CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.lower_left[0].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.lower_left[1].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.lower_right[0].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.lower_right[1].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.upper_right[0].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.upper_right[1].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.upper_left[0].ToString());
+                            //CaxLog.ShowListingWindow(cBoxCoordinate.upper_left[1].ToString());
+                            //CaxLog.ShowListingWindow("----");
+                            //CaxME.DrawTextBox(temp.Tag);
+                            #endregion
+                        }
+                        else if (DimeType == "NXOpen.Annotations.ParallelDimension")
+                        {
+                            #region ParallelDimension取Location
+                            NXOpen.Annotations.ParallelDimension temp = (NXOpen.Annotations.ParallelDimension)singleObj;
+                            CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
+                            #endregion
+                        }
+                        else if (DimeType == "NXOpen.Annotations.FoldedRadiusDimension")
+                        {
+                            #region FoldedRadiusDimension取Location
+                            NXOpen.Annotations.FoldedRadiusDimension temp = (NXOpen.Annotations.FoldedRadiusDimension)singleObj;
+                            CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
+                            #endregion
+                        }
+                        else if (DimeType == "NXOpen.Annotations.ArcLengthDimension")
+                        {
+                            #region ArcLengthDimension取Location
+                            NXOpen.Annotations.ArcLengthDimension temp = (NXOpen.Annotations.ArcLengthDimension)singleObj;
+                            CaxME.GetTextBoxCoordinate(temp.Tag, out cBoxCoordinate);
+                            #endregion
+                        }
+                            
 
                         #region 計算泡泡座標
                         DimenData sDimenData = new DimenData();
                         sDimenData.Obj = singleObj;
                         sDimenData.CurrentSheet = CurrentSheet;
-                        if (Math.Abs(cBoxCoordinate.upper_left[0] - cBoxCoordinate.lower_left[0]) < 0.01)
-                        {
-                            sDimenData.LocationX = (cBoxCoordinate.upper_left[0] + cBoxCoordinate.lower_left[0]) / 2 - 2;
-                            sDimenData.LocationY = (cBoxCoordinate.upper_left[1] + cBoxCoordinate.lower_left[1]) / 2;
-                        }
-                        else
-                        {
-                            sDimenData.LocationX = (cBoxCoordinate.upper_left[0] + cBoxCoordinate.lower_left[0]) / 2;
-                            sDimenData.LocationY = (cBoxCoordinate.upper_left[1] + cBoxCoordinate.lower_left[1]) / 2 - 2;
-                        }
-                        sDimenData.LocationZ = 0;
+                        Functions.CalculateBallonCoordinate(cBoxCoordinate, ref sDimenData);
                         #endregion
 
                         if (IPQC_Gauge != "")
@@ -320,6 +386,23 @@ public class Program
                                 DefineParam.DicDimenData.Add(IPQC_Gauge, ListDimenData);
                             }
                         }
+                        else
+                        {
+                            List<DimenData> ListDimenData = new List<DimenData>();
+                            status = DefineParam.DicDimenData.TryGetValue(AssignExcelType, out ListDimenData);
+                            if (status)
+                            {
+                                ListDimenData.Add(sDimenData);
+                                DefineParam.DicDimenData[AssignExcelType] = ListDimenData;
+                            }
+                            else
+                            {
+                                ListDimenData = new List<DimenData>();
+                                ListDimenData.Add(sDimenData);
+                                DefineParam.DicDimenData.Add(AssignExcelType, ListDimenData);
+                            }
+                        }
+                        /*
                         if (IQC_Gauge != "")
                         {
                             List<DimenData> ListDimenData = new List<DimenData>();
@@ -368,12 +451,14 @@ public class Program
                                 DefineParam.DicDimenData.Add(FQC_Gauge, ListDimenData);
                             }
                         }
+                        */
                     }
                 }
                 #endregion
 
                 #region 插入泡泡
                 int BallonNum = 0;
+                double BallonNumSize = 0;
                 foreach (KeyValuePair<string, List<DimenData>> kvp in DefineParam.DicDimenData)
                 {
                     List<DimenData> tempListDimenData = new List<DimenData>();
@@ -385,7 +470,21 @@ public class Program
                         Point3d BallonLocation = new Point3d();
                         BallonLocation.X = tempListDimenData[i].LocationX;
                         BallonLocation.Y = tempListDimenData[i].LocationY;
-                        CaxME.CreateBallonOnSheet(BallonNum.ToString(), BallonLocation);
+
+                        //決定數字的大小
+                        if (BallonNum <= 9)
+                        {
+                            BallonNumSize = 2.5;
+                        }
+                        else if (BallonNum > 9 && BallonNum <= 99)
+                        {
+                            BallonNumSize = 1.5;
+                        }
+                        else
+                        {
+                            BallonNumSize = 1;
+                        }
+                        CaxME.CreateBallonOnSheet(BallonNum.ToString(), BallonLocation, BallonNumSize);
 
                         //取得該尺寸所在圖紙
                         string SheetNum = tempListDimenData[i].Obj.GetStringAttribute("SheetName");
@@ -454,8 +553,26 @@ public class Program
                     DisplayableObject[] SheetObj = CurrentSheet.View.AskVisibleObjects();
                     foreach (DisplayableObject singleObj in SheetObj)
                     {
-                        string IPQC_Gauge = "", IQC_Gauge = "", FQC_Gauge = "", FAI_Gauge = "";
+                        string IPQC_Gauge = "", IQC_Gauge = "", FQC_Gauge = "", FAI_Gauge = "", AssignExcelType = "";
                         #region 判斷是否有屬性，沒有屬性就跳下一個
+                        try
+                        {
+                            AssignExcelType = singleObj.GetStringAttribute(CaxME.DimenAttr.AssignExcelType);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            IPQC_Gauge = singleObj.GetStringAttribute(CaxME.DimenAttr.IPQC_Gauge);
+                        }
+                        catch (System.Exception ex)
+                        {
+
+                        }
+
+                        /*
                         try
                         {
                             IPQC_Gauge = singleObj.GetStringAttribute(CaxME.DimenAttr.IPQC_Gauge);
@@ -493,6 +610,7 @@ public class Program
                         {
                             continue;
                         }
+                        */
                         #endregion
 
                         string OldBallonNum = "";
@@ -648,6 +766,23 @@ public class Program
                                 DefineParam.DicDimenData.Add(IPQC_Gauge, ListDimenData);
                             }
                         }
+                        else
+                        {
+                            List<DimenData> ListDimenData = new List<DimenData>();
+                            status = DefineParam.DicDimenData.TryGetValue(AssignExcelType, out ListDimenData);
+                            if (status)
+                            {
+                                ListDimenData.Add(sDimenData);
+                                DefineParam.DicDimenData[AssignExcelType] = ListDimenData;
+                            }
+                            else
+                            {
+                                ListDimenData = new List<DimenData>();
+                                ListDimenData.Add(sDimenData);
+                                DefineParam.DicDimenData.Add(AssignExcelType, ListDimenData);
+                            }
+                        }
+                        /*
                         if (IQC_Gauge != "")
                         {
                             List<DimenData> ListDimenData = new List<DimenData>();
@@ -696,11 +831,13 @@ public class Program
                                 DefineParam.DicDimenData.Add(FQC_Gauge, ListDimenData);
                             }
                         }
+                        */
                     }
                 }
                 #endregion
 
                 #region 插入泡泡
+                double BallonNumSize = 0;
                 foreach (KeyValuePair<string, List<DimenData>> kvp in DefineParam.DicDimenData)
                 {
                     List<DimenData> tempListDimenData = new List<DimenData>();
@@ -712,7 +849,20 @@ public class Program
                         Point3d BallonLocation = new Point3d();
                         BallonLocation.X = tempListDimenData[i].LocationX;
                         BallonLocation.Y = tempListDimenData[i].LocationY;
-                        CaxME.CreateBallonOnSheet(MaxBallonNum.ToString(), BallonLocation);
+                        //決定數字的大小
+                        if (MaxBallonNum <= 9)
+                        {
+                            BallonNumSize = 2.5;
+                        }
+                        else if (MaxBallonNum > 9 && MaxBallonNum <= 99)
+                        {
+                            BallonNumSize = 1.5;
+                        }
+                        else
+                        {
+                            BallonNumSize = 1;
+                        }
+                        CaxME.CreateBallonOnSheet(MaxBallonNum.ToString(), BallonLocation, BallonNumSize);
 
                         //取得該尺寸所在圖紙
                         string SheetNum = tempListDimenData[i].Obj.GetStringAttribute("SheetName");

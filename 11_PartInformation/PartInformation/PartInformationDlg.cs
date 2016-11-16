@@ -51,7 +51,7 @@ namespace PartInformation
         public static Dictionary<string, string> DicSecondPageNumberPos = new Dictionary<string, string>();
         public static string[] MaterialDataAry = new string[] { };
 
-        public static string RevRowHeight = "";
+        public static string RevRowHeight = "", Is_Local = "", MaterialDataPath = "", MaterialData_dat = "MaterialData.dat";
         public static string symbol = "", symbol_1 = "", UserDefineTxtPath = "";
         public static double SheetHeight, SheetWidth;
         //public static StringBuilder sb;
@@ -82,43 +82,51 @@ namespace PartInformation
             public static string SecondPageNumberPos = "SecondPageNumberPos";
         }
 
-        //public static class WorkPartAttribute
-        //{
-        //    public static string PartNumberText = "PartNumberText";
-        //    public static string PartDescriptionText = "PartDescriptionText";
-        //    public static string CurRevText = "CurRevText";
-        //    public static string PartUnitText = "PartUnitText";
-        //    public static string MaterialText = "MaterialText";
-        //    public static string DraftingText = "DraftingText";
-        //    public static string Tolerance0Text = "Tolerance0Text";
-        //    public static string Tolerance1Text = "Tolerance1Text";
-        //    public static string Tolerance2Text = "Tolerance2Text";
-        //    public static string Tolerance3Text = "Tolerance3Text";
-        //    public static string AngleText = "AngleText";
-        //}
 
         public PartInformationDlg()
         {
             InitializeComponent();
-
-            
         }
 
         private void PartInformationDlg_Load(object sender, EventArgs e)
         {
-            //取得DraftingData
-            status = CaxGetDatData.GetDraftingConfigData(out cDraftingConfig);
-            if (!status)
+            int module_id;
+            theUfSession.UF.AskApplicationModule(out module_id);
+            if (module_id != UFConstants.UF_APP_DRAFTING)
             {
-                return;
+                MessageBox.Show("請先轉換為製圖模組後再執行！");
+                this.Close();
             }
 
-            //取得材質資料庫並加入到下拉選單中
-            string MaterialData_dat = "MaterialData.dat";
-            string MaterialDataPath = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", "Config", MaterialData_dat);
+            Is_Local = Environment.GetEnvironmentVariable("UGII_ENV_FILE");
+            if (Is_Local != null)
+            {
+                //取得DraftingData
+                status = CaxGetDatData.GetDraftingConfigData(out cDraftingConfig);
+                if (!status)
+                {
+                    return;
+                }
+                //取得材質資料庫並加入到下拉選單中
+                MaterialDataPath = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "ME_Config", "Config", MaterialData_dat);
+            }
+            else
+            {
+                //取得DraftingData
+                string DraftingConfig_Path = string.Format(@"{0}\{1}", "D:", "DraftingConfig.dat");
+                status = CaxPublic.ReadDraftingConfig(DraftingConfig_Path, out cDraftingConfig);
+                if (!status)
+                {
+                    return;
+                }
+                //取得材質資料庫並加入到下拉選單中
+                MaterialDataPath = string.Format(@"{0}\{1}", "D:", MaterialData_dat);
+            }
             MaterialDataAry = new string[] { };
             CaxPublic.ReadFileData(MaterialDataPath, 0, out MaterialDataAry);
             MaterialText.Items.AddRange(MaterialDataAry);
+
+
 
             //取得零件資訊(SplitPath[3]=CusName、SplitPath[4]=PartNo、SplitPath[5]=CusRev)
             string PartFullPath = displayPart.FullPath;
@@ -295,7 +303,7 @@ namespace PartInformation
             theUfSession.Draw.AskDrawings(out SheetCount, out SheetTagAry);
 
             //建立字典資料庫存取(舊版)
-            DicPartInformation = new Dictionary<string, string>();
+            //DicPartInformation = new Dictionary<string, string>();
             //建立字典資料庫存取(新版)
             DicPartNumberPos = new Dictionary<string, string>();
             DicCusRevPos = new Dictionary<string, string>();
@@ -323,16 +331,6 @@ namespace PartInformation
             {
                 if (i == 0)
                 {
-                    //舊版(全部放在同一字典)
-                    //DicPartInformation.Add(TablePosi.PartNumberPos, PartNumberText.Text);//料號
-                    //DicPartInformation.Add(TablePosi.PartDescriptionPos, PartDescriptionText.Text);//品名
-                    //DicPartInformation.Add(TablePosi.PartUnitPos, PartUnitText.Text);//單位
-                    //DicPartInformation.Add(TablePosi.RevStartPos, DraftingRevText.Text);//版次
-                    //DicPartInformation.Add(TablePosi.RevDateStartPos, DateTime.Now.ToShortDateString());//版次日期
-                    //DicPartInformation.Add(TablePosi.AuthDatePos, DateTime.Now.ToShortDateString());//日期
-                    //DicPartInformation.Add(TablePosi.MaterialPos, MaterialText.Text);//材質
-                    //DicPartInformation.Add(TablePosi.PageNumberPos, "1/" + SheetCount.ToString());//頁數
-
                     //新版(資料分開放)
                     DicPartNumberPos.Add(TablePosi.PartNumberPos, PartNumberText.Text);//料號
                     DicCusRevPos.Add(TablePosi.CusRevPos, CusRevText.Text);//客戶版次
@@ -362,7 +360,7 @@ namespace PartInformation
                     if (AngleText.Text != "")
                     {
                         DicTolValue3Pos.Add(TablePosi.TolValue3Pos, "<$t>" + AngleText.Text + "<$s>");
-                        DicTolTitle3Pos.Add(TablePosi.TolTitle3Pos, "<F2>角度");
+                        DicTolTitle3Pos.Add(TablePosi.TolTitle3Pos, "角度");
                     }
                 }
                 else
@@ -558,9 +556,13 @@ namespace PartInformation
                                 }
                             }
                             Point3d TextPt = new Point3d();
+                            NXObject nxObj;
                             string FontSize = "";
                             Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                            Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
+                            string[] splitText = kvp.Value.Split(' ');
+                            Functions.InsertNote(kvp.Key, splitText, FontSize, TextPt, out nxObj);
+                            //塞屬性，以利重複執行時抓取資料
+                            nxObj.SetAttribute(kvp.Key, kvp.Value);
                         }
                         #endregion
 
@@ -662,95 +664,6 @@ namespace PartInformation
                             #endregion
                         }
 
-
-
-
-                        /*
-                        string DraftingAttri = "";
-                        try
-                        {
-                            DraftingAttri = workPart.GetStringAttribute(TablePosi.RevStartPos);
-                        }
-                        catch (System.Exception ex)
-                        {
-                            DraftingAttri = "";
-                        }
-
-                        if (DicRevStartPos[TablePosi.RevStartPos] != DraftingAttri || DraftingAttri == "")
-                        {
-                            #region 處理製圖版次
-                            foreach (KeyValuePair<string, string> kvp in DicRevStartPos)
-                            {
-                                string NoteValue = "";
-                                int DraftingCount = 0;
-                                if (NotesAry.Length != 0)
-                                {
-                                    foreach (NXOpen.Annotations.Note singleNote in NotesAry)
-                                    {
-                                        try
-                                        {
-                                            NoteValue = singleNote.GetStringAttribute(kvp.Key);
-                                            if (NoteValue == kvp.Value)
-                                            {
-                                                break;
-                                            }
-                                            DraftingCount++;
-                                        }
-                                        catch (System.Exception ex)
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                }
-                                if (NoteValue == kvp.Value)
-                                {
-                                    break;
-                                }
-
-                                Point3d TextPt = new Point3d();
-                                string FontSize = "";
-                                Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                                if (DraftingCount != 0)
-                                {
-                                    TextPt.Y = TextPt.Y + (Convert.ToDouble(RevRowHeight) * DraftingCount);
-                                }
-                                Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                            }
-                            #endregion
-
-                            #region 處理製圖版次日期
-                            foreach (KeyValuePair<string, string> kvp in DicRevDateStartPos)
-                            {
-                                int DraftingCount = 0;
-                                if (NotesAry.Length != 0)
-                                {
-                                    string NoteValue = "";
-                                    foreach (NXOpen.Annotations.Note singleNote in NotesAry)
-                                    {
-                                        try
-                                        {
-                                            NoteValue = singleNote.GetStringAttribute(kvp.Key);
-                                            DraftingCount++;
-                                        }
-                                        catch (System.Exception ex)
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                }
-
-                                Point3d TextPt = new Point3d();
-                                string FontSize = "";
-                                Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                                if (DraftingCount != 0)
-                                {
-                                    TextPt.Y = TextPt.Y + (Convert.ToDouble(RevRowHeight) * DraftingCount);
-                                }
-                                Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                            }
-                            #endregion
-                        }
-                        */
                         
                         #region 處理出圖日期
                         foreach (KeyValuePair<string, string> kvp in DicAuthDatePos)
@@ -1116,196 +1029,6 @@ namespace PartInformation
                         #endregion
                     }
                     
-                    /*
-                    foreach (KeyValuePair<string, string> kvp in DicPartInformation)
-                    {
-                        if (i == 0 && (kvp.Key == TablePosi.SecondPageNumberPos || kvp.Key == TablePosi.SecondPartNumberPos))
-                        {
-                            continue;
-                        }
-                        else if (i != 0 && kvp.Key != TablePosi.SecondPageNumberPos && kvp.Key != TablePosi.SecondPartNumberPos)
-                        {
-                            continue;
-                        }
-
-                        if (NotesAry.Length != 0)
-                        {
-                            #region 處理有Note但都沒有屬性的CASE
-                            int HasAttriCount = 0;
-                            foreach (NXOpen.Annotations.Note singleNote in NotesAry)
-                            {
-                                string NoteAttrValue = "";
-                                try
-                                {
-                                    NoteAttrValue = singleNote.GetStringAttribute(kvp.Key);
-                                }
-                                catch (System.Exception ex)
-                                {
-                                    HasAttriCount++;
-                                    continue;
-                                }
-                            }
-                            if (HasAttriCount == NotesAry.Length)
-                            {
-                                //如果Note沒有屬性，則相當於一開始狀態
-                                Point3d TextPt = new Point3d();
-                                string FontSize = "";
-                                Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                                Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                                break;
-                            }
-                            #endregion
-
-                            #region 處理有Note且有屬性的CASE
-                            foreach (NXOpen.Annotations.Note singleNote in NotesAry)
-                            {
-                                string NoteAttrValue = "";
-                                try
-                                {
-                                    NoteAttrValue = singleNote.GetStringAttribute(kvp.Key);
-                                }
-                                catch (System.Exception ex)
-                                {
-                                    continue;
-                                }
-
-                                if (NoteAttrValue == kvp.Value)
-                                {
-
-                                }
-                            }
-                            #endregion
-                        }
-                        else
-                        {
-                            //Point3d TextPt = new Point3d();
-                            //string FontSize = "";
-                            //Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                            //Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                        }
-                        
-                        if (NotesAry.Length != 0)
-                        {
-                            int count0 = 0;
-                            foreach (NXOpen.Annotations.Note singleNote in NotesAry)
-                            {
-                                string NoteAttr = "";
-                                try
-                                {
-                                    NoteAttr = singleNote.GetStringAttribute("GlobalTek"); 
-                                }
-                                catch (System.Exception ex)
-                                {
-                                    count0++;
-                                    continue;
-                                }
-
-                                //如果所有的Note都不是系統給的，則相當於一開始狀態
-                                if (count0 == NotesAry.Length)
-                                {
-                                    Point3d TextPt = new Point3d();
-                                    string FontSize = "";
-                                    Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                                    Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                                    break;
-                                }
-                                else
-                                {
-                                    //當有舊資料，且是料號、出圖日期、單位時，則不做事情
-                                    if ((NoteAttr == TablePosi.PartNumberPos && NoteAttr == kvp.Key) ||
-                                          (NoteAttr == TablePosi.AuthDatePos && NoteAttr == kvp.Key) ||
-                                          (NoteAttr == TablePosi.PartUnitPos && NoteAttr == kvp.Key))
-                                    {
-                                        break;
-                                    }
-                                    else if ((NoteAttr == TablePosi.RevStartPos && NoteAttr == kvp.Key) ||
-                                               (NoteAttr == TablePosi.RevDateStartPos && NoteAttr == kvp.Key))
-                                    {
-
-                                    }
-                                    else if (NoteAttr != kvp.Key)
-                                    {
-                                        continue;
-                                    }
-                                    else if (NoteAttr == kvp.Key)
-                                    {
-                                        CaxPublic.DelectObject(singleNote);
-                                    }
-
-                                    Point3d TextPt = new Point3d();
-                                    string FontSize = "";
-                                    Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                                    //(有舊資料)如果是製圖版次資料，則增加高度位置
-                                    if (kvp.Key == TablePosi.RevStartPos || kvp.Key == TablePosi.RevDateStartPos)
-                                    {
-                                        TextPt.Y = TextPt.Y + Convert.ToDouble(RevRowHeight);
-                                    }
-                                    Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Point3d TextPt = new Point3d();
-                            string FontSize = "";
-                            Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                            Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                        }
-                        
-
-                        if (NotesAry.Length != 0)
-                        {
-                            foreach (NXOpen.Annotations.Note singleNote in NotesAry)
-                            {
-                                string NoteAttr = "";
-                                try
-                                {
-                                    NoteAttr = singleNote.GetStringAttribute("GlobalTek");
-                                }
-                                catch (System.Exception ex)
-                                {
-                                    continue;
-                                }
-
-                                //當有舊資料，且是料號、出圖日期、單位時，則不做事情
-                                if (  (NoteAttr == TablePosi.PartNumberPos && NoteAttr == kvp.Key) ||
-                                      (NoteAttr == TablePosi.AuthDatePos && NoteAttr == kvp.Key) || 
-                                      (NoteAttr == TablePosi.PartUnitPos && NoteAttr == kvp.Key))
-                                {
-                                    break;
-                                }
-                                else if ((NoteAttr == TablePosi.RevStartPos && NoteAttr == kvp.Key) ||
-                                    (NoteAttr == TablePosi.RevDateStartPos && NoteAttr == kvp.Key) )
-                                {
-
-                                }
-                                else
-                                {
-                                    CaxPublic.DelectObject(singleNote);
-                                }
-
-                                Point3d TextPt = new Point3d();
-                                string FontSize = "";
-                                Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                                //(有舊資料)如果是製圖版次資料，則增加高度位置
-                                if (kvp.Key == TablePosi.RevStartPos || kvp.Key == TablePosi.RevDateStartPos)
-                                {
-                                    TextPt.Y = TextPt.Y + Convert.ToDouble(RevRowHeight);
-                                }
-                                Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                            }
-                        }
-                        else
-                        {
-                            Point3d TextPt = new Point3d();
-                            string FontSize = "";
-                            Functions.GetTextPos(cDraftingConfig, ii, kvp.Key, kvp.Value, out TextPt, out FontSize);
-                            Functions.InsertNote(kvp.Key, kvp.Value, FontSize, TextPt);
-                        }
-                        
-                    }
-                    */
-
                 }
 
             }
@@ -1346,9 +1069,6 @@ namespace PartInformation
 
             MessageBox.Show("更新完成");
             this.Close();
-            //this.Hide();
-            //UI.GetUI().NXMessageBox.Show("PartInformation", NXMessageBox.DialogType.Information, "更新完成");
-            //this.Show();
 
         }
 
@@ -1380,7 +1100,8 @@ namespace PartInformation
 
             string[] UserDefineNote = NoteBox.Text.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-            Functions.InsertNote("UserAddNote", UserDefineNote, "3", UserNotePos);
+            NXObject nxObj;
+            Functions.InsertNote("UserAddNote", UserDefineNote, "3", UserNotePos, out nxObj);
 
         }
 

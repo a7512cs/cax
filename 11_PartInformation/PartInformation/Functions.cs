@@ -39,13 +39,17 @@ namespace PartInformation
                 draftingNoteBuilder1.Origin.SetInferRelativeToGeometry(false);
                 draftingNoteBuilder1.Origin.SetInferRelativeToGeometry(true);
                 draftingNoteBuilder1.Origin.Anchor = defult;
+
                 
+                draftingNoteBuilder1.Style.LetteringStyle.GeneralTextSize = Convert.ToDouble(FontSize);
+
                 //text文字
-                workPart.Fonts.AddFont("chineset");
+                int a = workPart.Fonts.AddFont("chineset");
+                draftingNoteBuilder1.Style.LetteringStyle.GeneralTextFont = a;
                 string[] text1 = new string[1];
                 //text1[0] = "<C2>" + text + "<C>";
-                
-                text1[0] = "<F2>" + text + "<F>";
+                //text1[0] = "<F2>" + text + "<F>";
+                text1[0] = text;
                 draftingNoteBuilder1.Text.TextBlock.SetText(text1);
 
                 draftingNoteBuilder1.Style.LetteringStyle.GeneralTextSize = Convert.ToDouble(FontSize);
@@ -125,8 +129,9 @@ namespace PartInformation
         /// <param name="textLocation"></param>
         /// <param name="defult"></param>
         /// <returns></returns>
-        public static bool InsertNote(string attrStr, string[] text, string FontSize, Point3d textLocation, NXOpen.Annotations.OriginBuilder.AlignmentPosition defult = NXOpen.Annotations.OriginBuilder.AlignmentPosition.MidCenter)
+        public static bool InsertNote(string attrStr, string[] text, string FontSize, Point3d textLocation, out NXObject nXObject1, NXOpen.Annotations.OriginBuilder.AlignmentPosition defult = NXOpen.Annotations.OriginBuilder.AlignmentPosition.MidCenter)
         {
+            nXObject1 = null;
             try
             {
                 Session theSession = Session.GetSession();
@@ -144,19 +149,25 @@ namespace PartInformation
                 draftingNoteBuilder1.Origin.SetInferRelativeToGeometry(false);
                 draftingNoteBuilder1.Origin.SetInferRelativeToGeometry(true);
                 draftingNoteBuilder1.Origin.Anchor = defult;
+                
+                //draftingNoteBuilder1.Style.LetteringStyle.GeneralTextFont = 10;
+                draftingNoteBuilder1.Style.LetteringStyle.GeneralTextSize = Convert.ToDouble(FontSize);
 
+                int fontIndex1;
+                fontIndex1 = workPart.Fonts.AddFont("chineset");
+                draftingNoteBuilder1.Style.LetteringStyle.GeneralTextFont = fontIndex1;
                 //text文字
-                workPart.Fonts.AddFont("chineset");
                 string[] text1 = new string[text.Length];
                 //text1[0] = "<C2>" + text + "<C>";
-                for (int i = 0; i < text.Length;i++ )
+                for (int i = 0; i < text.Length; i++)
                 {
-                    text1[i] = "<F2>" + text[i] + "<F>";
+                    text1[i] = text[i];
+                    //text1[i] = "<F2>" + text[i] + "<F>";
                 }
                 //text1[0] = "<F18>" + text + "<F>";
                 draftingNoteBuilder1.Text.TextBlock.SetText(text1);
 
-                draftingNoteBuilder1.Style.LetteringStyle.GeneralTextSize = Convert.ToDouble(FontSize);
+                //draftingNoteBuilder1.Style.LetteringStyle.GeneralTextSize = Convert.ToDouble(FontSize);
 
 
                 theSession.SetUndoMarkName(markId1, "Note Dialog");
@@ -202,10 +213,9 @@ namespace PartInformation
                 draftingNoteBuilder1.Origin.SetInferRelativeToGeometry(true);
                 NXOpen.Session.UndoMarkId markId2;
                 markId2 = theSession.SetUndoMark(NXOpen.Session.MarkVisibility.Invisible, "Note");
-                NXObject nXObject1;
+                
                 nXObject1 = draftingNoteBuilder1.Commit();
-                //塞屬性，以利重複執行時抓取資料
-                nXObject1.SetAttribute("Createdby","CAX");
+                
                 theSession.DeleteUndoMark(markId2, null);
                 theSession.SetUndoMarkName(markId1, "Note");
                 theSession.SetUndoMarkVisibility(markId1, null, NXOpen.Session.MarkVisibility.Visible);
@@ -238,13 +248,43 @@ namespace PartInformation
                 }
                 else if (cDraftingConfig.Drafting[i].PartDescriptionPosText == KeyToCompare)
                 {
+                    //ptStr = cDraftingConfig.Drafting[i].PartDescriptionPos;
+                    //FontSize = cDraftingConfig.Drafting[i].PartDescriptionFontSize;
                     ptStr = cDraftingConfig.Drafting[i].PartDescriptionPos;
-                    FontSize = cDraftingConfig.Drafting[i].PartDescriptionFontSize;
+                    int Subtraction = ValueToCompare.Length - 13;
+                    if (Subtraction <= 0)
+                    {
+                        FontSize = cDraftingConfig.Drafting[i].PartDescriptionFontSize;
+                    }
+                    else
+                    {
+                        if (Subtraction <= 3)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartDescriptionFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize))).ToString();
+                        }
+                        else if (Subtraction > 3 && Subtraction <= 5)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartDescriptionFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 2).ToString();
+                        }
+                        else if (Subtraction > 5 && Subtraction <= 7)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartDescriptionFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 3).ToString();
+                        }
+                        else if (Subtraction > 7)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartDescriptionFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 3.5).ToString();
+                        }
+
+                        if (Convert.ToDouble(FontSize) <= 0)
+                        {
+                            FontSize = cDraftingConfig.Drafting[i].MatMinFontSize;
+                        }
+                    }
                 }
                 else if (cDraftingConfig.Drafting[i].AuthDatePosText == KeyToCompare)
                 {
                     ptStr = cDraftingConfig.Drafting[i].AuthDatePos;
-                    FontSize = cDraftingConfig.Drafting[i].AuthDateFontSize;
+                    FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].AuthDateFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 0.3).ToString();
                 }
                 else if (cDraftingConfig.Drafting[i].MaterialPosText == KeyToCompare)
                 {
@@ -256,7 +296,23 @@ namespace PartInformation
                     }
                     else
                     {
-                        FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].MaterialFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize) * Subtraction)).ToString();
+                        if (Subtraction <= 3)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].MaterialFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize))).ToString();
+                        }
+                        else if (Subtraction > 3 && Subtraction <= 5)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].MaterialFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize) * 2)).ToString();
+                        }
+                        else if (Subtraction > 5 && Subtraction <= 10)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartDescriptionFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 3).ToString();
+                        }
+                        else if (Subtraction > 10)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartDescriptionFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 3.5).ToString();
+                        }
+                        
                         if (Convert.ToDouble(FontSize) <= 0)
                         {
                             FontSize = cDraftingConfig.Drafting[i].MatMinFontSize;
@@ -266,14 +322,25 @@ namespace PartInformation
                 else if (cDraftingConfig.Drafting[i].PartNumberPosText == KeyToCompare)
                 {
                     ptStr = cDraftingConfig.Drafting[i].PartNumberPos;
-                    int Subtraction = ValueToCompare.Length - 17;
+                    int Subtraction = ValueToCompare.Length - 13;
                     if (Subtraction <= 0)
                     {
                         FontSize = cDraftingConfig.Drafting[i].PartNumberFontSize;
                     }
                     else
                     {
-                        FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartNumberFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize) * Subtraction)).ToString();
+                        if (Subtraction <= 3)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartNumberFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize))).ToString();
+                        }
+                        else if (Subtraction > 3 && Subtraction <= 6)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartNumberFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 2).ToString();
+                        }
+                        else if (Subtraction > 6)
+                        {
+                            FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].PartNumberFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 3).ToString();
+                        }
                         
                         if (Convert.ToDouble(FontSize) <= 0)
                         {
@@ -295,7 +362,7 @@ namespace PartInformation
                 else if (cDraftingConfig.Drafting[i].RevDateStartPosText == KeyToCompare)
                 {
                     ptStr = cDraftingConfig.Drafting[i].RevDateStartPos;
-                    FontSize = cDraftingConfig.Drafting[i].RevDateFontSize;
+                    FontSize = (Convert.ToDouble(cDraftingConfig.Drafting[i].RevDateFontSize) - (Convert.ToDouble(cDraftingConfig.Drafting[i].MatMinFontSize)) * 0.3).ToString();
                 }
                 else if (cDraftingConfig.Drafting[i].RevStartPosText == KeyToCompare)
                 {
