@@ -237,6 +237,9 @@ namespace ExportShopDoc
                 //取得本機ShopDoc.xls路徑
                 ShopDocPath = string.Format(@"{0}\{1}\{2}", Path.GetDirectoryName(displayPart.FullPath), "MODEL", "ShopDoc.xls");
 
+                //取得Server的ShopDoc.xls路徑
+                //ShopDocPath = string.Format(@"{0}\{1}\{2}\{3}", CaxEnv.GetGlobaltekEnvDir(), "TE_Config", "Config", "ShopDoc.xls");
+
                 //取得METEDownload_Upload.dat
                 CaxGetDatData.GetMETEDownload_Upload(out cMETE_Download_Upload_Path);
 
@@ -855,36 +858,39 @@ namespace ExportShopDoc
             
 
             #region 開始插入excel
-            /*
+            Excel.ApplicationClass excelApp = null;
+            Excel.Workbook book = null;
+            Excel.Worksheet sheet = null;
+            Excel.Range oRng = null;
             try
             {
                 //檢查PC有無Excel在執行
-                //bool flag = false;
-                //foreach (var item in Process.GetProcesses())
-                //{
-                //    if (item.ProcessName == "EXCEL")
-                //    {
-                //        flag = true;
-                //        break;
-                //    }
-                //}
-                //if (flag)
-                //{
-                //    CaxLog.ShowListingWindow("請先關閉所有Excel再重新執行輸出，如沒有EXCEL在執行，請開啟工作管理員關閉背景EXCEL");
-                //    return;
-                //}
+                bool flag = false;
+                foreach (var item in Process.GetProcesses())
+                {
+                    if (item.ProcessName == "EXCEL")
+                    {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag)
+                {
+                    CaxLog.ShowListingWindow("請先關閉所有Excel再重新執行輸出，如沒有EXCEL在執行，請開啟工作管理員關閉背景EXCEL");
+                    return;
+                }
 
-                ////判斷是否已經指定路徑
-                //if (OutputPath.Text == "")
-                //{
-                //    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Error, "請指定刀具路徑與清單的輸出路徑！");
-                //    return;
-                //}
+                //判斷是否已經指定路徑
+                if (OutputPath.Text == "")
+                {
+                    UI.GetUI().NXMessageBox.Show("注意", NXMessageBox.DialogType.Error, "請指定刀具路徑與清單的輸出路徑！");
+                    return;
+                }
 
-                //Excel.ApplicationClass excelApp = new Excel.ApplicationClass();
-                //Excel.Workbook book = null;
-                //Excel.Worksheet sheet = null;
-                //Excel.Range oRng = null;
+                excelApp = new Excel.ApplicationClass();
+                book = null;
+                sheet = null;
+                oRng = null;
              
                 excelApp.Visible = false;
 
@@ -1065,13 +1071,13 @@ namespace ExportShopDoc
                 excelApp.Quit();
                 this.Close();
             }
-            */
+            
             #endregion
 
 
 
             #region 上傳數據至Database
-
+            /*
             if (Is_Local != null)
             {
                 Com_PEMain comPEMain = new Com_PEMain();
@@ -1255,7 +1261,7 @@ namespace ExportShopDoc
                 }
                 
             }
-            
+            */
             #endregion
             
             MessageBox.Show("刀具路徑與清單輸出完成！");
